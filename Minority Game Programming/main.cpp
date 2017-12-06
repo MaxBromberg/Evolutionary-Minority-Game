@@ -6,159 +6,90 @@
 #include <algorithm>
 //#include <pair>
 #include <cassert>
+#include "Evolutionary_Minority_Game_Functions.h"
+#include <fstream>
 
 using namespace std;
 
 //Header Declarations
 enum {
-    NUM_INDICES_IN_STRATEGY = 4,
-    AGENT_POPULATION = 11,
     NUM_STRATEGIES_PER_AGENT = 2,
-    NUM_DAYS_AGENTS_PLAY = 10,
+    NUM_DAYS_AGENTS_PLAY = 1001,
     MARKET_HISTORY_INIT_SEED = 123,
-    RNG_RESOLUTION = 10000
+    RNG_RESOLUTION = 10000,
+    NUM_DIFF_AGENT_POPS = 4, //Log10 range
+    NUM_DIFF_MEMORY_LENGTHS = 5, //Log2 range
 };
 
-struct StrategyManipulation {
-    //there's no need to assign strategies initially, as they will be produced procedurally with the index serving as the RNG seed
-    static vector<vector<int>> TwoDimensionalVector (int x_size, int y_size, int value);
+int main() {
+    //File Data Details
+    ofstream file("Variance for Memory from 2 to 32, Pop from 11 to 1001, and 1001 Iterations.txt");
+    for (int a = 1; a <= NUM_DIFF_MEMORY_LENGTHS; a++) {
+        int NUM_INDICES_IN_STRATEGY = 0;
+        NUM_INDICES_IN_STRATEGY = int(floor(pow(2, a) + .5));
+        cout << "Just started " << NUM_INDICES_IN_STRATEGY << "th memory length run" << endl;
+        for (int b = 1; b < NUM_DIFF_AGENT_POPS; b++) {
+            int AGENT_POPULATION = 0;
+            for (int c = 0;
+                 c < 2; c++) { //I know this a really ugly, can't think of a better implementation at the moment
+                (c == 0) ? AGENT_POPULATION = int(floor(pow(10, b) + 0.5) + 1) : AGENT_POPULATION *= 5;
+                if (AGENT_POPULATION > 2000) {
+                    break;
+                }
 
-    static vector<vector<int>> strategyScoreUpdate(int agentPopulation, int strategiesPerAgent, int NumIndicesInStrategy,
-                                                   const vector<int>& binaryMarketHistory, vector<vector<int>> strategy_scores);
+                //initialization
+                auto strategy_scores = TwoDimensionalVector(AGENT_POPULATION, NUM_STRATEGIES_PER_AGENT, 0);
+                auto binary_history = MarketInitialization::binaryMarketHistoryGenerator(NUM_INDICES_IN_STRATEGY);
+                auto market_history = MarketInitialization::marketHistoryGenerator(binary_history, AGENT_POPULATION);
 
-    static int market_count (const vector<vector<int>>& strategy_scores, const vector<int>& binary_history,
-                                        int NumIndicesInStrategy, int strategiesPerAgent);
+                for (int i = 0; i < NUM_DAYS_AGENTS_PLAY; ++i) {
+                    market_history.push_back(
+                            StrategyManipulation::market_count(strategy_scores, binary_history, NUM_INDICES_IN_STRATEGY,
+                                                               NUM_STRATEGIES_PER_AGENT));
+                    StrategyManipulation::binaryHistoryUpdate(binary_history,
+                                                              market_history.back()); //Could just be written out as the one line fct. it is.
+                    strategy_scores = StrategyManipulation::strategyScoreUpdate(AGENT_POPULATION,
+                                                                                NUM_STRATEGIES_PER_AGENT,
+                                                                                NUM_INDICES_IN_STRATEGY, binary_history,
+                                                                                strategy_scores);
+                    /*
+                    //Testing For Sensible Results:
+                    if (i % 1000 == 0) {
+                        cout << "Strategy score on the " << i << "th day:" << endl;
+                        for (int j = 0; j < AGENT_POPULATION; j++) {
+                            for (int k = 0; k < NUM_STRATEGIES_PER_AGENT; k++) {
+                                cout << strategy_scores[j][k] << ", ";
+                            }
+                            cout << endl;
+                        }
+                    }
+                }
 
-    static int evaluateStrategy (int agent_idx, int index_of_best_strategy, int NumIndicesInStrategy,
-                                            int strategiesPerAgent, const vector<int>& binaryMarketHistory);
-};
+                //Testing For Sensible Results:
+                for (int i = NUM_DAYS_AGENTS_PLAY - 50; i < NUM_DAYS_AGENTS_PLAY; i++) {
+                    cout << "Market History: " << market_history[i] << "       Binary History at " << i << " = "
+                         << binary_history[i] << endl;
+                }
+                cout << "Alpha = " << pow(2, double(NUM_INDICES_IN_STRATEGY)) / AGENT_POPULATION << endl;
+                     */
+                }
+                vector<int> attendance = Analysis::attendance(market_history, AGENT_POPULATION);
+                double Variance = Analysis::variance(attendance);
+                double literatureVariance = Analysis::literatureVariance(attendance);
+                double Alpha = pow(2, double(NUM_INDICES_IN_STRATEGY)) / AGENT_POPULATION;
+                double successRate = Analysis::successRate(market_history, AGENT_POPULATION);
 
-struct MarketInitialization{
-    static vector<int> binaryMarketHistoryGenerator(int NumIndicesInStrategy);
-    static vector<int> marketHistoryGenerator(const vector<int>& source, int agentPopulation);
-};
+                file << AGENT_POPULATION << ", " << NUM_INDICES_IN_STRATEGY << ", " << Alpha << ", " << Variance << ", "
+                     << literatureVariance << ", "
+                     << Variance / AGENT_POPULATION << ", " << literatureVariance / AGENT_POPULATION << ", "
+                     << successRate << endl;
 
-    //general function declarations
-    vector<int> RandomBoolVector (int size, int seed, int true_value = 1, int false_value = 0);
-    int BinaryVectorLastNToStrategyIndex (const std::vector<int>& v, int n);
-
-int main(){
-    //initialization
-    auto strategy_scores = StrategyManipulation::TwoDimensionalVector (AGENT_POPULATION, NUM_STRATEGIES_PER_AGENT, 0);
-    auto binary_history = MarketInitialization::binaryMarketHistoryGenerator (NUM_INDICES_IN_STRATEGY);
-    auto market_history = MarketInitialization::marketHistoryGenerator (binary_history, AGENT_POPULATION);
-
-    
-    for(int i = 0; i < NUM_DAYS_AGENTS_PLAY; ++i){
-        market_history.push_back(StrategyManipulation::market_count (strategy_scores, binary_history,
-                                                                     NUM_INDICES_IN_STRATEGY, NUM_STRATEGIES_PER_AGENT));
-        strategy_scores = StrategyManipulation::strategyScoreUpdate(AGENT_POPULATION, NUM_STRATEGIES_PER_AGENT,
-                                                  NUM_INDICES_IN_STRATEGY, binary_history, strategy_scores);
-    }
-    return 0;
-}
-
-// FILE : api.cpp
-//MarketInitialization Function Declaration
-vector<vector<int>> StrategyManipulation::TwoDimensionalVector (int x_size, int y_size, int value) { //Generates a empty vector of corresponding size
-    std::vector<vector<int>> result {};
-    result.resize (x_size, std::vector<int> {y_size, value});
-}
-// Not working for some reason, couldn't get it to work myself...
-vector<int> RandomBoolVector (int size, int seed, int true_value, int false_value) { // generates a vector of random bools, as defined in true/false val
-    mt19937 generator (seed);
-    uniform_int_distribution<int> bitDistribution (0, 1);
-
-    vector<int> v {size};
-    std::generate (v.begin(), v.end(), [&bitDistribution, &generator, true_value, false_value] () {return bitDistribution (generator) ? true_value : false_value;});
-    return v;
-}
-
-/*
-vector<int> RandomBoolVector (int size, int seed, int true_value, int false_value) { // generates a vector of random bools, as defined in true/false val
-    mt19937 generator (seed);
-    uniform_int_distribution<int> bitDistribution (0, 1);
-    vector<int> v {size};
-    for(int i = 0; i < v.size(); i++){
-        v.push_back(bitDistribution(generator));
-        if(v[i] == 0)
-            v[i] = true_value;
-        v[i] = false_value;
-    return v;
-}
-*/
-vector<int> MarketInitialization::binaryMarketHistoryGenerator (int NumIndicesInStrategy){ //fills a vector with +/-1
-    return RandomBoolVector (NumIndicesInStrategy, MARKET_HISTORY_INIT_SEED, 1, -1);
-}
-
-vector<int> MarketInitialization::marketHistoryGenerator(const vector<int>& source, int agentPopulation){
-    mt19937 generator {MARKET_HISTORY_INIT_SEED};
-    uniform_int_distribution<int> distribution {0, agentPopulation};
-
-    vector<int> result {source.size()};
-    std::transform (source.begin(), source.end(), result.begin(), [&] (int i) {
-            int rand = distribution (generator);
-            return i * rand;
-            });
-    return result;
-}//Initializes market history to rand val (-Agentpop, Agent Pop)
-
-vector<vector<int>> StrategyManipulation::strategyScoreUpdate(int agentPopulation, int strategiesPerAgent, int NumIndicesInStrategy,
-                                                              const vector<int>& binaryMarketHistory, vector<vector<int>> strategy_scores){
-    for(int i = 0; i < agentPopulation; ++i){
-        for(int j = 0; j < strategiesPerAgent; ++j){
-            //if the strategy's evaluation is the same as the market chose, the strategy is downgraded
-            if(StrategyManipulation::evaluateStrategy(i,j,strategiesPerAgent, NumIndicesInStrategy, binaryMarketHistory) == binaryMarketHistory.back()){
-                strategy_scores[i][j]--;
-            strategy_scores[i][j]++;
+                //reseting: though the redeclaration should do this too, right?
+                strategy_scores.clear();
+                binary_history.clear();
+                market_history.clear();
             }
         }
     }
-    return strategy_scores;
-}
-
-int StrategyManipulation::market_count (const vector<vector<int>>& strategy_scores, const vector<int>& binary_history,
-                                        int NumIndicesInStrategy, int strategiesPerAgent){
-    //Finds best preforming strategy and uses it.
-    int marketCount = 0;
-    for(int agent_idx = 0; agent_idx < strategy_scores.size(); ++agent_idx) {
-        auto& agent_strategies = strategy_scores[agent_idx];
-        auto index_of_best_strategy = std::max_element (agent_strategies.begin(), agent_strategies.end()) - agent_strategies.begin();
-        marketCount += StrategyManipulation::evaluateStrategy (agent_idx, index_of_best_strategy, NumIndicesInStrategy, strategiesPerAgent, binary_history);
-    }
-    return marketCount;
-}
-
-int StrategyManipulation::evaluateStrategy (int agent_idx, int index_of_best_strategy, int NumIndicesInStrategy,
-                                            int strategiesPerAgent, const vector<int>& binaryMarketHistory){
-    //deterministically returns the strategy's value associated with the market history and strategy selection from the index
-    //I'm taking enum consts. as arguments as I expect to use others later
-    auto metaStrategyIndex = BinaryVectorLastNToStrategyIndex (binaryMarketHistory, NumIndicesInStrategy);
-    auto indexSeed = (agent_idx*strategiesPerAgent) + index_of_best_strategy; //converts to unique 1d array index
-
-    //produce a unique number to seed the bit generator with dependence on both the above (index seed and strategy index)
-    mt19937 indexDependentGenerator (indexSeed);
-    mt19937 metaStrategyindexDependentGenerator (metaStrategyIndex);
-    uniform_int_distribution<int> solutionDomain(0,RNG_RESOLUTION);
-    uniform_int_distribution<int> seedRandomizer(0,RNG_RESOLUTION);
-    int randomizedSeedInput = seedRandomizer(indexDependentGenerator);
-    int strategySolutionSeed = solutionDomain(metaStrategyindexDependentGenerator); //domain of 2^2^m
-    int bitToBe = randomizedSeedInput+strategySolutionSeed; //deterministically produces bit from strategy domain element
-    bitToBe = bitToBe < RNG_RESOLUTION ? 1 : -1; //cast will happen regardless, and will fit (highest unsigned int 1024>1000, no?)
-    //Ideally takes less time than simply recalling from memory?
-    return (bitToBe);
-}
-
-template <typename Iter>
-int BinaryArrayToStrategyIndex (Iter begin, Iter end) {
-    assert (end - begin <= 32);
-    int output = 0;
-    for (auto iter = begin; iter != end; ++iter) {
-        if (*iter == 1) output += 1 << iter - begin;
-    }
-    return output;
-}
-
-int BinaryVectorLastNToStrategyIndex (const std::vector<int>& v, int n) {
-    return BinaryArrayToStrategyIndex (v.end() - n, v.end());
+    return 0;
 }
