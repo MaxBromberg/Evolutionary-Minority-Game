@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="Minority_Game_Programming"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Minority_Game_UnitTests">
+				<Option output="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Minority_Game_UnitTests" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 Minority_Game_UnitTests"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Minority_Game_UnitTests/fast">
+				<Option output="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Minority_Game_UnitTests" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 Minority_Game_UnitTests/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Minority_Game_Programming">
+				<Option output="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Minority_Game_Programming" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 Minority_Game_Programming"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Minority_Game_Programming/fast">
+				<Option output="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Minority_Game_Programming" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 Minority_Game_Programming/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/Evolutionary_Minority_Game.cpp">
+			<Option target="Minority_Game_UnitTests"/>
+			<Option target="Minority_Game_Programming"/>
+		</Unit>
+		<Unit filename="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/Evolutionary_Minority_Game.h">
+			<Option target="Minority_Game_UnitTests"/>
+			<Option target="Minority_Game_Programming"/>
+		</Unit>
+		<Unit filename="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/Evolutionary_Minority_Game_Test.cpp">
+			<Option target="Minority_Game_UnitTests"/>
+		</Unit>
+		<Unit filename="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/main.cpp">
+			<Option target="Minority_Game_Programming"/>
+		</Unit>
+		<Unit filename="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/test_main.cpp">
+			<Option target="Minority_Game_UnitTests"/>
+		</Unit>
+		<Unit filename="/Users/Gabriel/Desktop/Evolutionary-Minority-Game/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
