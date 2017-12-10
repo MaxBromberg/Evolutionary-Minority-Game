@@ -4,11 +4,14 @@
 #include <vector>
 #ifndef MINORITY_GAME_PROGRAMMING_EVOLUTIONARY_MINORITY_GAME_FUNCTIONS_H
 #define MINORITY_GAME_PROGRAMMING_EVOLUTIONARY_MINORITY_GAME_FUNCTIONS_H
+#endif //MINORITY_GAME_PROGRAMMING_EVOLUTIONARY_MINORITY_GAME_FUNCTIONS_H
 
 //General Function Declarations
 std::vector<int> RandomBoolvector (int size, int seed, int true_value = 1, int false_value = 0);
 int BinaryVectorLastNToStrategyIndex (const std::vector<int>& v, int n);
 std::vector<std::vector<int>> TwoDimensionalVector (unsigned int x_size, int y_size, int value);
+void debugOutputMatrix(const std::vector<std::vector<int>>& v); //- templates do not require a declaration?
+void debugOutputVector(const std::vector<int>& v);
 
 struct StrategyManipulation {
     //there's no need to assign strategies initially, as they will be produced procedurally with the index serving as the RNG seed
@@ -37,4 +40,3 @@ struct Analysis{
     static std::vector<int> attendance(const std::vector<int>& obv, int agentPop);
 };
 
-#endif //MINORITY_GAME_PROGRAMMING_EVOLUTIONARY_MINORITY_GAME_FUNCTIONS_H

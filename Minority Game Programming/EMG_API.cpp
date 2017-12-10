@@ -38,20 +38,6 @@ vector<vector<int>> TwoDimensionalVector (unsigned int x_size, int y_size, int v
     return (result);
 }
 
-/*
-vector<int> RandomBoolVector (int size, int seed, int true_value, int false_value) { // generates a vector of random bools, as defined in true/false val
-    mt19937 generator (seed);
-    uniform_int_distribution<int> bitDistribution (0, 1);
-    vector<int> v {size};
-    for(int i = 0; i < v.size(); i++){
-        v.push_back(bitDistribution(generator));
-        if(v[i] == 0)
-            v[i] = true_value;
-        v[i] = false_value;
-    return v;
-}
-*/
-
 vector<int> MarketInitialization::binaryMarketHistoryGenerator (int NumIndicesInStrategy){ //fills a vector with +/-1
     return RandomBoolVector (NumIndicesInStrategy, MARKET_HISTORY_INIT_SEED, 1, -1);
 }
@@ -170,7 +156,8 @@ double Analysis::literatureVariance(const vector<int>& obv){
 double Analysis::successRate(const vector<int>& obv, int agentPop){
     double successRate = 0;
     for(int i = 0; i < obv.size(); i++){
-        successRate += (agentPop - abs(obv[i]))/(2*agentPop);
+        successRate += double((agentPop - abs(obv[i]))/(2*agentPop));
+        cout<<obv[i]<<endl;
     }
     return successRate/obv.size();
 }
@@ -196,4 +183,18 @@ int BinaryArrayToStrategyIndex (Iter begin, Iter end) {
 
 int BinaryVectorLastNToStrategyIndex (const std::vector<int>& v, int n) {
     return BinaryArrayToStrategyIndex (v.end() - n, v.end());
+}
+
+void debugOutputMatrix(const vector<vector<int>>& v){
+    for(int i = 0; i < v.size(); i++){
+        for(int j = 0; j < v[i].size(); j++){
+            cout << v[i][j] << ", ";
+        }
+        cout<<endl;
+    }
+}
+void debugOutputVector(const vector<int>& v) {
+    for (int i = 0; i < v.size(); i++) {
+        cout << v[i] << ", " << endl;
+    }
 }

@@ -3,9 +3,6 @@
 #include <cmath>
 #include <vector>
 #include <random>
-#include <algorithm>
-//#include <pair>
-#include <cassert>
 #include "Evolutionary_Minority_Game_Functions.h"
 #include <fstream>
 
@@ -14,7 +11,7 @@ using namespace std;
 //Header Declarations
 enum {
     NUM_STRATEGIES_PER_AGENT = 2,
-    NUM_DAYS_AGENTS_PLAY = 1001,
+    NUM_DAYS_AGENTS_PLAY = 10000,
     MARKET_HISTORY_INIT_SEED = 123,
     RNG_RESOLUTION = 10000,
     NUM_DIFF_AGENT_POPS = 4, //Log10 range
@@ -44,44 +41,37 @@ int main() {
 
                 for (int i = 0; i < NUM_DAYS_AGENTS_PLAY; ++i) {
                     market_history.push_back(
-                            StrategyManipulation::market_count(strategy_scores, binary_history, NUM_INDICES_IN_STRATEGY,
+                            StrategyManipulation::market_count(strategy_scores,
+                                                               binary_history,
+                                                               NUM_INDICES_IN_STRATEGY,
                                                                NUM_STRATEGIES_PER_AGENT));
                     StrategyManipulation::binaryHistoryUpdate(binary_history,
                                                               market_history.back()); //Could just be written out as the one line fct. it is.
                     strategy_scores = StrategyManipulation::strategyScoreUpdate(AGENT_POPULATION,
                                                                                 NUM_STRATEGIES_PER_AGENT,
-                                                                                NUM_INDICES_IN_STRATEGY, binary_history,
+                                                                                NUM_INDICES_IN_STRATEGY,
+                                                                                binary_history,
                                                                                 strategy_scores);
-                    /*
-                    //Testing For Sensible Results:
-                    if (i % 1000 == 0) {
-                        cout << "Strategy score on the " << i << "th day:" << endl;
-                        for (int j = 0; j < AGENT_POPULATION; j++) {
-                            for (int k = 0; k < NUM_STRATEGIES_PER_AGENT; k++) {
-                                cout << strategy_scores[j][k] << ", ";
-                            }
-                            cout << endl;
-                        }
+                    if(i % 100 == 0 ) {
+                        debugOutputMatrix(strategy_scores);
+                        cout << "Strategy Score matrix after " << i << " days printed" << endl;
                     }
                 }
+                debugOutputVector(binary_history);
 
-                //Testing For Sensible Results:
-                for (int i = NUM_DAYS_AGENTS_PLAY - 50; i < NUM_DAYS_AGENTS_PLAY; i++) {
-                    cout << "Market History: " << market_history[i] << "       Binary History at " << i << " = "
-                         << binary_history[i] << endl;
-                }
-                cout << "Alpha = " << pow(2, double(NUM_INDICES_IN_STRATEGY)) / AGENT_POPULATION << endl;
-                     */
-                }
                 vector<int> attendance = Analysis::attendance(market_history, AGENT_POPULATION);
-                double Variance = Analysis::variance(attendance);
-                double literatureVariance = Analysis::literatureVariance(attendance);
                 double Alpha = pow(2, double(NUM_INDICES_IN_STRATEGY)) / AGENT_POPULATION;
+                double Variance = Analysis::variance(market_history);
+                double literatureVariance = Analysis::literatureVariance(market_history);
                 double successRate = Analysis::successRate(market_history, AGENT_POPULATION);
 
-                file << AGENT_POPULATION << ", " << NUM_INDICES_IN_STRATEGY << ", " << Alpha << ", " << Variance << ", "
+                file << AGENT_POPULATION << ", "
+                     << NUM_INDICES_IN_STRATEGY << ", "
+                     << Alpha << ", "
+                     << Variance << ", "
                      << literatureVariance << ", "
-                     << Variance / AGENT_POPULATION << ", " << literatureVariance / AGENT_POPULATION << ", "
+                     << Variance / AGENT_POPULATION << ", "
+                     << literatureVariance / AGENT_POPULATION << ", "
                      << successRate << endl;
 
                 //reseting: though the redeclaration should do this too, right?
