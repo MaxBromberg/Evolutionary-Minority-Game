@@ -1,8 +1,10 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/Minority_Game_Programming.dir/main.cpp.o"
-  "CMakeFiles/Minority_Game_Programming.dir/Evolutionary_Minority_Game.cpp.o"
+  "CMakeFiles/Minority_Game_Programming.dir/main.cpp.obj"
+  "CMakeFiles/Minority_Game_Programming.dir/Evolutionary_Minority_Game.cpp.obj"
   "Minority_Game_Programming.pdb"
-  "Minority_Game_Programming"
+  "Minority_Game_Programming.exe"
+  "Minority_Game_Programming.exe.manifest"
+  "libMinority_Game_Programming.dll.a"
 )
 
 # Per-language clean rules from dependency scanning.

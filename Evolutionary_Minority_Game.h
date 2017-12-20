@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <numeric>
+#include <algorithm>
 
 std::vector<int> RandomBoolVector (int size, int seed, int true_value = 1, int false_value = 0);
 int BinaryVectorLastNToStrategyIndex (const std::vector<int>& v, int n);
@@ -47,8 +48,28 @@ struct Analysis{
         return squared_mean (v) - (m * m);
     }
 
+template <typename T>
+    static std::vector<std::vector<double>> frequencyHistogram (const std::vector<T>& v){
+        std::vector<std::vector<double>> frequencyHistogram;
+        std::vector<double> temp;
+        for(int i = 0; i < v.size(); i++) {
+            temp.push_back(v[i]);
+            temp.push_back(std::count(v.cbegin(), v.cend(), v[i]));
+            frequencyHistogram.push_back(temp);
+                for (int j = 0; j < frequencyHistogram.size(); j++) {
+                    if (v[i] == frequencyHistogram[j][0]) {
+                        i++;
+                    }
+                }
+            temp.clear();
+        }
+    return frequencyHistogram;
+    }
 
     static double literatureVariance(const std::vector<int>& obv);
     static double successRate(const std::vector<int>& obv, int agentPop);
     static std::vector<int> attendance(const std::vector<int>& obv, int agentPop);
 };
+
+//main output function, Num_Diff_Agent_Pop is defined in log10 Range, NUm_Diff_Memory_Lengths is log2 range
+void outputMinorityGameObservables(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, int NUM_DIFF_AGENT_POPS, int  NUM_DIFF_MEMORY_LENGTHS);

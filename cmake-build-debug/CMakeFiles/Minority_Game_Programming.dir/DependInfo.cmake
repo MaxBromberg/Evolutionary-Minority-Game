@@ -4,10 +4,10 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/Users/Gabriel/Desktop/Evolutionary-Minority-Game/Evolutionary_Minority_Game.cpp" "/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/CMakeFiles/Minority_Game_Programming.dir/Evolutionary_Minority_Game.cpp.o"
-  "/Users/Gabriel/Desktop/Evolutionary-Minority-Game/main.cpp" "/Users/Gabriel/Desktop/Evolutionary-Minority-Game/cmake-build-debug/CMakeFiles/Minority_Game_Programming.dir/main.cpp.o"
+  "C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/Evolutionary_Minority_Game.cpp" "C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/cmake-build-debug/CMakeFiles/Minority_Game_Programming.dir/Evolutionary_Minority_Game.cpp.obj"
+  "C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/main.cpp" "C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/cmake-build-debug/CMakeFiles/Minority_Game_Programming.dir/main.cpp.obj"
   )
-set(CMAKE_CXX_COMPILER_ID "AppleClang")
+set(CMAKE_CXX_COMPILER_ID "GNU")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH

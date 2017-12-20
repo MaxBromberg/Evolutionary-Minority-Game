@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/main.cpp
+iostream
+-
+cmath
+-
+vector
+-
+random
+-
+

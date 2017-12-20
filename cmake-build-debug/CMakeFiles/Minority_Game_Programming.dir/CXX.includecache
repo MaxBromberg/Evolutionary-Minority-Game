@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/Users/Gabriel/Desktop/Evolutionary-Minority-Game/Evolutionary_Minority_Game.cpp
+C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/Evolutionary_Minority_Game.cpp
 iostream
 -
 bitset
@@ -21,28 +21,28 @@ algorithm
 -
 cassert
 -
+fstream
+-
+debug_utilities.h
+C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/debug_utilities.h
 Evolutionary_Minority_Game.h
-/Users/Gabriel/Desktop/Evolutionary-Minority-Game/Evolutionary_Minority_Game.h
+C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/Evolutionary_Minority_Game.h
 
-/Users/Gabriel/Desktop/Evolutionary-Minority-Game/Evolutionary_Minority_Game.h
+C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/Evolutionary_Minority_Game.h
 vector
 -
 numeric
 -
+algorithm
+-
 
-/Users/Gabriel/Desktop/Evolutionary-Minority-Game/main.cpp
+C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/debug_utilities.h
 iostream
 -
-bitset
+type_traits
 -
-cmath
--
-vector
--
-random
--
-fstream
--
+
+C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/main.cpp
 Evolutionary_Minority_Game.h
-/Users/Gabriel/Desktop/Evolutionary-Minority-Game/Evolutionary_Minority_Game.h
+C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/Evolutionary_Minority_Game.h
 

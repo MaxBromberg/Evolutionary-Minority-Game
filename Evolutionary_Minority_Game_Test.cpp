@@ -47,3 +47,16 @@ TEST_CASE ("Numerics") {
         REQUIRE (Analysis::variance(v2) == 1.0);
     }
 }
+
+TEST_CASE("Frequency Analysis"){
+    std::vector<int> v (100,5);
+    std::vector<int> v2;
+
+    for (int i = 0; i < 100; ++i) {
+        v2.push_back (i % 2 ? 2 : 0);
+    };
+    SECTION("Frequency Histogram Function") {
+        debug_print(Analysis::frequencyHistogram(v));
+        debug_print(Analysis::frequencyHistogram(v2));
+    }
+}
