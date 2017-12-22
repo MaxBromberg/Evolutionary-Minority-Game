@@ -3,6 +3,7 @@
 #include <vector>
 #include <numeric>
 #include <algorithm>
+#include <cassert>
 
 std::vector<int> RandomBoolVector (int size, int seed, int true_value = 1, int false_value = 0);
 int BinaryVectorLastNToStrategyIndex (const std::vector<int>& v, int n);
@@ -48,22 +49,49 @@ struct Analysis{
         return squared_mean (v) - (m * m);
     }
 
-template <typename T>
-    static std::vector<std::vector<double>> frequencyHistogram (const std::vector<T>& v){
-        std::vector<std::vector<double>> frequencyHistogram;
-        std::vector<double> temp;
+/*
+    // Version 1, using find
+    template <typename T>
+    static std::vector<std::vector<T>> frequencyHistogram (const std::vector<T>& v){
+        std::vector<std::vector<T>> frequencyHistogram;
+        std::vector<T> temp;
         for(int i = 0; i < v.size(); i++) {
             temp.push_back(v[i]);
             temp.push_back(std::count(v.cbegin(), v.cend(), v[i]));
             frequencyHistogram.push_back(temp);
-                for (int j = 0; j < frequencyHistogram.size(); j++) {
-                    if (v[i] == frequencyHistogram[j][0]) {
-                        i++;
-                    }
-                }
+            for(; std::find(frequencyHistogram.begin(), frequencyHistogram.end(), v[i]) != v.cend(); ){
+                i++;
+            }
             temp.clear();
         }
     return frequencyHistogram;
+    }
+*/
+    //Version 2, using sort. Possibly faster for larger vectors.
+    template <typename T>
+    static std::vector<std::vector<int>> frequencyHistogram (const std::vector<T>& v){
+        std::vector<std::vector<int>> frequencyHistogram;
+        std::vector<int> temp;
+        std::vector<T> sortedV = v;
+        std::sort(sortedV.begin(), sortedV.end());
+        int i = 0;
+        for(; i < sortedV.size();) {
+            temp.push_back(sortedV[i]);
+            temp.push_back(std::count(sortedV.cbegin(), sortedV.cend(), sortedV[i]));
+            frequencyHistogram.push_back(temp);
+            i+=std::count(sortedV.begin(), sortedV.end(), sortedV[i]); //=temp[1]
+            assert(sortedV[i-1] != sortedV[i]);
+            temp.clear();
+        }
+    return frequencyHistogram;
+    }
+
+    template <typename T>
+    static int numberOfUniqueElements (const std::vector<T>& v){
+        std::vector<T> tempV = v;
+        std::sort(tempV.begin(),tempV.end());
+        int uniqueCount = std::unique(tempV.begin(), tempV.end()) - tempV.begin();
+    return uniqueCount;
     }
 
     static double literatureVariance(const std::vector<int>& obv);
@@ -73,3 +101,6 @@ template <typename T>
 
 //main output function, Num_Diff_Agent_Pop is defined in log10 Range, NUm_Diff_Memory_Lengths is log2 range
 void outputMinorityGameObservables(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, int NUM_DIFF_AGENT_POPS, int  NUM_DIFF_MEMORY_LENGTHS);
+
+void output_Minority_Game_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, int AGENT_POPULATION,
+                                        int NUM_INDICES_IN_STRATEGY);

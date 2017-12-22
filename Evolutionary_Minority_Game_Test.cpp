@@ -1,7 +1,8 @@
 #include "catch/catch.hpp"
 #include "Evolutionary_Minority_Game.h"
 #include "debug_utilities.h"
-
+#include <iostream>
+/*
 TEST_CASE ("Random Bool Vector") {
     auto v = RandomBoolVector(10, 0, 1, -1);
 
@@ -51,12 +52,22 @@ TEST_CASE ("Numerics") {
 TEST_CASE("Frequency Analysis"){
     std::vector<int> v (100,5);
     std::vector<int> v2;
+    std::vector<int> v3 = RandomBoolVector(100, 0, 1, -1);
 
     for (int i = 0; i < 100; ++i) {
         v2.push_back (i % 2 ? 2 : 0);
     };
+
     SECTION("Frequency Histogram Function") {
         debug_print(Analysis::frequencyHistogram(v));
         debug_print(Analysis::frequencyHistogram(v2));
+        debug_print(Analysis::frequencyHistogram(v3));
+    }
+
+    SECTION("Unique Element Frequency Function"){
+        REQUIRE(Analysis::numberOfUniqueElements(v) == 1);
+        REQUIRE(Analysis::numberOfUniqueElements(v2) == 2);
+        REQUIRE(Analysis::numberOfUniqueElements(v3) == 2);
     }
 }
+*/
