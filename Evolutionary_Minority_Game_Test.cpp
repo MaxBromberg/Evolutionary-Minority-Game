@@ -1,7 +1,19 @@
 #include "catch/catch.hpp"
 #include "Evolutionary_Minority_Game.h"
 #include "debug_utilities.h"
+#include "Intermediary_Function_Tests.h"
 #include <iostream>
+#include <cmath>
+
+using namespace std;
+
+enum{
+    TEST_POPULATION = 501,
+    TEST_MEMORY_LENGTH = 3,
+    TEST_RUN_TIME = 1000,
+    TEST_NUM_STRATEGIES_AGENT = 2,
+};
+
 /*
 TEST_CASE ("Random Bool Vector") {
     auto v = RandomBoolVector(10, 0, 1, -1);
@@ -71,3 +83,11 @@ TEST_CASE("Frequency Analysis"){
     }
 }
 */
+
+TEST_CASE("Intermediate Tests") {
+    SECTION("Full Test Run") {
+        cout << "Alpha = " << (floor(pow(2, (double) TEST_MEMORY_LENGTH) + 0.5)/TEST_POPULATION) << endl;
+        //test_run(TEST_NUM_STRATEGIES_AGENT, TEST_RUN_TIME, TEST_POPULATION, TEST_MEMORY_LENGTH);
+        test_Minority_Game_Attendance_History(TEST_NUM_STRATEGIES_AGENT, TEST_RUN_TIME, TEST_POPULATION, TEST_MEMORY_LENGTH);
+    }
+}

@@ -87,20 +87,19 @@ int StrategyManipulation::market_count (const vector<vector<int>>& strategy_scor
         auto& agent_strategies = strategy_scores[agent_idx];
         auto index_of_best_strategy = std::max_element (agent_strategies.begin(), agent_strategies.end()) - agent_strategies.begin();
         marketCount += StrategyManipulation::evaluateStrategy (agent_idx, index_of_best_strategy, NumIndicesInStrategy, strategiesPerAgent, binary_history);
-    }
+        }
     return marketCount;
 }
 
 int StrategyManipulation::evaluateStrategy (int agent_idx, int index_of_best_strategy, int NumIndicesInStrategy,
                                             int strategiesPerAgent, const vector<int>& binaryMarketHistory){
     //deterministically returns the strategy's value associated with the market history and strategy selection from the index
-    //I'm taking enum consts. as arguments as I expect to use others later
     auto metaStrategyIndex = BinaryVectorLastNToStrategyIndex (binaryMarketHistory, NumIndicesInStrategy);
     auto indexSeed = (agent_idx*strategiesPerAgent) + index_of_best_strategy; //converts to unique 1d array index, will repeat
 
     //produce a unique number to seed the bit generator with dependence on both the above (index seed and strategy index)
-    mt19937 indexDependentGenerator (indexSeed);
-    mt19937 metaStrategyIndexDependentGenerator (metaStrategyIndex);
+    static mt19937 indexDependentGenerator (indexSeed); //leads to independent numbers for each call, which is problematic
+    static mt19937 metaStrategyIndexDependentGenerator (metaStrategyIndex);
     uniform_int_distribution<int> bitdistribution(0,RNG_RESOLUTION);
 
     int randomizedSeedInput = bitdistribution(indexDependentGenerator);
@@ -138,7 +137,7 @@ double Analysis::successRate(const vector<int>& obv, int agentPop){
 vector<int> Analysis::attendance(const vector<int>& obv, int agentPop){
     vector<int> attendance;
     for(int i = 0; i < obv.size(); i++){
-        attendance.push_back(agentPop-abs(obv[i]));
+        attendance.push_back((agentPop/2)-obv[i]);
     }
     return attendance;
 }//yields abs. attendance vector

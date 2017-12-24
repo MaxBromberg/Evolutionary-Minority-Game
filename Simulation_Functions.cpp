@@ -8,6 +8,7 @@
 #include <fstream>
 #include "debug_utilities.h"
 #include "Evolutionary_Minority_Game.h"
+#include "Intermediary_Function_Tests.h"
 
 using namespace std;
 
@@ -83,9 +84,9 @@ void outputMinorityGameObservables(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AG
 }
 
 
-void output_Minority_Game_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, int AGENT_POPULATION,
+void output_Minority_Game_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, unsigned int AGENT_POPULATION,
                                         int NUM_INDICES_IN_STRATEGY) {
-    ofstream file("Market History for m=3, s=2, N=501, 10000 Iterations.txt");
+    ofstream file("Market History for m=15, s=2, N=31, 500 Iterations.txt");
     //initialization
     auto strategy_scores = TwoDimensionalVector(AGENT_POPULATION, NUM_STRATEGIES_PER_AGENT, 0);
     auto binary_history = MarketInitialization::binaryMarketHistoryGenerator(NUM_INDICES_IN_STRATEGY);
