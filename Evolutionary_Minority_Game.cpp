@@ -68,11 +68,27 @@ vector<vector<int>> StrategyManipulation::strategyScoreUpdate(int agentPopulatio
     for(int i = 0; i < agentPopulation; ++i){
         for(int j = 0; j < strategiesPerAgent; ++j){
             //if the strategy's evaluation is the same as the market chose, the strategy is downgraded
+            if(StrategyManipulation::evaluateStrategy(i,j, NumIndicesInStrategy, strategiesPerAgent, binaryMarketHistory) == binaryMarketHistory.back()) { //
+                //Strategy scores are not quantitatively updated, only qualitatively. Can readily be changed to accommodate quantitative results.
+                strategy_scores[i][j]++;
+            }else{
+                strategy_scores[i][j]--;
+            }
+        }
+    }
+    return strategy_scores;
+}
+
+vector<vector<int>> StrategyManipulation::Alternate_strategyScoreUpdate(int agentPopulation, int strategiesPerAgent, int NumIndicesInStrategy,
+                                             const vector<int>& binaryMarketHistory, vector<vector<int>> strategy_scores, int market_Count) {
+    for(int i = 0; i < agentPopulation; ++i){
+        for(int j = 0; j < strategiesPerAgent; ++j){
+            //if the strategy's evaluation is the same as the market chose, the strategy is downgraded
             if(StrategyManipulation::evaluateStrategy(i,j, NumIndicesInStrategy, strategiesPerAgent, binaryMarketHistory) == binaryMarketHistory.back()) {
                 //Strategy scores are not quantitatively updated, only qualitatively. Can readily be changed to accommodate quantitative results, but no
-                strategy_scores[i][j]--;
+                strategy_scores[i][j]-=market_Count;
             }else{
-                strategy_scores[i][j]++;
+                strategy_scores[i][j]+=market_Count;
             }
         }
     }
@@ -88,31 +104,33 @@ int StrategyManipulation::market_count (const vector<vector<int>>& strategy_scor
         auto index_of_best_strategy = std::max_element (agent_strategies.begin(), agent_strategies.end()) - agent_strategies.begin();
         marketCount += StrategyManipulation::evaluateStrategy (agent_idx, index_of_best_strategy, NumIndicesInStrategy, strategiesPerAgent, binary_history);
         }
+    assert(abs(marketCount) <= strategy_scores.size());
     return marketCount;
 }
 
 int StrategyManipulation::evaluateStrategy (int agent_idx, int index_of_best_strategy, int NumIndicesInStrategy,
                                             int strategiesPerAgent, const vector<int>& binaryMarketHistory){
+    assert(index_of_best_strategy <= strategiesPerAgent);
     //deterministically returns the strategy's value associated with the market history and strategy selection from the index
     auto metaStrategyIndex = BinaryVectorLastNToStrategyIndex (binaryMarketHistory, NumIndicesInStrategy);
     auto indexSeed = (agent_idx*strategiesPerAgent) + index_of_best_strategy; //converts to unique 1d array index, will repeat
 
     //produce a unique number to seed the bit generator with dependence on both the above (index seed and strategy index)
-    static mt19937 indexDependentGenerator (indexSeed); //leads to independent numbers for each call, which is problematic
-    static mt19937 metaStrategyIndexDependentGenerator (metaStrategyIndex);
+    mt19937 indexDependentGenerator (indexSeed); //leads to independent numbers for each call, which is problematic
+    mt19937 metaStrategyIndexDependentGenerator (metaStrategyIndex);
     uniform_int_distribution<int> bitdistribution(0,RNG_RESOLUTION);
 
     int randomizedSeedInput = bitdistribution(indexDependentGenerator);
     int strategySolutionSeed = bitdistribution(metaStrategyIndexDependentGenerator);
-    //cout<<"strategy Solution Seed: "<<strategySolutionSeed<<"     randomizedSeedInput: "<<randomizedSeedInput<<endl;
+    //all these declarations ought to be made into asingle statement, or else compiled down to one.
     int bitToBe = randomizedSeedInput+strategySolutionSeed; //deterministically produces bit from strategy domain
     bitToBe = bitToBe < RNG_RESOLUTION ? 1 : -1;
-    //Ideally takes less time than simply recalling from memory
-    return (bitToBe);
+    //Ideally takes less time than simply recalling from memory, at least after gen optimization and variable memory length
+    return bitToBe;
 }
 
 void StrategyManipulation::binaryHistoryUpdate(vector<int>& binaryHistory, int marketCount){
-    binaryHistory.push_back((marketCount > 0) ? 1 : -1);
+    binaryHistory.push_back((marketCount > 0) ? -1 : 1); //outputs the minority; i.e. the winning group
 }
 
 double Analysis::literatureVariance(const vector<int>& obv){
@@ -141,3 +159,4 @@ vector<int> Analysis::attendance(const vector<int>& obv, int agentPop){
     }
     return attendance;
 }//yields abs. attendance vector
+

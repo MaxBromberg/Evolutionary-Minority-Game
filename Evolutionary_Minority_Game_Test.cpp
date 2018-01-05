@@ -8,10 +8,12 @@
 using namespace std;
 
 enum{
-    TEST_POPULATION = 501,
-    TEST_MEMORY_LENGTH = 3,
+    TEST_POPULATION = 301,
+    TEST_MEMORY_LENGTH = 15,
     TEST_RUN_TIME = 1000,
     TEST_NUM_STRATEGIES_AGENT = 2,
+
+    STATIC_RNG_TEST_SIZE = 40,
 };
 
 /*
@@ -82,12 +84,38 @@ TEST_CASE("Frequency Analysis"){
         REQUIRE(Analysis::numberOfUniqueElements(v3) == 2);
     }
 }
-*/
-
+ */
+//Compiled with Intermediary_Function_tests.h .cpp
 TEST_CASE("Intermediate Tests") {
     SECTION("Full Test Run") {
-        cout << "Alpha = " << (floor(pow(2, (double) TEST_MEMORY_LENGTH) + 0.5)/TEST_POPULATION) << endl;
+        cout << "Alpha = " << (floor(pow(2, (double) TEST_MEMORY_LENGTH) + 0.5) / TEST_POPULATION) << endl;
         //test_run(TEST_NUM_STRATEGIES_AGENT, TEST_RUN_TIME, TEST_POPULATION, TEST_MEMORY_LENGTH);
-        test_Minority_Game_Attendance_History(TEST_NUM_STRATEGIES_AGENT, TEST_RUN_TIME, TEST_POPULATION, TEST_MEMORY_LENGTH);
+        //test_Minority_Game_Attendance_History(TEST_NUM_STRATEGIES_AGENT, TEST_RUN_TIME, TEST_POPULATION, TEST_MEMORY_LENGTH);
+        output_Minority_Game_Attendance_History(TEST_NUM_STRATEGIES_AGENT, TEST_RUN_TIME, TEST_POPULATION, TEST_MEMORY_LENGTH);
     }
-}
+        /*
+    SECTION("Uniqueness of Permuted Generator Seed")
+        REQUIRE(random_Generator_Test(0, 100, STATIC_RNG_TEST_SIZE) ==
+               random_Generator_Test(0, 100, STATIC_RNG_TEST_SIZE));
+
+        vector<int> RNGVector = random_Generator_Test(0, 100, STATIC_RNG_TEST_SIZE);
+        vector<int> RNGVector2 = random_Generator_Test(0, 100, STATIC_RNG_TEST_SIZE);
+        auto print = [](const int& n) { std::cout << " " << n; };
+
+        cout << "First Vector = " << endl;
+        std::for_each(RNGVector.begin(), RNGVector.end(), print);
+        cout << "Second Vector = " << endl;
+        std::for_each(RNGVector2.begin(), RNGVector2.end(), print);
+
+        SECTION("Strategy Evaluation Check"){
+            auto binary_history = MarketInitialization::binaryMarketHistoryGenerator(TEST_MEMORY_LENGTH);
+            for(int i = 0; i < TEST_RUN_TIME; i++) {
+            REQUIRE(evaluateStrategy_test(2, 2, TEST_MEMORY_LENGTH, TEST_NUM_STRATEGIES_AGENT, binary_history) ==
+                    evaluateStrategy_test(2, 2, TEST_MEMORY_LENGTH, TEST_NUM_STRATEGIES_AGENT, binary_history));
+            //the above lines are not axiomatically true, as it tests whether or not a RNG generator seeded with the same value
+            //twice gives the same value, i.e. its internal state is not advanced for that seed. (leading to a diff. # generated)
+            }
+        }
+        */
+    }
+

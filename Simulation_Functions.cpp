@@ -3,12 +3,10 @@
 #include <cmath>
 #include <vector>
 #include <random>
-#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include "debug_utilities.h"
 #include "Evolutionary_Minority_Game.h"
-#include "Intermediary_Function_Tests.h"
 
 using namespace std;
 
@@ -28,6 +26,7 @@ void outputMinorityGameObservables(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AG
                 if (AGENT_POPULATION > 2000) {
                     break;
                 }
+                assert(AGENT_POPULATION % 2 == 0);
 
                 //initialization
                 auto strategy_scores = TwoDimensionalVector(AGENT_POPULATION, NUM_STRATEGIES_PER_AGENT, 0);
@@ -86,7 +85,8 @@ void outputMinorityGameObservables(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AG
 
 void output_Minority_Game_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, unsigned int AGENT_POPULATION,
                                         int NUM_INDICES_IN_STRATEGY) {
-    ofstream file("Market History for m=15, s=2, N=31, 500 Iterations.txt");
+    ofstream file("Market History for m=3, s=2, N=301, 1000 Iterations.txt");
+    assert(AGENT_POPULATION % 2 == 1);
     //initialization
     auto strategy_scores = TwoDimensionalVector(AGENT_POPULATION, NUM_STRATEGIES_PER_AGENT, 0);
     auto binary_history = MarketInitialization::binaryMarketHistoryGenerator(NUM_INDICES_IN_STRATEGY);
@@ -105,10 +105,43 @@ void output_Minority_Game_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int N
                                                                     NUM_INDICES_IN_STRATEGY,
                                                                     binary_history,
                                                                     strategy_scores);
-        file << i << ", "
-             << market_history[i] << ", "
-             << AGENT_POPULATION - abs(market_history[i]) << endl;
-
+        if(i > NUM_DAYS_AGENTS_PLAY - 500) { //gives last 500 data points
+            file << i << ", "
+                 << market_history[i] << ", "
+                 << AGENT_POPULATION - abs(market_history[i]) << endl;
+        }
     }
 }
 
+//Uses the g(x) = A(t) reward fct in str.score update, rather than g(x) = sign(A(t))
+void alt_Strategy_Score_Update_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, unsigned int AGENT_POPULATION,
+                                             int NUM_INDICES_IN_STRATEGY) {
+    ofstream file("Market History Test for m=3, s=2, N=301, 1000 Iterations.txt");
+    //initialization
+    auto strategy_scores = TwoDimensionalVector(AGENT_POPULATION, NUM_STRATEGIES_PER_AGENT, 0);
+    auto binary_history = MarketInitialization::binaryMarketHistoryGenerator(NUM_INDICES_IN_STRATEGY);
+    auto market_history = MarketInitialization::marketHistoryGenerator(binary_history, AGENT_POPULATION);
+
+    for (int i = 0; i < NUM_DAYS_AGENTS_PLAY; ++i) {
+        int market_Count;
+        market_history.push_back(
+                StrategyManipulation::market_count(strategy_scores,
+                                  binary_history,
+                                  NUM_INDICES_IN_STRATEGY,
+                                  NUM_STRATEGIES_PER_AGENT));
+        market_Count = market_history.back();
+        StrategyManipulation::binaryHistoryUpdate(binary_history,
+                                 market_history.back()); //Could just be written out as the one line fct. it is.
+        strategy_scores = StrategyManipulation::Alternate_strategyScoreUpdate(AGENT_POPULATION,
+                                                   NUM_STRATEGIES_PER_AGENT,
+                                                   NUM_INDICES_IN_STRATEGY,
+                                                   binary_history,
+                                                   strategy_scores,
+                                                   market_Count);
+        if(i>500) {
+            file << i << ", "
+                 << market_history[i] << ", "
+                 << (int) (AGENT_POPULATION / 2) + (market_history[i]) << endl;
+        }
+    }
+}
