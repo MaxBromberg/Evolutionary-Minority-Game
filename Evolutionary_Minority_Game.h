@@ -110,3 +110,5 @@ void output_Minority_Game_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int N
 
 void alt_Strategy_Score_Update_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, unsigned int AGENT_POPULATION,
                                              int NUM_INDICES_IN_STRATEGY);
+void strategy_test_run(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, unsigned int AGENT_POPULATION,
+                                             int NUM_INDICES_IN_STRATEGY);

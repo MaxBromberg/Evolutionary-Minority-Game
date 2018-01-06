@@ -4,14 +4,17 @@
 #include "Intermediary_Function_Tests.h"
 #include <iostream>
 #include <cmath>
+#include <random>
+#include <fstream>
 
 using namespace std;
 
 enum{
     TEST_POPULATION = 301,
-    TEST_MEMORY_LENGTH = 15,
+    TEST_MEMORY_LENGTH = 3,
     TEST_RUN_TIME = 1000,
     TEST_NUM_STRATEGIES_AGENT = 2,
+    TEST_RNG_RESOLUTION = 10000,
 
     STATIC_RNG_TEST_SIZE = 40,
 };
@@ -84,17 +87,19 @@ TEST_CASE("Frequency Analysis"){
         REQUIRE(Analysis::numberOfUniqueElements(v3) == 2);
     }
 }
- */
+
 //Compiled with Intermediary_Function_tests.h .cpp
 TEST_CASE("Intermediate Tests") {
+    /*
     SECTION("Full Test Run") {
         cout << "Alpha = " << (floor(pow(2, (double) TEST_MEMORY_LENGTH) + 0.5) / TEST_POPULATION) << endl;
         //test_run(TEST_NUM_STRATEGIES_AGENT, TEST_RUN_TIME, TEST_POPULATION, TEST_MEMORY_LENGTH);
         //test_Minority_Game_Attendance_History(TEST_NUM_STRATEGIES_AGENT, TEST_RUN_TIME, TEST_POPULATION, TEST_MEMORY_LENGTH);
-        output_Minority_Game_Attendance_History(TEST_NUM_STRATEGIES_AGENT, TEST_RUN_TIME, TEST_POPULATION, TEST_MEMORY_LENGTH);
+        //output_Minority_Game_Attendance_History(TEST_NUM_STRATEGIES_AGENT, TEST_RUN_TIME, TEST_POPULATION, TEST_MEMORY_LENGTH);
     }
+
+    SECTION("Uniqueness of Permuted Generator Seed") {
         /*
-    SECTION("Uniqueness of Permuted Generator Seed")
         REQUIRE(random_Generator_Test(0, 100, STATIC_RNG_TEST_SIZE) ==
                random_Generator_Test(0, 100, STATIC_RNG_TEST_SIZE));
 
@@ -116,6 +121,45 @@ TEST_CASE("Intermediate Tests") {
             //twice gives the same value, i.e. its internal state is not advanced for that seed. (leading to a diff. # generated)
             }
         }
-        */
-    }
 
+        SECTION("Randomness of Strategy Evaluations"){
+            auto binary_history = MarketInitialization::binaryMarketHistoryGenerator(TEST_MEMORY_LENGTH);
+            vector<int> BitVector;
+            vector<int> RandomVector;
+            for(int i = 0; i < TEST_RUN_TIME; i++) {
+                for(int j = 0; j < TEST_MEMORY_LENGTH; j++) {
+                    mt19937 indexDependentGenerator (i);
+                    mt19937 metaStrategyIndexDependentGenerator (j);
+
+                    uniform_int_distribution<int> bitDistribution(0, TEST_RNG_RESOLUTION);
+                    int bitToBe = bitDistribution(indexDependentGenerator)+bitDistribution(metaStrategyIndexDependentGenerator);
+                    RandomVector.push_back(bitToBe);
+                    bitToBe = bitToBe < TEST_RNG_RESOLUTION ? 1 : -1;
+                    BitVector.push_back(bitToBe);
+                }
+            }
+            auto randomVectorVariance = Analysis::variance(RandomVector);
+            auto bitVectorVariance = Analysis::variance(BitVector);
+            cout << "Random Vector Variance = " << randomVectorVariance << endl;
+            cout << "Bit Vector Variance = " << bitVectorVariance << endl;
+
+            ofstream randomfile ("Randomness Test Full Distribution.txt");
+            ofstream randomBitsfile ("Randomness Test Bit Distribution.txt");
+            for(int i = 0; i < RandomVector.size(); i++){
+                randomfile << i << ", "
+                           << RandomVector[i] << endl;
+                randomBitsfile << i << ", "
+                               << BitVector[i] << endl;
+            }
+        }
+
+    }
+*/
+
+TEST_CASE("Strategy Scores Updates"){
+    SECTION("Strategy Score Printout") {
+        cout << "Alpha = " << (floor(pow(2, (double) TEST_MEMORY_LENGTH) + 0.5) / TEST_POPULATION) << endl;
+        test_run(TEST_NUM_STRATEGIES_AGENT, TEST_RUN_TIME, TEST_POPULATION,
+                                              TEST_MEMORY_LENGTH);
+    }
+}

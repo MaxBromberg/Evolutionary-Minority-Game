@@ -112,21 +112,13 @@ int StrategyManipulation::evaluateStrategy (int agent_idx, int index_of_best_str
                                             int strategiesPerAgent, const vector<int>& binaryMarketHistory){
     assert(index_of_best_strategy <= strategiesPerAgent);
     //deterministically returns the strategy's value associated with the market history and strategy selection from the index
-    auto metaStrategyIndex = BinaryVectorLastNToStrategyIndex (binaryMarketHistory, NumIndicesInStrategy);
-    auto indexSeed = (agent_idx*strategiesPerAgent) + index_of_best_strategy; //converts to unique 1d array index, will repeat
 
-    //produce a unique number to seed the bit generator with dependence on both the above (index seed and strategy index)
-    mt19937 indexDependentGenerator (indexSeed); //leads to independent numbers for each call, which is problematic
-    mt19937 metaStrategyIndexDependentGenerator (metaStrategyIndex);
+    mt19937 indexDependentGenerator ((agent_idx*strategiesPerAgent) + index_of_best_strategy); //leads to independent numbers for each call, which is problematic
+    mt19937 metaStrategyIndexDependentGenerator (BinaryVectorLastNToStrategyIndex (binaryMarketHistory, NumIndicesInStrategy));
     uniform_int_distribution<int> bitdistribution(0,RNG_RESOLUTION);
 
-    int randomizedSeedInput = bitdistribution(indexDependentGenerator);
-    int strategySolutionSeed = bitdistribution(metaStrategyIndexDependentGenerator);
-    //all these declarations ought to be made into asingle statement, or else compiled down to one.
-    int bitToBe = randomizedSeedInput+strategySolutionSeed; //deterministically produces bit from strategy domain
-    bitToBe = bitToBe < RNG_RESOLUTION ? 1 : -1;
-    //Ideally takes less time than simply recalling from memory, at least after gen optimization and variable memory length
-    return bitToBe;
+    return bitdistribution(metaStrategyIndexDependentGenerator) + bitdistribution(indexDependentGenerator) < RNG_RESOLUTION
+           ? 1 : -1;
 }
 
 void StrategyManipulation::binaryHistoryUpdate(vector<int>& binaryHistory, int marketCount){

@@ -24,9 +24,9 @@ vector<vector<int>> strategyScoreUpdate_test(int agentPopulation, int strategies
             //if the strategy's evaluation is the same as the market chose, the strategy is downgraded
             if(StrategyManipulation::evaluateStrategy(i,j, NumIndicesInStrategy, strategiesPerAgent, binaryMarketHistory) == binaryMarketHistory.back()) {
                 //Strategy scores are not quantitatively updated, only qualitatively. Can readily be changed to accommodate quantitative results, but no
-                strategy_scores[i][j]-=market_Count;
+                strategy_scores[i][j]++;//=market_Count;
             }else{
-                strategy_scores[i][j]+=market_Count;
+                strategy_scores[i][j]--;//=market_Count;
             }
         }
     }
@@ -69,7 +69,7 @@ int evaluateStrategy_test (int agent_idx, int index_of_best_strategy, int NumInd
 }
 
 void binaryHistoryUpdate_test(vector<int>& binaryHistory, int marketCount){
-    binaryHistory.push_back((marketCount > 0) ? 1 : -1);
+    binaryHistory.push_back((marketCount < 0) ? 1 : -1);
 }
 
 void test_Minority_Game_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, unsigned int AGENT_POPULATION,
@@ -96,10 +96,51 @@ void test_Minority_Game_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int NUM
                                                    binary_history,
                                                    strategy_scores,
                                                    market_Count);
-        if(i > NUM_DAYS_AGENTS_PLAY - 500) {
+        if (i > NUM_DAYS_AGENTS_PLAY - 500) {
             file << i << ", "
                  << market_history[i] << ", "
                  << (int) (AGENT_POPULATION / 2) + (market_history[i]) << endl;
+        }
+    }
+}
+
+void test_run(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, unsigned int AGENT_POPULATION,
+                                             int NUM_INDICES_IN_STRATEGY) {
+    auto strategy_scores = TwoDimensionalVector(AGENT_POPULATION, NUM_STRATEGIES_PER_AGENT, 0);
+    auto binary_history = MarketInitialization::binaryMarketHistoryGenerator(NUM_INDICES_IN_STRATEGY);
+    auto market_history = MarketInitialization::marketHistoryGenerator(binary_history, AGENT_POPULATION);
+
+    for (int i = 0; i < NUM_DAYS_AGENTS_PLAY; ++i) {
+        int market_Count;
+        market_history.push_back(
+                market_count_test(strategy_scores,
+                                  binary_history,
+                                  NUM_INDICES_IN_STRATEGY,
+                                  NUM_STRATEGIES_PER_AGENT));
+        market_Count = market_history.back(); //Here it's faster to recall from memory than do the *entire* calculation
+        binaryHistoryUpdate_test(binary_history,
+                                 market_history.back()); //Could just be written out as the one line fct. it is.
+        strategy_scores = strategyScoreUpdate_test(AGENT_POPULATION,
+                                                   NUM_STRATEGIES_PER_AGENT,
+                                                   NUM_INDICES_IN_STRATEGY,
+                                                   binary_history,
+                                                   strategy_scores,
+                                                   market_Count);
+
+        cout << "Strategy_Scores.size = " << strategy_scores.size() << endl;
+        cout << "and strategy_scores[1].size = " << strategy_scores[1].size() << endl;
+        ofstream file("Strategy Scores.txt");
+
+        if(i % 100 == 1){
+            cout << "Strategy Scores for " << i << "th run printed below" << endl;
+            debug_print(strategy_scores); //Perhaps not fully printing because it completes the 'tests' before it finishes printing?
+
+            for (int j = 0; j < strategy_scores.size(); j++) {
+                file << strategy_scores[j][0] << ", "
+                     << strategy_scores[j][1]
+                     << endl; //did this hoaxy version, as neither debug print nor double for loops works
+                //this also doesn't work, perhaps for the same reason as the above debug print doesn't. 
+            }
         }
     }
 }

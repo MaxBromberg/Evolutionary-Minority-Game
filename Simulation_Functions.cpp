@@ -85,7 +85,7 @@ void outputMinorityGameObservables(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AG
 
 void output_Minority_Game_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, unsigned int AGENT_POPULATION,
                                         int NUM_INDICES_IN_STRATEGY) {
-    ofstream file("Market History for m=3, s=2, N=301, 1000 Iterations.txt");
+    ofstream file("Market History for m=15, s=2, N=301, 10000 Iterations.txt");
     assert(AGENT_POPULATION % 2 == 1);
     //initialization
     auto strategy_scores = TwoDimensionalVector(AGENT_POPULATION, NUM_STRATEGIES_PER_AGENT, 0);
@@ -105,11 +105,11 @@ void output_Minority_Game_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int N
                                                                     NUM_INDICES_IN_STRATEGY,
                                                                     binary_history,
                                                                     strategy_scores);
-        if(i > NUM_DAYS_AGENTS_PLAY - 500) { //gives last 500 data points
+        //if(i > NUM_DAYS_AGENTS_PLAY - 500) { //gives last 500 data points
             file << i << ", "
                  << market_history[i] << ", "
                  << AGENT_POPULATION - abs(market_history[i]) << endl;
-        }
+        //}
     }
 }
 
@@ -142,6 +142,44 @@ void alt_Strategy_Score_Update_Attendance_History(int NUM_STRATEGIES_PER_AGENT, 
             file << i << ", "
                  << market_history[i] << ", "
                  << (int) (AGENT_POPULATION / 2) + (market_history[i]) << endl;
+        }
+    }
+}
+
+void strategy_test_run(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, unsigned int AGENT_POPULATION,
+                                             int NUM_INDICES_IN_STRATEGY) {
+    auto strategy_scores = TwoDimensionalVector(AGENT_POPULATION, NUM_STRATEGIES_PER_AGENT, 0);
+    auto binary_history = MarketInitialization::binaryMarketHistoryGenerator(NUM_INDICES_IN_STRATEGY);
+    auto market_history = MarketInitialization::marketHistoryGenerator(binary_history, AGENT_POPULATION);
+
+    cout << "Strategy_Scores.size = " << strategy_scores.size() << endl;
+    cout << "and strategy_scores[1].size = " << strategy_scores[1].size() << endl;
+
+    for (int i = 0; i < NUM_DAYS_AGENTS_PLAY; ++i) {
+        market_history.push_back(
+                StrategyManipulation::market_count(strategy_scores,
+                                  binary_history,
+                                  NUM_INDICES_IN_STRATEGY,
+                                  NUM_STRATEGIES_PER_AGENT));
+        StrategyManipulation::binaryHistoryUpdate(binary_history,
+                                 market_history.back()); //Could just be written out as the one line fct. it is.
+        strategy_scores = StrategyManipulation::strategyScoreUpdate(AGENT_POPULATION,
+                                                   NUM_STRATEGIES_PER_AGENT,
+                                                   NUM_INDICES_IN_STRATEGY,
+                                                   binary_history,
+                                                   strategy_scores);
+//Where we put stuff ot test:
+        ofstream file("Strategy Scores.txt");
+        if(i % 100 == 0){
+            cout << "Strategy Scores for " << i << "th run printed below" << endl;
+            debug_print(strategy_scores); //Perhaps not fully printing because it completes the 'tests' before it finishes printing?
+
+            for (int j = 0; j < strategy_scores.size(); j++) {
+                file << strategy_scores[j][0] << ", "
+                     << strategy_scores[j][1]
+                     << endl; //did this hoaxy version, as neither debug print nor double for loops works
+                //this also doesn't work, perhaps for the same reason as the above debug print doesn't.
+            }
         }
     }
 }
