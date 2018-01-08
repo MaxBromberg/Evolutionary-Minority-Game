@@ -60,15 +60,13 @@ vector<int> MarketInitialization::marketHistoryGenerator(const vector<int>& sour
     });
     return result;
 }//Initializes market history to rand val (-Agentpop, Agent Pop)
-
-
 //Strategy Manipulation Function Definitions
-vector<vector<int>> StrategyManipulation::strategyScoreUpdate(int agentPopulation, int strategiesPerAgent, int NumIndicesInStrategy,
+vector<vector<int>> StrategyManipulation::strategyScoreUpdate(int actual_value, int NumIndicesInStrategy,
                                                               const vector<int>& binaryMarketHistory, vector<vector<int>> strategy_scores) {
-    for(int i = 0; i < agentPopulation; ++i){
-        for(int j = 0; j < strategiesPerAgent; ++j){
+    for(int i = 0; i < strategy_scores.size(); ++i){
+        for(int j = 0; j < strategy_scores[i].size(); ++j){
             //if the strategy's evaluation is the same as the market chose, the strategy is downgraded
-            if(StrategyManipulation::evaluateStrategy(i,j, NumIndicesInStrategy, strategiesPerAgent, binaryMarketHistory) == binaryMarketHistory.back()) { //
+            if(StrategyManipulation::evaluateStrategy(i,j, NumIndicesInStrategy, strategy_scores[i].size(), binaryMarketHistory) == actual_value) { //
                 //Strategy scores are not quantitatively updated, only qualitatively. Can readily be changed to accommodate quantitative results.
                 strategy_scores[i][j]++;
             }else{
@@ -110,15 +108,21 @@ int StrategyManipulation::market_count (const vector<vector<int>>& strategy_scor
 
 int StrategyManipulation::evaluateStrategy (int agent_idx, int index_of_best_strategy, int NumIndicesInStrategy,
                                             int strategiesPerAgent, const vector<int>& binaryMarketHistory){
-    assert(index_of_best_strategy <= strategiesPerAgent);
+    assert(index_of_best_strategy < strategiesPerAgent);
     //deterministically returns the strategy's value associated with the market history and strategy selection from the index
+    //
+    int64_t input = ((agent_idx * strategiesPerAgent) + index_of_best_strategy) * BinaryVectorLastNToStrategyIndex (binaryMarketHistory, NumIndicesInStrategy);
 
+    mt19937 generator (input);
+    uniform_int_distribution<int> bitdistribution(0,1);
+
+    /*
     mt19937 indexDependentGenerator ((agent_idx*strategiesPerAgent) + index_of_best_strategy); //leads to independent numbers for each call, which is problematic
     mt19937 metaStrategyIndexDependentGenerator (BinaryVectorLastNToStrategyIndex (binaryMarketHistory, NumIndicesInStrategy));
     uniform_int_distribution<int> bitdistribution(0,RNG_RESOLUTION);
+    */
 
-    return bitdistribution(metaStrategyIndexDependentGenerator) + bitdistribution(indexDependentGenerator) < RNG_RESOLUTION
-           ? 1 : -1;
+    return bitdistribution(generator) ? 1 : -1;
 }
 
 void StrategyManipulation::binaryHistoryUpdate(vector<int>& binaryHistory, int marketCount){
@@ -151,4 +155,3 @@ vector<int> Analysis::attendance(const vector<int>& obv, int agentPop){
     }
     return attendance;
 }//yields abs. attendance vector
-

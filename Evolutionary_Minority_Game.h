@@ -9,10 +9,11 @@ std::vector<int> RandomBoolVector (int size, int seed, int true_value = 1, int f
 int BinaryVectorLastNToStrategyIndex (const std::vector<int>& v, int n);
 std::vector<std::vector<int>> TwoDimensionalVector (unsigned int x_size, int y_size, int value);
 
+typedef int signum;
 
 struct StrategyManipulation {
     //there's no need to assign strategies initially, as they will be produced procedurally with the index serving as the RNG seed
-    static std::vector<std::vector<int>> strategyScoreUpdate(int agentPopulation, int strategiesPerAgent, int NumIndicesInStrategy,
+    static std::vector<std::vector<int>> strategyScoreUpdate(int actual_value, int NumIndicesInStrategy,
                                                    const std::vector<int>& binaryMarketHistory, std::vector<std::vector<int>> strategy_scores);
 
     static std::vector<std::vector<int>> Alternate_strategyScoreUpdate(int agentPopulation, int strategiesPerAgent, int NumIndicesInStrategy,
@@ -20,6 +21,32 @@ struct StrategyManipulation {
 
     static int market_count (const std::vector<std::vector<int>>& strategy_scores, const std::vector<int>& binary_history,
                                         int NumIndicesInStrategy, int strategiesPerAgent);
+
+    struct Strategy {
+        int agent_indx;
+        int strategy_index;
+        int strategiesPerAgent;
+
+        signum predict (const std::vector<signum>& history);
+    };
+
+    struct Agent {
+        std::vector<Strategy> strategies;
+        std::vector<int> scores;
+
+        signum vote();
+        void update (const std::vector<signum>& history);
+    };
+
+    struct Experiment {
+        int agent_count;
+        int strategies_per_agent;
+        std::vector<signum> history;
+        std::vector<Agent> agents;
+    };
+
+
+    signum predict (const struct Strategy&, const std::vector<int>& history);
 
     static int evaluateStrategy (int agent_idx, int index_of_best_strategy, int NumIndicesInStrategy,
                                             int strategiesPerAgent, const std::vector<int>& binaryMarketHistory);
@@ -86,7 +113,7 @@ struct Analysis{
             assert(sortedV[i-1] != sortedV[i]);
             temp.clear();
         }
-    return frequencyHistogram;
+        return frequencyHistogram;
     }
 
     template <typename T>
@@ -102,6 +129,7 @@ struct Analysis{
     static std::vector<int> attendance(const std::vector<int>& obv, int agentPop);
 };
 
+// Simulation_Functions.h
 //main output function, Num_Diff_Agent_Pop is defined in log10 Range, NUm_Diff_Memory_Lengths is log2 range
 void outputMinorityGameObservables(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, int NUM_DIFF_AGENT_POPS, int  NUM_DIFF_MEMORY_LENGTHS);
 
