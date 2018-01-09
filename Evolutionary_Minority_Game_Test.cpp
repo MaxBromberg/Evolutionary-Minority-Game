@@ -6,6 +6,8 @@
 #include <cmath>
 #include <random>
 #include <fstream>
+#include "analysis_utilities.h"
+#include "Simulation_Functions.h"
 
 using namespace std;
 

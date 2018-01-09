@@ -7,6 +7,7 @@
 #include <fstream>
 #include "debug_utilities.h"
 #include "Evolutionary_Minority_Game.h"
+#include "analysis_utilities.h"
 
 using namespace std;
 
@@ -113,7 +114,6 @@ void output_Minority_Game_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int N
             file << i << ", "
              << market_history[i] << ", "
              << AGENT_POPULATION - abs(market_history[i]) << endl;
-
     }
     debug_print (strategy_scores);
 }
