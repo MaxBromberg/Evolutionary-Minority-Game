@@ -10,7 +10,7 @@
 #include "analysis_utilities.h"
 
 using namespace std;
-
+/*
 void outputMinorityGameObservables(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, int NUM_DIFF_AGENT_POPS,
                                    int NUM_DIFF_MEMORY_LENGTHS) {
     //File Data Details
@@ -27,7 +27,7 @@ void outputMinorityGameObservables(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AG
                 if (AGENT_POPULATION > 2000) {
                     break;
                 }
-                assert(AGENT_POPULATION % 2 == 0);
+                assert(AGENT_POPULATION % 2 == 0)
 
                 //initialization
                 auto strategy_scores = TwoDimensionalVector(AGENT_POPULATION, NUM_STRATEGIES_PER_AGENT, 0);
@@ -54,8 +54,7 @@ void outputMinorityGameObservables(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AG
                             debug_print(strategy_scores);
                         }
                     }
-                     */
-                }
+                                     }
                 //cout<<"Binary History = "<<endl;
                 //debug_print(binary_history);
 
@@ -86,28 +85,7 @@ void outputMinorityGameObservables(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AG
 
 void output_Minority_Game_Attendance_History(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, unsigned int AGENT_POPULATION,
                                         int NUM_INDICES_IN_STRATEGY) {
-    assert(AGENT_POPULATION % 2 == 1);
-    //initialization
-    auto strategy_scores = TwoDimensionalVector(AGENT_POPULATION, NUM_STRATEGIES_PER_AGENT, 0);
-    auto binary_history = MarketInitialization::binaryMarketHistoryGenerator(NUM_INDICES_IN_STRATEGY);
-    auto market_history = MarketInitialization::marketHistoryGenerator(binary_history, AGENT_POPULATION);
 
-    for (int i = 0; i < NUM_DAYS_AGENTS_PLAY; ++i) {
-        auto market_count = StrategyManipulation::market_count(strategy_scores,
-                                                   binary_history,
-                                                   NUM_INDICES_IN_STRATEGY,
-                                                   NUM_STRATEGIES_PER_AGENT);
-        assert (market_count >= -AGENT_POPULATION || market_count <= AGENT_POPULATION);
-        auto next_value = market_count > 0 ? -1 : 1;
-
-        strategy_scores = StrategyManipulation::strategyScoreUpdate(next_value, NUM_INDICES_IN_STRATEGY,
-                                                                    binary_history,
-                                                                    std::move (strategy_scores));
-        //if(i > NUM_DAYS_AGENTS_PLAY - 500) { //gives last 500 data points
-        market_history.push_back(market_count);
-        binary_history.push_back(next_value);
-        //}
-    }
 
     ofstream file("Market History for m=15, s=2, N=301, 10000 Iterations.txt");
     for (int i = NUM_INDICES_IN_STRATEGY; i < market_history.size(); ++i) {
@@ -173,6 +151,7 @@ void strategy_test_run(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, u
                                                    binary_history,
                                                    strategy_scores);
                                                    */
+/*
 //Where we put stuff ot test:
         ofstream file("Strategy Scores.txt");
         if(i % 100 == 0){
@@ -188,3 +167,4 @@ void strategy_test_run(int NUM_STRATEGIES_PER_AGENT, int NUM_DAYS_AGENTS_PLAY, u
         }
     }
 }
+*/
