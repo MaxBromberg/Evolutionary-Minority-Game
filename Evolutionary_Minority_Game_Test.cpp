@@ -3,19 +3,17 @@
 #include <cmath>
 #include <random>
 #include <fstream>
-#include <numeric>
 #include "analysis_utilities.h"
-#include "Simulation_Functions.h"
 #include "Evolutionary_Minority_Game.h"
 #include "debug_utilities.h"
 
 using namespace std;
 
 enum{
-    TEST_POPULATION = 11,
+    TEST_POPULATION = 301,
     TEST_MEMORY_LENGTH = 3,
     TEST_RUN_TIME = 1000,
-    TEST_NUM_STRATEGIES_AGENT = 2,
+    TEST_NUM_STRATEGIES_AGENT = 22,
     TEST_RNG_SEED = 42,
 };
 
@@ -42,13 +40,14 @@ TEST_CASE ("Random Bool Vector") {
 TEST_CASE("BinaryArrayToStrategyIndex"){
     vector<signum> binary_vector = {1, -1, 1, -1, 1, 1};
     vector<int> nonbinary_vector_with_ones = {1, 23, 1, -5, 1, 1};
+    vector<int> empty_vector = {-1, -1, -1, -1, -1, -1};
     REQUIRE(BinaryArrayToStrategyIndex(binary_vector.begin(), binary_vector.end()) == 53);
     REQUIRE(BinaryArrayToStrategyIndex(binary_vector.begin(), binary_vector.end()) == BinaryArrayToStrategyIndex(nonbinary_vector_with_ones.begin(), nonbinary_vector_with_ones.end()));
+    REQUIRE(BinaryArrayToStrategyIndex(empty_vector.begin(), empty_vector.end()) == 0);
 }
 
 TEST_CASE("BinaryVectorLastNToStrategyIndex"){
     vector<signum> binary_history = binaryMarketHistoryGenerator(TEST_MEMORY_LENGTH, TEST_RNG_SEED);
-    int binary_conversion = BinaryVectorLastNToStrategyIndex(binary_history, TEST_MEMORY_LENGTH);
     REQUIRE(BinaryVectorLastNToStrategyIndex(binary_history, TEST_MEMORY_LENGTH) >= 0);
     REQUIRE(BinaryVectorLastNToStrategyIndex(binary_history, TEST_MEMORY_LENGTH) <= floor(pow(2, (double)TEST_MEMORY_LENGTH)+0.5));
 }
@@ -152,8 +151,11 @@ TEST_CASE("Experiment Struct") {
         REQUIRE (environment1.agents.size() == environment1.agent_count);
         for(int i = 0; i < environment1.agents.size(); i++){
             REQUIRE (environment1.agents[i].strategies.size() == environment1.strategies_per_agent);
-            REQUIRE (environment1.agents[i].strategies[0].num_indicies_in_strategy == environment1.num_indicies_in_strategy);
-            REQUIRE (environment1.agents[i].strategies[0].strategy_score == 0);
+            for(int j = 0; j < environment1.agents[i].strategies.size(); j++){
+                REQUIRE (environment1.agents[i].strategies[j].num_indicies_in_strategy ==
+                         environment1.num_indicies_in_strategy);
+                REQUIRE (environment1.agents[i].strategies[j].strategy_score == 0);
+            }
         }//The for-loop should be unnecessary, given there is no initial variation
     }
 
@@ -196,9 +198,11 @@ TEST_CASE("Agent Struct"){
 
     vector<signum> predictions;
     vector<signum> predictions_2;
+    vector<signum> alt_predictions;
     for(int i = 0; i < TEST_NUM_STRATEGIES_AGENT; i++){
         predictions.push_back(Agent1.predict(i, TEST_MEMORY_LENGTH, binary_history));
         predictions_2.push_back(Agent1.predict(i, TEST_MEMORY_LENGTH, binary_history_2));
+        alt_predictions.push_back(Agent1.alt_predict(i, TEST_MEMORY_LENGTH, binary_history));
     }
     int market_evaluation = accumulate(predictions.begin(), predictions.end(), 0);
     int market_evaluation_2 = accumulate(predictions_2.begin(), predictions_2.end(), 0);
@@ -207,9 +211,17 @@ TEST_CASE("Agent Struct"){
         REQUIRE(abs(Agent1.predict(0,TEST_MEMORY_LENGTH, binary_history)) == 1);
         cout<<"Predictions of all strategies of sample agent: "<<endl;
         debug_print(predictions); //easier to just see randomness than require it.
-        CHECK_FALSE(market_evaluation == 0); //
-        REQUIRE(market_evaluation != market_evaluation_2); //as this is probable for high Strategies/agent
+        REQUIRE(Analysis::numberOfUniqueElements(predictions) == 2);
+        //REQUIRE(market_evaluation != market_evaluation_2); //as this is probable for high Strategies/agent
     }
+
+    SECTION("Sin based Predict Function"){
+        REQUIRE(abs(Agent1.alt_predict(0,TEST_MEMORY_LENGTH, binary_history)) == 1);
+        cout<<"Alt Predictions of sample agent: "<<endl;
+        debug_print(alt_predictions); //easier to just see randomness than require it.
+        REQUIRE(Analysis::numberOfUniqueElements(alt_predictions) == 2);
+    }
+
     SECTION("Update Function"){
         int first_strategy_score_before = Agent1.strategies[0].strategy_score;
         int last_strategy_score_before = Agent1.strategies[TEST_NUM_STRATEGIES_AGENT-1].strategy_score;
@@ -233,6 +245,7 @@ TEST_CASE("Agent Struct"){
         int first_strategy_score_before = Agent1.strategies[0].strategy_score;
         int last_strategy_score_before = Agent1.strategies[TEST_NUM_STRATEGIES_AGENT-1].strategy_score;
         Agent1.weighted_update(binary_history, market_evaluation);
+        //relies on market evaluation > 0
         CHECK_FALSE(first_strategy_score_before == Agent1.strategies[0].strategy_score);
         CHECK_FALSE(last_strategy_score_before == Agent1.strategies[TEST_NUM_STRATEGIES_AGENT-1].strategy_score);
         REQUIRE(abs(first_strategy_score_before - Agent1.strategies[0].strategy_score) >= 1);
@@ -248,12 +261,27 @@ TEST_CASE("Agent Struct"){
         REQUIRE(abs(last_strategy_score_before_2 - Agent1.strategies[TEST_NUM_STRATEGIES_AGENT - 1].strategy_score) >= 1);
 }
     SECTION("Congruency of Update Functions"){
+        //--------------reinitialization to compare--------------------------
+        vector<Strategy> reinitialized_Strategies;
+        for(int j = 0; j < TEST_NUM_STRATEGIES_AGENT; j++){
+            reinitialized_Strategies.push_back(Strategy {0, TEST_MEMORY_LENGTH});
+        }
+        Agent1 = Agent{reinitialized_Strategies, 0};
+        Agent2 = Agent{reinitialized_Strategies, 0};
+        binary_history = binaryMarketHistoryGenerator(TEST_MEMORY_LENGTH,TEST_RNG_SEED);
+        predictions.clear();
+        for(int i = 0; i < TEST_NUM_STRATEGIES_AGENT; i++){
+            predictions.push_back(Agent1.predict(i, TEST_MEMORY_LENGTH, binary_history));
+        }
+        market_evaluation = accumulate(predictions.begin(), predictions.end(), 0);
+        //--------------Reinitialization complete--------------------------
+
         Agent1.update(binary_history, sgn(market_evaluation));
         Agent2.weighted_update(binary_history, market_evaluation);
         if(sgn(Agent2.strategies[0].strategy_score) != 0) {
             REQUIRE(Agent1.strategies[0].strategy_score == sgn(Agent2.strategies[0].strategy_score));
         }
-    }//Works as both agents are identical
+    }
 }
 
 TEST_CASE("Strategy Struct"){

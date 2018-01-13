@@ -4,6 +4,7 @@
 #include <numeric>
 #include <algorithm>
 #include <cassert>
+#include <bitset>
 
 
 typedef int signum; //To hold the +/-1s, and indicate return type. (binary history --> history)
@@ -15,7 +16,6 @@ std::vector<int> marketHistoryGenerator(const std::vector<int>& source, int agen
 
 template <typename Iter>
 int BinaryArrayToStrategyIndex (Iter begin, Iter end) {
-    assert ((end - begin) <= 32);
     int output = 0;
     for (auto iter = begin; iter != end; ++iter) {
         if (*iter == 1) output += 1 << iter - begin;
@@ -34,6 +34,7 @@ struct Agent {
     int relatively_unique_identifer;
 
     signum predict(int strategy_index, int num_indicies_in_strategy, const std::vector<signum>& history) const;
+    signum alt_predict(int strategy_index, int num_indicies_in_strategy, const std::vector<signum>& history) const;
     void update (const std::vector<signum>& history, const int& market_prediction);
     void weighted_update (const std::vector<signum>& history, const int& last_market_value);
 };
@@ -50,5 +51,8 @@ struct Experiment {
     Experiment(int, int, int, int);
 
     void run_minority_game(int number_of_runs);
+    void write_attendance_history();
+    void outputMinorityGameObservables(int NUM_DAYS_AGENTS_PLAY, int NUM_DIFF_AGENT_POPS,
+                                   int NUM_DIFF_MEMORY_LENGTHS);
 };
 
