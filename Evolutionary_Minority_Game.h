@@ -35,6 +35,7 @@ struct Agent {
 
     signum predict(int strategy_index, int num_indicies_in_strategy, const std::vector<signum>& history) const;
     signum alt_predict(int strategy_index, int num_indicies_in_strategy, const std::vector<signum>& history) const;
+    signum high_resolution_predict(int strategy_index, int num_indicies_in_strategy, const std::vector<signum>& history) const;
     void update (const std::vector<signum>& history, const int& market_prediction);
     void weighted_update (const std::vector<signum>& history, const int& last_market_value);
 };
@@ -49,7 +50,6 @@ struct Experiment {
 
     std::vector<Agent> initialize_agents();
     Experiment(int, int, int, int);
-
     void run_minority_game(int number_of_runs);
     void write_attendance_history();
     void outputMinorityGameObservables(int NUM_DAYS_AGENTS_PLAY, int NUM_DIFF_AGENT_POPS,

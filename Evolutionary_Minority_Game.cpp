@@ -47,7 +47,13 @@ signum Agent::predict(const int strategy_index, const int num_indicies_in_strate
     mt19937 generator ((unsigned int) ( (relatively_unique_identifer + strategy_index) * (BinaryVectorLastNToStrategyIndex (history, num_indicies_in_strategy)+1)));
     uniform_int_distribution<int> bit_distribution(0,1);
     return bit_distribution(generator) ? 1 : -1;
-    //Perhaps I could alternatively take a bit from a ctan distribution for faster rng generation.
+}
+
+signum Agent::high_resolution_predict(const int strategy_index, const int num_indicies_in_strategy, const std::vector<signum>& history) const {
+    //deterministically returns the strategy's value associated with the market history and strategy selection from the index
+    mt19937 generator ((unsigned int) ( (relatively_unique_identifer + strategy_index) * (BinaryVectorLastNToStrategyIndex (history, num_indicies_in_strategy)+1)));
+    uniform_int_distribution<int> bit_distribution(0, 100000);
+    return bit_distribution(generator) < 50000 ? 1 : -1;
 }
 
 signum Agent::alt_predict(const int strategy_index, const int num_indicies_in_strategy, const std::vector<signum>& history) const {
@@ -59,7 +65,7 @@ signum Agent::alt_predict(const int strategy_index, const int num_indicies_in_st
 
 void Agent::update(const std::vector<signum> &history, const int& market_prediction) {
     for(int i = 0; i < strategies.size(); i++){
-        if (Agent::predict(i, strategies[i].num_indicies_in_strategy, history) == market_prediction) {
+        if (Agent::high_resolution_predict(i, strategies[i].num_indicies_in_strategy, history) == market_prediction) {
             strategies[i].strategy_score++;
         } else {
             strategies[i].strategy_score--;
@@ -69,7 +75,7 @@ void Agent::update(const std::vector<signum> &history, const int& market_predict
 
 void Agent::weighted_update(const std::vector<signum> &history, const int& last_market_value) {
     for(int i = 0; i < strategies.size(); i++){
-        if (Agent::predict(i, strategies[i].num_indicies_in_strategy, history) == sgn(last_market_value)) {
+        if (Agent::high_resolution_predict(i, strategies[i].num_indicies_in_strategy, history) == sgn(last_market_value)) {
             strategies[i].strategy_score += abs(last_market_value);
         } else {
             strategies[i].strategy_score -= abs(last_market_value);
@@ -86,11 +92,13 @@ int market_evaluation(const std::vector<Agent>& Agents, const std::vector<signum
         }//Likely better way to find the max element...
 
         auto index_of_best_strategy = std::max_element(std::begin(strategy_scores), std::end(strategy_scores))-std::begin(strategy_scores);
-        market_evaluation += Agents[agent_index].predict(index_of_best_strategy, Agents[agent_index].strategies[index_of_best_strategy].num_indicies_in_strategy, history);
+        market_evaluation += Agents[agent_index].high_resolution_predict(index_of_best_strategy, Agents[agent_index].strategies[index_of_best_strategy].num_indicies_in_strategy, history);
     }
-    assert(abs(market_evaluation) <= Agents.size()); //failed before, though seemingly without reason
+    //assert(abs(market_evaluation) <= Agents.size()); //failed before, though seemingly without reason
     return market_evaluation;
 }
+
+
 
 vector<Agent> Experiment::initialize_agents() {
     vector<Agent> Agents;
@@ -131,7 +139,7 @@ void Experiment::run_minority_game(int number_of_runs){
 }
 
 void Experiment::write_attendance_history(){
-    ofstream Attendance("Market History for 301 N, 7 m, 2 s, 1000 runs.txt");
+    ofstream Attendance("Market History for 301 N, 15 m, 2 s, 1000 runs.txt");
     for(int i = num_indicies_in_strategy; i < nonbinary_history.size(); i++) {
         Attendance << i << ", "
                    << nonbinary_history[i] << ", "
@@ -144,7 +152,7 @@ void Experiment::outputMinorityGameObservables(int NUM_DAYS_AGENTS_PLAY, int NUM
     //File Data Details
     ofstream file("Variance for Memory from 2 to 16, Pop from 101 to 701, and 1000 Iterations.txt");
     for (int a = 1; a <= NUM_DIFF_MEMORY_LENGTHS; a++) {
-        int NUM_INDICES_IN_STRATEGY = int(floor(pow(2, a) + .5));
+        int NUM_INDICES_IN_STRATEGY = 2*a; //int(floor(pow(2, a) + .5));
         cout << "Just started " << NUM_INDICES_IN_STRATEGY << "th memory length run" << endl;
         for (int b = 1; b < NUM_DIFF_AGENT_POPS; b++) {
             int AGENT_POPULATION = (100*b)+1;

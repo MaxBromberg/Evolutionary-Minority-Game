@@ -12,7 +12,7 @@ using namespace std;
 enum{
     TEST_POPULATION = 301,
     TEST_MEMORY_LENGTH = 3,
-    TEST_RUN_TIME = 1000,
+    TEST_RUN_TIME = 500,
     TEST_NUM_STRATEGIES_AGENT = 22,
     TEST_RNG_SEED = 42,
 };
@@ -199,24 +199,45 @@ TEST_CASE("Agent Struct"){
     vector<signum> predictions;
     vector<signum> predictions_2;
     vector<signum> alt_predictions;
+    vector<signum> high_resolution_predictions;
     for(int i = 0; i < TEST_NUM_STRATEGIES_AGENT; i++){
         predictions.push_back(Agent1.predict(i, TEST_MEMORY_LENGTH, binary_history));
         predictions_2.push_back(Agent1.predict(i, TEST_MEMORY_LENGTH, binary_history_2));
         alt_predictions.push_back(Agent1.alt_predict(i, TEST_MEMORY_LENGTH, binary_history));
+        high_resolution_predictions.push_back(Agent1.high_resolution_predict(i, TEST_MEMORY_LENGTH, binary_history));
     }
     int market_evaluation = accumulate(predictions.begin(), predictions.end(), 0);
     int market_evaluation_2 = accumulate(predictions_2.begin(), predictions_2.end(), 0);
 
     SECTION("Predict Function"){
         REQUIRE(abs(Agent1.predict(0,TEST_MEMORY_LENGTH, binary_history)) == 1);
+        REQUIRE((Agent1.predict(0,TEST_MEMORY_LENGTH, binary_history)) == Agent1.predict(0,TEST_MEMORY_LENGTH,binary_history));
         cout<<"Predictions of all strategies of sample agent: "<<endl;
         debug_print(predictions); //easier to just see randomness than require it.
         REQUIRE(Analysis::numberOfUniqueElements(predictions) == 2);
         //REQUIRE(market_evaluation != market_evaluation_2); //as this is probable for high Strategies/agent
     }
 
+    SECTION("High Resolution Predict Function"){
+        REQUIRE(abs(Agent1.high_resolution_predict(0,TEST_MEMORY_LENGTH, binary_history)) == 1);
+        REQUIRE((Agent1.high_resolution_predict(0,TEST_MEMORY_LENGTH, binary_history)) == Agent1.high_resolution_predict(0,TEST_MEMORY_LENGTH,binary_history));
+        cout<<"High Resolution Predictions of sample agent: "<<endl;
+        debug_print(high_resolution_predictions); //easier to just see randomness than require it.
+        REQUIRE(Analysis::numberOfUniqueElements(high_resolution_predictions) == 2);
+
+        vector<int> distribution;
+        int distRange = 10000;
+        for(int i = 0; i < 1000000; i++){
+            mt19937 generator (i);
+            uniform_int_distribution<int> dist(-distRange, distRange);
+            distribution.push_back(dist(generator));
+        }
+        REQUIRE(Analysis::mean(distribution) < 0.0001*distRange);
+        REQUIRE(Analysis::mean(distribution) > -0.0001*distRange);
+    }
     SECTION("Sin based Predict Function"){
         REQUIRE(abs(Agent1.alt_predict(0,TEST_MEMORY_LENGTH, binary_history)) == 1);
+        REQUIRE((Agent1.alt_predict(0,TEST_MEMORY_LENGTH, binary_history)) == Agent1.alt_predict(0,TEST_MEMORY_LENGTH,binary_history));
         cout<<"Alt Predictions of sample agent: "<<endl;
         debug_print(alt_predictions); //easier to just see randomness than require it.
         REQUIRE(Analysis::numberOfUniqueElements(alt_predictions) == 2);
@@ -292,3 +313,57 @@ TEST_CASE("Strategy Struct"){
     }//not really much to test...
 }
 
+/*
+TEST_CASE("Proving Randomness of Predict Functions"){
+    const int SAMPLE_SIZE = 1000000;
+    vector<signum> uniform_int_generation_values;
+    vector<signum> sin_bit_sampled_values;
+    for(int i = 1; i < SAMPLE_SIZE; i++) {
+        mt19937 generator(i);
+        uniform_int_distribution<int> bit_distribution(0, 1);
+        uniform_int_generation_values.push_back(bit_distribution(generator) ? 1 : -1);
+        double sin_seed = sin((double) i);
+        sin_bit_sampled_values.push_back(((int)(sin_seed*10000) & 1) ? 1 : -1);
+    }
+    int market_evaluation = accumulate(uniform_int_generation_values.begin(), uniform_int_generation_values.end(), 0);
+    int alt_market_evaluation = accumulate(sin_bit_sampled_values.begin(), sin_bit_sampled_values.end(), 0);
+    REQUIRE(market_evaluation < SAMPLE_SIZE/100);
+    REQUIRE(alt_market_evaluation < SAMPLE_SIZE/100);
+
+    const int number_of_ten_bit_sequences = SAMPLE_SIZE/10;
+    vector<int> convertered_test_sequence;
+    vector<int> sin_convertered_test_sequence;
+    for(int i = 0; i < number_of_ten_bit_sequences; i+=10){
+        REQUIRE(BinaryArrayToStrategyIndex(uniform_int_generation_values.begin()+i, uniform_int_generation_values.begin()+(i+10)) <= 1024);
+        REQUIRE(BinaryArrayToStrategyIndex(uniform_int_generation_values.begin()+i, uniform_int_generation_values.begin()+(i+10)) >= -1024);
+        REQUIRE(BinaryArrayToStrategyIndex(sin_bit_sampled_values.begin()+i, sin_bit_sampled_values.begin()+(i+10)) <= 1024);
+        REQUIRE(BinaryArrayToStrategyIndex(sin_bit_sampled_values.begin()+i, sin_bit_sampled_values.begin()+(i+10)) >= -1024);
+        convertered_test_sequence.push_back(BinaryArrayToStrategyIndex(uniform_int_generation_values.begin()+i, uniform_int_generation_values.begin()+(i+10)));
+        sin_convertered_test_sequence.push_back(BinaryArrayToStrategyIndex(sin_bit_sampled_values.begin()+i, sin_bit_sampled_values.begin()+(i+10)));
+    }
+    REQUIRE(convertered_test_sequence.size() == SAMPLE_SIZE/100);
+    REQUIRE(convertered_test_sequence.size() % 100 == 0);
+
+    //Overlapping sums test:
+    vector<double> sums;
+    vector<double> sin_sums;
+    for(int i = 0; i < convertered_test_sequence.size(); i+=100){
+        REQUIRE(accumulate(convertered_test_sequence.begin()+i, convertered_test_sequence.begin()+(i+100), 0) <= 102400);
+        REQUIRE(accumulate(convertered_test_sequence.begin()+i, convertered_test_sequence.begin()+(i+100), 0) >= -102400);
+        REQUIRE(accumulate(sin_convertered_test_sequence.begin()+i, sin_convertered_test_sequence.begin()+(i+100), 0) <= 102400);
+        REQUIRE(accumulate(sin_convertered_test_sequence.begin()+i, sin_convertered_test_sequence.begin()+(i+100), 0) >= -102400);
+        sums.push_back(abs((double) accumulate(convertered_test_sequence.begin()+i, convertered_test_sequence.begin()+(i+100), 0)/ (double) 102400));
+        sin_sums.push_back(abs((double) accumulate(sin_convertered_test_sequence.begin()+i, sin_convertered_test_sequence.begin()+(i+100), 0)/ (double) 102400));
+    }//These sums ought to be normally distributed, so var(sums) = 0.5, mean = 0
+    //REQUIRE(sums[3] == 0); //Checks if sums were 0, just forces a print out to console of actual value
+    REQUIRE(Analysis::mean(sums) < 0.06);
+    REQUIRE(Analysis::mean(sums) > -0.06);
+    REQUIRE(Analysis::mean(sin_sums) < 0.6);
+    REQUIRE(Analysis::mean(sin_sums) > -0.6);
+    REQUIRE(Analysis::variance(sums) < 1.1);
+    REQUIRE(Analysis::variance(sums) > 0.9);
+    REQUIRE(Analysis::variance(sin_sums) < 1.1);
+    REQUIRE(Analysis::variance(sin_sums) > 0.9);
+
+}
+*/
