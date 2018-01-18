@@ -17,6 +17,8 @@ enum{
     TEST_RNG_SEED = 42,
 };
 
+static const double euler_e = 2.71828182846;
+
 TEST_CASE ("Random Bool Vector") {
     auto v = RandomBoolVector(10, 0, 1, -1);
 
@@ -74,6 +76,7 @@ TEST_CASE("marketHistoryGenerator") {
 TEST_CASE ("Numerics") {
     std::vector<int> v (100, 5);
     std::vector<int> v2;
+    std::vector<int> v3 = RandomBoolVector(10000, 0, 1, -1);
 
     for (int i = 0; i < 100; ++i) {
         v2.push_back (i % 2 ? 2 : 0);
@@ -84,16 +87,28 @@ TEST_CASE ("Numerics") {
     SECTION ("mean") {
         REQUIRE (Analysis::mean(v) == 5.0);
         REQUIRE (Analysis::mean(v2) == 1.0);
+        REQUIRE (Analysis::mean(v3) <= 0.05);
+        REQUIRE (Analysis::mean(v3) >= -0.05);
     }
 
     SECTION ("squared_mean") {
         REQUIRE (Analysis::squared_mean(v) == 25.0);
         REQUIRE (Analysis::squared_mean(v2) == 2.0);
+        REQUIRE (Analysis::squared_mean(v3) == 1.0);
     }
 
     SECTION ("variance") {
         REQUIRE (Analysis::variance(v) == 0.0);
         REQUIRE (Analysis::variance(v2) == 1.0);
+        REQUIRE (Analysis::variance(v3) < 1.05);
+        REQUIRE (Analysis::variance(v3) > 0.95);
+    }
+
+    SECTION ("literature variance") {
+        REQUIRE (Analysis::literatureVariance(v) == 0.0);
+        REQUIRE (Analysis::literatureVariance(v2) == 1.0);
+        //REQUIRE (Analysis::literatureVariance(v3) < 1.05);
+        //REQUIRE (Analysis::literatureVariance(v3) > 0.95);
     }
 }
 
@@ -137,46 +152,94 @@ TEST_CASE ("Market Initialization") {
 
 TEST_CASE("Experiment Struct") {
     Experiment environment1{TEST_POPULATION, TEST_NUM_STRATEGIES_AGENT, TEST_MEMORY_LENGTH, TEST_RNG_SEED};
-    SECTION("Agent Initialization"){
+
+    SECTION("Experiment Constructor") {
+        REQUIRE(environment1.agent_count == TEST_POPULATION);
+        REQUIRE(environment1.strategies_per_agent == TEST_NUM_STRATEGIES_AGENT);
+        REQUIRE(environment1.num_indicies_in_strategy == TEST_MEMORY_LENGTH);
+        REQUIRE(environment1.history == binaryMarketHistoryGenerator(TEST_MEMORY_LENGTH, TEST_RNG_SEED));
+        REQUIRE(environment1.nonbinary_history ==
+                marketHistoryGenerator(environment1.history, TEST_POPULATION, TEST_RNG_SEED));
+    }
+    SECTION("Agent Initialization") {
         /*
-        for(int i = 0; i < environment1.agents.size(); i++){
+        for(int i = 0; i < environment1.linear_dist_agents.size(); i++){
             cout<<i<<"th Agent:"<<endl;
-            for(int j = 0; j < environment1.agents[i].strategies.size(); j++){
+            for(int j = 0; j < environment1.linear_dist_agents[i].strategies.size(); j++){
                 cout<<"For "<<j<<"th strategy:"<<endl;
-                cout<<"num_indicies_in_strategy = "<<(environment1.agents[i].strategies[j].num_indicies_in_strategy)<<endl;
-                cout<<"strategy score = "<<(environment1.agents[i].strategies[j].strategy_score)<<endl;
+                cout<<"num_indicies_in_strategy = "<<(environment1.linear_dist_agents[i].strategies[j].num_indicies_in_strategy)<<endl;
+                cout<<"strategy score = "<<(environment1.linear_dist_agents[i].strategies[j].strategy_score)<<endl;
             }
         }
         */ //Print Out
         REQUIRE (environment1.agents.size() == environment1.agent_count);
-        for(int i = 0; i < environment1.agents.size(); i++){
+        for (int i = 0; i < environment1.agents.size(); i++) {
             REQUIRE (environment1.agents[i].strategies.size() == environment1.strategies_per_agent);
-            for(int j = 0; j < environment1.agents[i].strategies.size(); j++){
+            for (int j = 0; j < environment1.agents[i].strategies.size(); j++) {
                 REQUIRE (environment1.agents[i].strategies[j].num_indicies_in_strategy ==
                          environment1.num_indicies_in_strategy);
                 REQUIRE (environment1.agents[i].strategies[j].strategy_score == 0);
             }
         }//The for-loop should be unnecessary, given there is no initial variation
+
+        //Should perhaps initialize environment1 with the linear dist fct, but these values are the same
+        vector<Agent> linear_dist_agents = environment1.linear_memory_dist_agent_init();
+        REQUIRE (linear_dist_agents.size() == environment1.agent_count);
+        for (int i = 0; i < linear_dist_agents.size(); i++) {
+            REQUIRE (linear_dist_agents[i].strategies.size() == environment1.strategies_per_agent);
+            for (int j = 0; j < linear_dist_agents[i].strategies.size(); j++) {
+                REQUIRE (linear_dist_agents[i].strategies[j].num_indicies_in_strategy == (i % environment1.num_indicies_in_strategy) + 1);
+                REQUIRE (linear_dist_agents[i].strategies[j].strategy_score == 0);
+            }
+        }//The for-loop should be unnecessary, given there is no initial variation
+
+        //Should perhaps initialize environment1 with the exp dist fct, but these values are the same
+        vector<Agent> exponential_dist_agents = environment1.exponential_memory_dist_agent_init(euler_e, 1.2);
+        double max_exponential = log(environment1.num_indicies_in_strategy*1.2); //as ln(e) = 1, no division necessary
+        REQUIRE (exponential_dist_agents.size() == environment1.agent_count);
+        for (int i = 0; i < exponential_dist_agents.size(); i++) {
+            REQUIRE (exponential_dist_agents[i].strategies.size() == environment1.strategies_per_agent);
+            for (int j = 0; j < exponential_dist_agents[i].strategies.size(); j++) {
+                REQUIRE (exponential_dist_agents[i].strategies[j].num_indicies_in_strategy == (int)floor((i/max_exponential)+0.5));
+                REQUIRE (exponential_dist_agents[i].strategies[j].strategy_score == 0);
+            }
+        }//Does not contain actual information regarding the eventual distribution, though.
+
+        vector<Agent> weighted_random_dist_agents = environment1.weighted_rnd_memory_dist_agent_init(0, 42);
+        REQUIRE (weighted_random_dist_agents.size() == environment1.agent_count);
+        for (int i = 0; i < weighted_random_dist_agents.size(); i++) {
+            REQUIRE (weighted_random_dist_agents[i].strategies.size() == environment1.strategies_per_agent);
+            for (int j = 0; j < weighted_random_dist_agents[i].strategies.size(); j++) {
+                REQUIRE (weighted_random_dist_agents[i].strategies[j].num_indicies_in_strategy <= environment1.num_indicies_in_strategy);
+                REQUIRE (weighted_random_dist_agents[i].strategies[j].num_indicies_in_strategy >= 1);
+                REQUIRE (weighted_random_dist_agents[i].strategies[j].strategy_score == 0);
+            }
+        }//Does not contain actual information regarding the eventual distribution, though.
+
+        vector<Agent> bell_curve_dist_agents = environment1.bell_curve_memory_dist_agent_init(42);
+        REQUIRE (bell_curve_dist_agents.size() == environment1.agent_count);
+        for (int i = 0; i < bell_curve_dist_agents.size(); i++) {
+            REQUIRE (bell_curve_dist_agents[i].strategies.size() == environment1.strategies_per_agent);
+            for (int j = 0; j < bell_curve_dist_agents[i].strategies.size(); j++) {
+                REQUIRE (bell_curve_dist_agents[i].strategies[j].num_indicies_in_strategy <= environment1.num_indicies_in_strategy);
+                REQUIRE (bell_curve_dist_agents[i].strategies[j].num_indicies_in_strategy >= 1);
+                REQUIRE (bell_curve_dist_agents[i].strategies[j].strategy_score == 0);
+            }
+        }//Does not contain actual information regarding the eventual distribution, though.
+
     }
 
-    SECTION("Experiment Constructor"){
-        REQUIRE(environment1.agent_count == TEST_POPULATION);
-        REQUIRE(environment1.strategies_per_agent == TEST_NUM_STRATEGIES_AGENT);
-        REQUIRE(environment1.num_indicies_in_strategy == TEST_MEMORY_LENGTH);
-        REQUIRE(environment1.history == binaryMarketHistoryGenerator(TEST_MEMORY_LENGTH, TEST_RNG_SEED));
-        REQUIRE(environment1.nonbinary_history == marketHistoryGenerator(environment1.history, TEST_POPULATION, TEST_RNG_SEED));
-    }
-    /*
     SECTION("Minority Game Run"){
+        //Experiment environment1{TEST_POPULATION, TEST_NUM_STRATEGIES_AGENT, TEST_MEMORY_LENGTH, TEST_RNG_SEED};
         int strategy_score = environment1.agents[0].strategies[0].strategy_score;
-        int agent_pop = environment1.agents.size());
+        int agent_pop = environment1.agents.size();
         environment1.run_minority_game(1); //the strategy score will definitely have a non-zero update
         REQUIRE(strategy_score != environment1.agents[0].strategies[0].strategy_score);
         REQUIRE(environment1.nonbinary_history.back() <= abs(environment1.agent_count));
         REQUIRE(environment1.agents.size() == agent_pop);
         REQUIRE(abs(environment1.history.back()) == 1);
     }
-    */
+
 }
 
 TEST_CASE("Agent Struct"){
@@ -203,7 +266,7 @@ TEST_CASE("Agent Struct"){
     for(int i = 0; i < TEST_NUM_STRATEGIES_AGENT; i++){
         predictions.push_back(Agent1.predict(i, TEST_MEMORY_LENGTH, binary_history));
         predictions_2.push_back(Agent1.predict(i, TEST_MEMORY_LENGTH, binary_history_2));
-        alt_predictions.push_back(Agent1.alt_predict(i, TEST_MEMORY_LENGTH, binary_history));
+        alt_predictions.push_back(Agent1.sin_predict(i, TEST_MEMORY_LENGTH, binary_history));
         high_resolution_predictions.push_back(Agent1.high_resolution_predict(i, TEST_MEMORY_LENGTH, binary_history));
     }
     int market_evaluation = accumulate(predictions.begin(), predictions.end(), 0);
@@ -227,17 +290,19 @@ TEST_CASE("Agent Struct"){
 
         vector<int> distribution;
         int distRange = 10000;
-        for(int i = 0; i < 1000000; i++){
+        for(int i = 0; i < 100000; i++){
             mt19937 generator (i);
             uniform_int_distribution<int> dist(-distRange, distRange);
             distribution.push_back(dist(generator));
         }
-        REQUIRE(Analysis::mean(distribution) < 0.0001*distRange);
-        REQUIRE(Analysis::mean(distribution) > -0.0001*distRange);
+        REQUIRE(Analysis::mean(distribution) < 0.001*distRange);
+        REQUIRE(Analysis::mean(distribution) > -0.001*distRange);
     }
+
     SECTION("Sin based Predict Function"){
-        REQUIRE(abs(Agent1.alt_predict(0,TEST_MEMORY_LENGTH, binary_history)) == 1);
-        REQUIRE((Agent1.alt_predict(0,TEST_MEMORY_LENGTH, binary_history)) == Agent1.alt_predict(0,TEST_MEMORY_LENGTH,binary_history));
+        REQUIRE(abs(Agent1.sin_predict(0, TEST_MEMORY_LENGTH, binary_history)) == 1);
+        REQUIRE((Agent1.sin_predict(0, TEST_MEMORY_LENGTH, binary_history)) ==
+                        Agent1.sin_predict(0, TEST_MEMORY_LENGTH, binary_history));
         cout<<"Alt Predictions of sample agent: "<<endl;
         debug_print(alt_predictions); //easier to just see randomness than require it.
         REQUIRE(Analysis::numberOfUniqueElements(alt_predictions) == 2);
@@ -367,3 +432,4 @@ TEST_CASE("Proving Randomness of Predict Functions"){
 
 }
 */
+

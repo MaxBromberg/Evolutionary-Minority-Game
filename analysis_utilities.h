@@ -59,7 +59,7 @@ struct Analysis{
             temp.push_back(sortedV[i]);
             temp.push_back(std::count(sortedV.cbegin(), sortedV.cend(), sortedV[i]));
             frequencyHistogram.push_back(temp);
-            i+=std::count(sortedV.begin(), sortedV.end(), sortedV[i]); //=temp[1]
+            i += std::count(sortedV.begin(), sortedV.end(), sortedV[i]); //=temp[1]
             assert(sortedV[i-1] != sortedV[i]);
             temp.clear();
         }
@@ -74,8 +74,9 @@ struct Analysis{
         return uniqueCount;
     }
 
-    static double literatureVariance(const vector<int>& obv){
-        vector<double> sqObvMinusObvMean(obv.size()); //implement generate
+    template <typename T>
+    static double literatureVariance(const vector<T>& obv){
+        vector<T> sqObvMinusObvMean(obv.size()); //implement generate
         double variance;
         double obvMean = Analysis::mean(obv);
         for(int i = 0; i < sqObvMinusObvMean.size(); i++){
@@ -85,7 +86,8 @@ struct Analysis{
         return variance;
     }
 
-    static double successRate(const vector<int>& obv, int agentPop){
+    template <typename T>
+    static double successRate(const vector<T>& obv, int agentPop){
         double successRate = 0;
         for(auto e : obv){
             successRate += (agentPop - abs(e))/(double)(2*agentPop);

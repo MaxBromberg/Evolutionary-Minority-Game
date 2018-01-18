@@ -13,6 +13,7 @@ std::vector<int> RandomBoolVector (int size, int seed, int true_value = 1, int f
 int BinaryVectorLastNToStrategyIndex (const std::vector<int>& v, int n);
 std::vector<signum> binaryMarketHistoryGenerator(int NumIndicesInStrategy, int seed);
 std::vector<int> marketHistoryGenerator(const std::vector<int>& source, int agentPopulation, int seed);
+int random_generate(double weight, int range, int seed);
 
 template <typename Iter>
 int BinaryArrayToStrategyIndex (Iter begin, Iter end) {
@@ -34,7 +35,7 @@ struct Agent {
     int relatively_unique_identifer;
 
     signum predict(int strategy_index, int num_indicies_in_strategy, const std::vector<signum>& history) const;
-    signum alt_predict(int strategy_index, int num_indicies_in_strategy, const std::vector<signum>& history) const;
+    signum sin_predict(int strategy_index, int num_indicies_in_strategy, const std::vector<signum> &history) const;
     signum high_resolution_predict(int strategy_index, int num_indicies_in_strategy, const std::vector<signum>& history) const;
     void update (const std::vector<signum>& history, const int& market_prediction);
     void weighted_update (const std::vector<signum>& history, const int& last_market_value);
@@ -48,11 +49,18 @@ struct Experiment {
     std::vector<int> nonbinary_history;
     std::vector<Agent> agents;
 
+    //Agent Memory Length Distributions
     std::vector<Agent> initialize_agents();
+    std::vector<Agent> linear_memory_dist_agent_init();
+    std::vector<Agent> exponential_memory_dist_agent_init(double base, double exp_factor);
+    std::vector<Agent> weighted_rnd_memory_dist_agent_init(double weight, int seed); //weighting in range (-1,1)
+    std::vector<Agent> bell_curve_memory_dist_agent_init(double kurtosis);
+
     Experiment(int, int, int, int);
     void run_minority_game(int number_of_runs);
-    void write_attendance_history();
-    void outputMinorityGameObservables(int NUM_DAYS_AGENTS_PLAY, int NUM_DIFF_AGENT_POPS,
+    void write_minority_game_observables(int NUM_DAYS_AGENTS_PLAY, int NUM_DIFF_AGENT_POPS,
                                    int NUM_DIFF_MEMORY_LENGTHS);
+    void write_attendance_history();
+    void write_memory_distribution();
 };
 
