@@ -50,16 +50,16 @@ struct Experiment {
     std::vector<Agent> agents;
 
     //Agent Memory Length Distributions
-    std::vector<Agent> initialize_agents();
-    std::vector<Agent> linear_memory_dist_agent_init();
-    std::vector<Agent> exponential_memory_dist_agent_init(double base, double exp_factor);
-    std::vector<Agent> weighted_rnd_memory_dist_agent_init(double weight, int seed); //weighting in range (-1,1)
-    std::vector<Agent> bell_curve_memory_dist_agent_init(double kurtosis);
+    std::vector<Agent> initialize_agents(int agents_identifier);
+    std::vector<Agent> linear_memory_dist_agent_init(int agent_identifier);
+    std::vector<Agent> exponential_memory_dist_agent_init(double base, double exp_factor, int agents_identifier);
+    std::vector<Agent> weighted_rnd_memory_dist_agent_init(double weight, int seed, int agents_identifier); //weighting in range (-1,1)
+    std::vector<Agent> bell_curve_memory_dist_agent_init(double kurtosis, int agents_identifier);
 
-    Experiment(int, int, int, int);
+    Experiment(int, int, int, int, int);
     void run_minority_game(int number_of_runs);
     void write_minority_game_observables(int NUM_DAYS_AGENTS_PLAY, int NUM_DIFF_AGENT_POPS,
-                                   int NUM_DIFF_MEMORY_LENGTHS);
+                                         int NUM_DIFF_MEMORY_LENGTHS, int NUM_STRATEGIES_PER_AGENT, int NUM_DIFF_STRATEGY_SETS);
     void write_attendance_history();
     void write_memory_distribution();
 };
