@@ -3,6 +3,7 @@
 #include <cmath>
 #include <random>
 #include <fstream>
+#include <algorithm>
 #include "analysis_utilities.h"
 #include "Evolutionary_Minority_Game.h"
 #include "debug_utilities.h"
@@ -15,6 +16,7 @@ enum{
     TEST_RUN_TIME = 500,
     TEST_NUM_STRATEGIES_AGENT = 22,
     TEST_RNG_SEED = 42,
+    TEST_AGENTS_IDENTIFIER = 0,
 };
 
 static const double euler_e = 2.71828182846;
@@ -77,13 +79,19 @@ TEST_CASE ("Numerics") {
     std::vector<int> v (100, 5);
     std::vector<int> v2;
     std::vector<int> v3 = RandomBoolVector(10000, 0, 1, -1);
+    std::vector<int> v4;
 
     for (int i = 0; i < 100; ++i) {
         v2.push_back (i % 2 ? 2 : 0);
+        std:: vector<int> Random_Bool_Vector = RandomBoolVector(1000, 0, 1, -1);
+        v4.push_back(std::accumulate(Random_Bool_Vector.begin(), Random_Bool_Vector.end(), 0));
     };
 
     REQUIRE (v.size() == 100);
-
+    REQUIRE (v4.size() == 100);
+    for(int i = 0; i < v4.size(); i++){
+       REQUIRE(v4[i] !=  v[i+1]); //just to see if there is indeed variation
+    }
     SECTION ("mean") {
         REQUIRE (Analysis::mean(v) == 5.0);
         REQUIRE (Analysis::mean(v2) == 1.0);
@@ -102,13 +110,27 @@ TEST_CASE ("Numerics") {
         REQUIRE (Analysis::variance(v2) == 1.0);
         REQUIRE (Analysis::variance(v3) < 1.05);
         REQUIRE (Analysis::variance(v3) > 0.95);
+        REQUIRE (Analysis::variance(v4)/v4.size() < 1.05);
+        REQUIRE (Analysis::variance(v4)/v4.size() > 0.95);
+    }
+
+    SECTION ("unexpanded_variance") {
+        REQUIRE (Analysis::unexpanded_variance(v) == 0.0);
+        REQUIRE (Analysis::unexpanded_variance(v2) == 1.0);
+        REQUIRE (Analysis::unexpanded_variance(v3) < 0.55);
+        REQUIRE (Analysis::unexpanded_variance(v3) > 0.45);
+        REQUIRE (Analysis::unexpanded_variance(v4)/v4.size() < 1.05);
+        REQUIRE (Analysis::unexpanded_variance(v4)/v4.size() > 0.95);
     }
 
     SECTION ("literature variance") {
         REQUIRE (Analysis::literatureVariance(v) == 0.0);
         REQUIRE (Analysis::literatureVariance(v2) == 1.0);
-        //REQUIRE (Analysis::literatureVariance(v3) < 1.05);
-        //REQUIRE (Analysis::literatureVariance(v3) > 0.95);
+        REQUIRE (Analysis::literatureVariance(v3) < 0.55);
+        REQUIRE (Analysis::literatureVariance(v3) > 0.45);
+        REQUIRE (Analysis::literatureVariance(v4)/v4.size() < 1.05);
+        REQUIRE (Analysis::literatureVariance(v4)/v4.size() > 0.95);
+
     }
 }
 
@@ -151,7 +173,7 @@ TEST_CASE ("Market Initialization") {
 }
 
 TEST_CASE("Experiment Struct") {
-    Experiment environment1{TEST_POPULATION, TEST_NUM_STRATEGIES_AGENT, TEST_MEMORY_LENGTH, TEST_RNG_SEED};
+    Experiment environment1{TEST_POPULATION, TEST_NUM_STRATEGIES_AGENT, TEST_MEMORY_LENGTH, TEST_AGENTS_IDENTIFIER, TEST_RNG_SEED};
 
     SECTION("Experiment Constructor") {
         REQUIRE(environment1.agent_count == TEST_POPULATION);
@@ -182,8 +204,9 @@ TEST_CASE("Experiment Struct") {
             }
         }//The for-loop should be unnecessary, given there is no initial variation
 
+/*
         //Should perhaps initialize environment1 with the linear dist fct, but these values are the same
-        vector<Agent> linear_dist_agents = environment1.linear_memory_dist_agent_init();
+        vector<Agent> linear_dist_agents = environment1.linear_memory_dist_agent_init(TEST_AGENTS_IDENTIFIER);
         REQUIRE (linear_dist_agents.size() == environment1.agent_count);
         for (int i = 0; i < linear_dist_agents.size(); i++) {
             REQUIRE (linear_dist_agents[i].strategies.size() == environment1.strategies_per_agent);
@@ -194,7 +217,7 @@ TEST_CASE("Experiment Struct") {
         }//The for-loop should be unnecessary, given there is no initial variation
 
         //Should perhaps initialize environment1 with the exp dist fct, but these values are the same
-        vector<Agent> exponential_dist_agents = environment1.exponential_memory_dist_agent_init(euler_e, 1.2);
+        vector<Agent> exponential_dist_agents = environment1.exponential_memory_dist_agent_init(euler_e, 1.2, TEST_AGENTS_IDENTIFIER);
         double max_exponential = log(environment1.num_indicies_in_strategy*1.2); //as ln(e) = 1, no division necessary
         REQUIRE (exponential_dist_agents.size() == environment1.agent_count);
         for (int i = 0; i < exponential_dist_agents.size(); i++) {
@@ -204,8 +227,8 @@ TEST_CASE("Experiment Struct") {
                 REQUIRE (exponential_dist_agents[i].strategies[j].strategy_score == 0);
             }
         }//Does not contain actual information regarding the eventual distribution, though.
-
-        vector<Agent> weighted_random_dist_agents = environment1.weighted_rnd_memory_dist_agent_init(0, 42);
+*/
+        vector<Agent> weighted_random_dist_agents = environment1.weighted_rnd_memory_dist_agent_init(0, TEST_RNG_SEED, TEST_AGENTS_IDENTIFIER);
         REQUIRE (weighted_random_dist_agents.size() == environment1.agent_count);
         for (int i = 0; i < weighted_random_dist_agents.size(); i++) {
             REQUIRE (weighted_random_dist_agents[i].strategies.size() == environment1.strategies_per_agent);
@@ -216,7 +239,7 @@ TEST_CASE("Experiment Struct") {
             }
         }//Does not contain actual information regarding the eventual distribution, though.
 
-        vector<Agent> bell_curve_dist_agents = environment1.bell_curve_memory_dist_agent_init(42);
+        vector<Agent> bell_curve_dist_agents = environment1.bell_curve_memory_dist_agent_init(TEST_RNG_SEED, TEST_AGENTS_IDENTIFIER);
         REQUIRE (bell_curve_dist_agents.size() == environment1.agent_count);
         for (int i = 0; i < bell_curve_dist_agents.size(); i++) {
             REQUIRE (bell_curve_dist_agents[i].strategies.size() == environment1.strategies_per_agent);

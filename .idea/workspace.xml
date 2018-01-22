@@ -8,15 +8,21 @@
   </component>
   <component name="CMakeSettings" AUTO_RELOAD="true">
     <configurations>
-      <configuration CONFIG_NAME="Debug" GENERATION_DIR="CMakeFiles" />
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" GENERATION_DIR="CMakeFiles" />
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6596228b-3fd6-4999-9cb1-733af731eba4" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Evolutionary_Minority_Game.cpp" afterPath="$PROJECT_DIR$/Evolutionary_Minority_Game.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Evolutionary_Minority_Game.h" afterPath="$PROJECT_DIR$/Evolutionary_Minority_Game.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.cpp" afterPath="$PROJECT_DIR$/main.cpp" />
+    <list default="true" id="6596228b-3fd6-4999-9cb1-733af731eba4" name="Default" comment="Just syncing">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/CMakeCache.txt" afterPath="$PROJECT_DIR$/CMakeCache.txt" />
+      <change beforePath="$PROJECT_DIR$/Evolutionary_Minority_Game.cpp" afterPath="$PROJECT_DIR$/Evolutionary_Minority_Game.cpp" />
+      <change beforePath="$PROJECT_DIR$/Evolutionary_Minority_Game_Test.cpp" afterPath="$PROJECT_DIR$/Evolutionary_Minority_Game_Test.cpp" />
+      <change beforePath="$PROJECT_DIR$/High_Res predict Variance for Memory from 2 to 16, Pop from 101 to 701, and 1000 Iterations.txt" afterPath="$PROJECT_DIR$/High_Res predict Variance for Memory from 2 to 16, Pop from 101 to 701, and 1000 Iterations.txt" />
+      <change beforePath="$PROJECT_DIR$/Makefile" afterPath="$PROJECT_DIR$/Makefile" />
+      <change beforePath="$PROJECT_DIR$/Minority_Game_Programming.cbp" afterPath="$PROJECT_DIR$/Minority_Game_Programming.cbp" />
+      <change beforePath="$PROJECT_DIR$/analysis_utilities.h" afterPath="$PROJECT_DIR$/analysis_utilities.h" />
+      <change beforePath="$PROJECT_DIR$/cmake_install.cmake" afterPath="$PROJECT_DIR$/cmake_install.cmake" />
+      <change beforePath="$PROJECT_DIR$/main.cpp" afterPath="$PROJECT_DIR$/main.cpp" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <ignored path="$PROJECT_DIR$/CMakeFiles/" />
@@ -29,36 +35,41 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="ChangesViewManager" show_ignored="true" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="FavoritesManager">
     <favorites_list name="Minority_Game_Programming" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5962991">
+    <splitter split-orientation="horizontal" split-proportion="0.5626888">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="600">
           <file leaf-file-name="Evolutionary_Minority_Game.cpp" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/Evolutionary_Minority_Game.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="191">
-                  <caret line="256" column="59" lean-forward="false" selection-start-line="256" selection-start-column="59" selection-end-line="256" selection-end-column="59" />
+                <state relative-caret-position="1551">
+                  <caret line="294" column="0" lean-forward="false" selection-start-line="294" selection-start-column="0" selection-end-line="294" selection-end-column="0" />
                   <folding>
                     <element signature="e#273#731#0" expanded="false" />
                     <element signature="e#733#870#0" expanded="false" />
                     <element signature="e#872#1047#0" expanded="false" />
+                    <element signature="e#1049#1461#0" expanded="false" />
                     <element signature="e#1553#1978#0" expanded="false" />
                     <element signature="e#1980#2516#0" expanded="false" />
                     <element signature="e#2518#3074#0" expanded="false" />
+                    <element signature="e#3076#3614#0" expanded="false" />
                     <element signature="e#3616#3980#0" expanded="false" />
                     <element signature="e#4017#4443#0" expanded="false" />
                     <element signature="e#4521#5431#0" expanded="false" />
-                    <element signature="e#5433#6118#0" expanded="false" />
-                    <element signature="e#6120#6615#0" expanded="false" />
-                    <element signature="e#6716#7603#0" expanded="false" />
-                    <element signature="e#7736#8348#0" expanded="false" />
-                    <element signature="e#8437#10943#0" expanded="false" />
-                    <element signature="e#11513#11973#0" expanded="false" />
-                    <element signature="e#11975#12309#0" expanded="false" />
-                    <element signature="e#14985#15650#0" expanded="false" />
+                    <element signature="e#5433#6120#0" expanded="false" />
+                    <element signature="e#6122#6617#0" expanded="false" />
+                    <element signature="e#6718#7605#0" expanded="false" />
+                    <element signature="e#7738#8350#0" expanded="false" />
+                    <element signature="e#8439#10945#0" expanded="false" />
+                    <element signature="e#10999#11513#0" expanded="false" />
+                    <element signature="e#11515#11975#0" expanded="false" />
+                    <element signature="e#11977#12311#0" expanded="false" />
+                    <element signature="e#12313#15262#0" expanded="false" />
+                    <element signature="e#15264#15929#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -67,21 +78,21 @@
           <file leaf-file-name="Evolutionary_Minority_Game_Test.cpp" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/Evolutionary_Minority_Game_Test.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="323">
-                  <caret line="19" column="30" lean-forward="false" selection-start-line="19" selection-start-column="30" selection-end-line="19" selection-end-column="30" />
+                <state relative-caret-position="5742">
+                  <caret line="174" column="31" lean-forward="false" selection-start-line="174" selection-start-column="31" selection-end-line="174" selection-end-column="31" />
                   <folding>
-                    <element signature="e#453#826#0" expanded="false" />
-                    <element signature="e#867#1415#0" expanded="false" />
-                    <element signature="e#1462#1786#0" expanded="false" />
-                    <element signature="e#1829#2239#0" expanded="false" />
-                    <element signature="e#2276#2766#0" expanded="false" />
-                    <element signature="e#2790#3949#0" expanded="false" />
-                    <element signature="e#3982#4651#0" expanded="false" />
-                    <element signature="e#4688#5114#0" expanded="false" />
-                    <element signature="e#5146#11306#0" expanded="false" />
-                    <element signature="e#11333#18963#0" expanded="false" />
-                    <element signature="e#18993#19243#0" expanded="false" />
-                    <element signature="e#19245#22823#0" expanded="false" />
+                    <element signature="e#0#26#0" expanded="true" />
+                    <element signature="e#506#879#0" expanded="false" />
+                    <element signature="e#920#1468#0" expanded="false" />
+                    <element signature="e#1515#1839#0" expanded="false" />
+                    <element signature="e#1882#2292#0" expanded="false" />
+                    <element signature="e#2329#2819#0" expanded="false" />
+                    <element signature="e#5068#5737#0" expanded="false" />
+                    <element signature="e#5774#6200#0" expanded="false" />
+                    <element signature="e#6232#12537#0" expanded="false" />
+                    <element signature="e#12564#20194#0" expanded="false" />
+                    <element signature="e#20224#20474#0" expanded="false" />
+                    <element signature="e#20476#24054#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -91,26 +102,21 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="600">
-          <file leaf-file-name="analysis_utilities.h" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/analysis_utilities.h">
+          <file leaf-file-name="main.cpp" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/main.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1037">
-                  <caret line="61" column="17" lean-forward="false" selection-start-line="61" selection-start-column="17" selection-end-line="61" selection-end-column="17" />
-                  <folding>
-                    <element signature="e#749#761#0" expanded="true" />
-                    <element signature="e#880#1516#0" expanded="false" />
-                    <element signature="e#2613#2625#0" expanded="true" />
-                    <element signature="e#3065#3077#0" expanded="true" />
-                  </folding>
+                <state relative-caret-position="363">
+                  <caret line="11" column="31" lean-forward="false" selection-start-line="11" selection-start-column="31" selection-end-line="11" selection-end-column="31" />
+                  <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="Evolutionary_Minority_Game.h" pinned="false" current-in-tab="false">
+          <file leaf-file-name="Evolutionary_Minority_Game.h" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/Evolutionary_Minority_Game.h">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1037">
-                  <caret line="61" column="41" lean-forward="false" selection-start-line="61" selection-start-column="41" selection-end-line="61" selection-end-column="41" />
+                <state relative-caret-position="1188">
+                  <caret line="55" column="84" lean-forward="false" selection-start-line="55" selection-start-column="84" selection-end-line="55" selection-end-column="84" />
                   <folding>
                     <element signature="e#635#866#0" expanded="false" />
                   </folding>
@@ -118,12 +124,15 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="main.cpp" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/main.cpp">
+          <file leaf-file-name="analysis_utilities.h" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/analysis_utilities.h">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="187">
-                  <caret line="11" column="31" lean-forward="false" selection-start-line="11" selection-start-column="31" selection-end-line="11" selection-end-column="31" />
-                  <folding />
+                <state relative-caret-position="1188">
+                  <caret line="36" column="164" lean-forward="false" selection-start-line="36" selection-start-column="164" selection-end-line="36" selection-end-column="164" />
+                  <folding>
+                    <element signature="e#893#905#0" expanded="true" />
+                    <element signature="e#1288#1924#0" expanded="false" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -161,11 +170,12 @@
         <option value="$PROJECT_DIR$/debug_utilities.h" />
         <option value="$PROJECT_DIR$/Simulation_Functions.cpp" />
         <option value="$USER_HOME$/AppData/Local/Temp/Start Page.url" />
-        <option value="$PROJECT_DIR$/Evolutionary_Minority_Game_Test.cpp" />
-        <option value="$PROJECT_DIR$/analysis_utilities.h" />
         <option value="$PROJECT_DIR$/Evolutionary_Minority_Game.h" />
-        <option value="$PROJECT_DIR$/Evolutionary_Minority_Game.cpp" />
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch.cpp" />
+        <option value="$PROJECT_DIR$/analysis_utilities.h" />
+        <option value="$PROJECT_DIR$/Evolutionary_Minority_Game_Test.cpp" />
         <option value="$PROJECT_DIR$/main.cpp" />
+        <option value="$PROJECT_DIR$/Evolutionary_Minority_Game.cpp" />
       </list>
     </option>
   </component>
@@ -181,7 +191,7 @@
     <option name="height" value="1006" />
   </component>
   <component name="ProjectView">
-    <navigator proportions="" version="1">
+    <navigator currentView="ProjectPane" proportions="" version="1">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -194,12 +204,25 @@
       <manualOrder />
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes />
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="Minority_Game_Programming" type="dad4c3:CidrFilesViewHelper$MyProjectTreeStructure$1" />
+              <item name="Minority Game Surface Repository" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="settings.editor.selected.configurable" value="CMakeSettings" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/CMakeFiles" />
+    <property name="com.intellij.ide.scratch.LRUPopupBuilder$2/Languages" value="ObjectiveC" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -277,6 +300,7 @@
       <workItem from="1516267541965" duration="86000" />
       <workItem from="1516267855471" duration="12909000" />
       <workItem from="1516368994590" duration="605000" />
+      <workItem from="1516631187737" duration="565000" />
     </task>
     <task id="LOCAL-00001" summary="Created Simulation Functions file and ran simulation to determine market history. I have unduely high variation (i.e. it appears as though the market behavior is incredibly erratic, even for different alpha ranges. (the resultant graphs are in clear disagreement with the top of pg 6 of Morro's Summary work.">
       <created>1513956792179</created>
@@ -324,7 +348,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="285023000" />
+    <option name="totallyTimeSpent" value="299837000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -336,11 +360,14 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="-13" y="-13" width="2762" height="1770" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.21336858" sideWeight="0.8543046" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297943" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.29860651" sideWeight="0.49773413" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3273305" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="LuaJ" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31917718" sideWeight="0.5022659" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32846716" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2447034" sideWeight="0.49853802" order="2" side_tool="false" content_ui="tabs" />
@@ -348,16 +375,14 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32846716" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.19939578" sideWeight="0.14569536" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39724576" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.29872882" sideWeight="0.49773413" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="LuaJ" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297943" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -403,32 +428,11 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="53" />
+      <option name="time" value="58" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/Evolutionary_Minority_Game_Test.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2013">
-          <caret line="61" column="0" lean-forward="false" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="0" />
-          <folding>
-            <element signature="e#453#826#0" expanded="false" />
-            <element signature="e#867#1415#0" expanded="false" />
-            <element signature="e#1462#1786#0" expanded="false" />
-            <element signature="e#1829#2239#0" expanded="false" />
-            <element signature="e#2276#2766#0" expanded="false" />
-            <element signature="e#2790#3949#0" expanded="false" />
-            <element signature="e#3982#4651#0" expanded="false" />
-            <element signature="e#4688#5114#0" expanded="false" />
-            <element signature="e#5146#11306#0" expanded="false" />
-            <element signature="e#11333#18963#0" expanded="false" />
-            <element signature="e#18993#19243#0" expanded="false" />
-            <element signature="e#19245#22823#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Evolutionary_Minority_Game.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="66">
@@ -447,20 +451,24 @@
             <element signature="e#273#731#0" expanded="false" />
             <element signature="e#733#870#0" expanded="false" />
             <element signature="e#872#1047#0" expanded="false" />
+            <element signature="e#1049#1461#0" expanded="false" />
             <element signature="e#1553#1978#0" expanded="false" />
             <element signature="e#1980#2516#0" expanded="false" />
             <element signature="e#2518#3074#0" expanded="false" />
+            <element signature="e#3076#3614#0" expanded="false" />
             <element signature="e#3616#3980#0" expanded="false" />
             <element signature="e#4017#4443#0" expanded="false" />
             <element signature="e#4521#5431#0" expanded="false" />
-            <element signature="e#5433#6118#0" expanded="false" />
-            <element signature="e#6120#6615#0" expanded="false" />
-            <element signature="e#6716#7603#0" expanded="false" />
-            <element signature="e#7736#8348#0" expanded="false" />
-            <element signature="e#8437#10943#0" expanded="false" />
-            <element signature="e#11513#11973#0" expanded="false" />
-            <element signature="e#11975#12309#0" expanded="false" />
-            <element signature="e#14985#15650#0" expanded="false" />
+            <element signature="e#5433#6120#0" expanded="false" />
+            <element signature="e#6122#6617#0" expanded="false" />
+            <element signature="e#6718#7605#0" expanded="false" />
+            <element signature="e#7738#8350#0" expanded="false" />
+            <element signature="e#8439#10945#0" expanded="false" />
+            <element signature="e#10999#11513#0" expanded="false" />
+            <element signature="e#11515#11975#0" expanded="false" />
+            <element signature="e#11977#12311#0" expanded="false" />
+            <element signature="e#12313#15262#0" expanded="false" />
+            <element signature="e#15264#15929#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -470,18 +478,18 @@
         <state relative-caret-position="1782">
           <caret line="54" column="35" lean-forward="false" selection-start-line="54" selection-start-column="35" selection-end-line="54" selection-end-column="35" />
           <folding>
-            <element signature="e#453#826#0" expanded="false" />
-            <element signature="e#867#1415#0" expanded="false" />
-            <element signature="e#1462#1786#0" expanded="false" />
-            <element signature="e#1829#2239#0" expanded="false" />
-            <element signature="e#2276#2766#0" expanded="false" />
-            <element signature="e#2790#3949#0" expanded="false" />
-            <element signature="e#3982#4651#0" expanded="false" />
-            <element signature="e#4688#5114#0" expanded="false" />
-            <element signature="e#5146#11306#0" expanded="false" />
-            <element signature="e#11333#18963#0" expanded="false" />
-            <element signature="e#18993#19243#0" expanded="false" />
-            <element signature="e#19245#22823#0" expanded="false" />
+            <element signature="e#0#26#0" expanded="true" />
+            <element signature="e#506#879#0" expanded="false" />
+            <element signature="e#920#1468#0" expanded="false" />
+            <element signature="e#1515#1839#0" expanded="false" />
+            <element signature="e#1882#2292#0" expanded="false" />
+            <element signature="e#2329#2819#0" expanded="false" />
+            <element signature="e#5068#5737#0" expanded="false" />
+            <element signature="e#5774#6200#0" expanded="false" />
+            <element signature="e#6232#12537#0" expanded="false" />
+            <element signature="e#12564#20194#0" expanded="false" />
+            <element signature="e#20224#20474#0" expanded="false" />
+            <element signature="e#20476#24054#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -527,20 +535,24 @@
             <element signature="e#273#731#0" expanded="false" />
             <element signature="e#733#870#0" expanded="false" />
             <element signature="e#872#1047#0" expanded="false" />
+            <element signature="e#1049#1461#0" expanded="false" />
             <element signature="e#1553#1978#0" expanded="false" />
             <element signature="e#1980#2516#0" expanded="false" />
             <element signature="e#2518#3074#0" expanded="false" />
+            <element signature="e#3076#3614#0" expanded="false" />
             <element signature="e#3616#3980#0" expanded="false" />
             <element signature="e#4017#4443#0" expanded="false" />
             <element signature="e#4521#5431#0" expanded="false" />
-            <element signature="e#5433#6118#0" expanded="false" />
-            <element signature="e#6120#6615#0" expanded="false" />
-            <element signature="e#6716#7603#0" expanded="false" />
-            <element signature="e#7736#8348#0" expanded="false" />
-            <element signature="e#8437#10943#0" expanded="false" />
-            <element signature="e#11513#11973#0" expanded="false" />
-            <element signature="e#11975#12309#0" expanded="false" />
-            <element signature="e#14985#15650#0" expanded="false" />
+            <element signature="e#5433#6120#0" expanded="false" />
+            <element signature="e#6122#6617#0" expanded="false" />
+            <element signature="e#6718#7605#0" expanded="false" />
+            <element signature="e#7738#8350#0" expanded="false" />
+            <element signature="e#8439#10945#0" expanded="false" />
+            <element signature="e#10999#11513#0" expanded="false" />
+            <element signature="e#11515#11975#0" expanded="false" />
+            <element signature="e#11977#12311#0" expanded="false" />
+            <element signature="e#12313#15262#0" expanded="false" />
+            <element signature="e#15264#15929#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -550,18 +562,18 @@
         <state relative-caret-position="1782">
           <caret line="54" column="35" lean-forward="false" selection-start-line="54" selection-start-column="35" selection-end-line="54" selection-end-column="35" />
           <folding>
-            <element signature="e#453#826#0" expanded="false" />
-            <element signature="e#867#1415#0" expanded="false" />
-            <element signature="e#1462#1786#0" expanded="false" />
-            <element signature="e#1829#2239#0" expanded="false" />
-            <element signature="e#2276#2766#0" expanded="false" />
-            <element signature="e#2790#3949#0" expanded="false" />
-            <element signature="e#3982#4651#0" expanded="false" />
-            <element signature="e#4688#5114#0" expanded="false" />
-            <element signature="e#5146#11306#0" expanded="false" />
-            <element signature="e#11333#18963#0" expanded="false" />
-            <element signature="e#18993#19243#0" expanded="false" />
-            <element signature="e#19245#22823#0" expanded="false" />
+            <element signature="e#0#26#0" expanded="true" />
+            <element signature="e#506#879#0" expanded="false" />
+            <element signature="e#920#1468#0" expanded="false" />
+            <element signature="e#1515#1839#0" expanded="false" />
+            <element signature="e#1882#2292#0" expanded="false" />
+            <element signature="e#2329#2819#0" expanded="false" />
+            <element signature="e#5068#5737#0" expanded="false" />
+            <element signature="e#5774#6200#0" expanded="false" />
+            <element signature="e#6232#12537#0" expanded="false" />
+            <element signature="e#12564#20194#0" expanded="false" />
+            <element signature="e#20224#20474#0" expanded="false" />
+            <element signature="e#20476#24054#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -603,20 +615,24 @@
             <element signature="e#273#731#0" expanded="false" />
             <element signature="e#733#870#0" expanded="false" />
             <element signature="e#872#1047#0" expanded="false" />
+            <element signature="e#1049#1461#0" expanded="false" />
             <element signature="e#1553#1978#0" expanded="false" />
             <element signature="e#1980#2516#0" expanded="false" />
             <element signature="e#2518#3074#0" expanded="false" />
+            <element signature="e#3076#3614#0" expanded="false" />
             <element signature="e#3616#3980#0" expanded="false" />
             <element signature="e#4017#4443#0" expanded="false" />
             <element signature="e#4521#5431#0" expanded="false" />
-            <element signature="e#5433#6118#0" expanded="false" />
-            <element signature="e#6120#6615#0" expanded="false" />
-            <element signature="e#6716#7603#0" expanded="false" />
-            <element signature="e#7736#8348#0" expanded="false" />
-            <element signature="e#8437#10943#0" expanded="false" />
-            <element signature="e#11513#11973#0" expanded="false" />
-            <element signature="e#11975#12309#0" expanded="false" />
-            <element signature="e#14985#15650#0" expanded="false" />
+            <element signature="e#5433#6120#0" expanded="false" />
+            <element signature="e#6122#6617#0" expanded="false" />
+            <element signature="e#6718#7605#0" expanded="false" />
+            <element signature="e#7738#8350#0" expanded="false" />
+            <element signature="e#8439#10945#0" expanded="false" />
+            <element signature="e#10999#11513#0" expanded="false" />
+            <element signature="e#11515#11975#0" expanded="false" />
+            <element signature="e#11977#12311#0" expanded="false" />
+            <element signature="e#12313#15262#0" expanded="false" />
+            <element signature="e#15264#15929#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -626,18 +642,18 @@
         <state relative-caret-position="1782">
           <caret line="54" column="35" lean-forward="true" selection-start-line="54" selection-start-column="35" selection-end-line="54" selection-end-column="35" />
           <folding>
-            <element signature="e#453#826#0" expanded="false" />
-            <element signature="e#867#1415#0" expanded="false" />
-            <element signature="e#1462#1786#0" expanded="false" />
-            <element signature="e#1829#2239#0" expanded="false" />
-            <element signature="e#2276#2766#0" expanded="false" />
-            <element signature="e#2790#3949#0" expanded="false" />
-            <element signature="e#3982#4651#0" expanded="false" />
-            <element signature="e#4688#5114#0" expanded="false" />
-            <element signature="e#5146#11306#0" expanded="false" />
-            <element signature="e#11333#18963#0" expanded="false" />
-            <element signature="e#18993#19243#0" expanded="false" />
-            <element signature="e#19245#22823#0" expanded="false" />
+            <element signature="e#0#26#0" expanded="true" />
+            <element signature="e#506#879#0" expanded="false" />
+            <element signature="e#920#1468#0" expanded="false" />
+            <element signature="e#1515#1839#0" expanded="false" />
+            <element signature="e#1882#2292#0" expanded="false" />
+            <element signature="e#2329#2819#0" expanded="false" />
+            <element signature="e#5068#5737#0" expanded="false" />
+            <element signature="e#5774#6200#0" expanded="false" />
+            <element signature="e#6232#12537#0" expanded="false" />
+            <element signature="e#12564#20194#0" expanded="false" />
+            <element signature="e#20224#20474#0" expanded="false" />
+            <element signature="e#20476#24054#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -793,44 +809,57 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Evolutionary_Minority_Game_Test.cpp">
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="19" column="30" lean-forward="false" selection-start-line="19" selection-start-column="30" selection-end-line="19" selection-end-column="30" />
-          <folding>
-            <element signature="e#453#826#0" expanded="false" />
-            <element signature="e#867#1415#0" expanded="false" />
-            <element signature="e#1462#1786#0" expanded="false" />
-            <element signature="e#1829#2239#0" expanded="false" />
-            <element signature="e#2276#2766#0" expanded="false" />
-            <element signature="e#2790#3949#0" expanded="false" />
-            <element signature="e#3982#4651#0" expanded="false" />
-            <element signature="e#4688#5114#0" expanded="false" />
-            <element signature="e#5146#11306#0" expanded="false" />
-            <element signature="e#11333#18963#0" expanded="false" />
-            <element signature="e#18993#19243#0" expanded="false" />
-            <element signature="e#19245#22823#0" expanded="false" />
-          </folding>
+        <state relative-caret-position="33">
+          <caret line="1" column="12" lean-forward="true" selection-start-line="1" selection-start-column="12" selection-end-line="1" selection-end-column="12" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/analysis_utilities.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1037">
-          <caret line="61" column="17" lean-forward="false" selection-start-line="61" selection-start-column="17" selection-end-line="61" selection-end-column="17" />
+        <state relative-caret-position="1188">
+          <caret line="36" column="164" lean-forward="false" selection-start-line="36" selection-start-column="164" selection-end-line="36" selection-end-column="164" />
           <folding>
-            <element signature="e#749#761#0" expanded="true" />
-            <element signature="e#880#1516#0" expanded="false" />
-            <element signature="e#2613#2625#0" expanded="true" />
-            <element signature="e#3065#3077#0" expanded="true" />
+            <element signature="e#893#905#0" expanded="true" />
+            <element signature="e#1288#1924#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Evolutionary_Minority_Game_Test.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5742">
+          <caret line="174" column="31" lean-forward="false" selection-start-line="174" selection-start-column="31" selection-end-line="174" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+            <element signature="e#506#879#0" expanded="false" />
+            <element signature="e#920#1468#0" expanded="false" />
+            <element signature="e#1515#1839#0" expanded="false" />
+            <element signature="e#1882#2292#0" expanded="false" />
+            <element signature="e#2329#2819#0" expanded="false" />
+            <element signature="e#5068#5737#0" expanded="false" />
+            <element signature="e#5774#6200#0" expanded="false" />
+            <element signature="e#6232#12537#0" expanded="false" />
+            <element signature="e#12564#20194#0" expanded="false" />
+            <element signature="e#20224#20474#0" expanded="false" />
+            <element signature="e#20476#24054#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="363">
+          <caret line="11" column="31" lean-forward="false" selection-start-line="11" selection-start-column="31" selection-end-line="11" selection-end-column="31" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Evolutionary_Minority_Game.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1037">
-          <caret line="61" column="41" lean-forward="false" selection-start-line="61" selection-start-column="41" selection-end-line="61" selection-end-column="41" />
+        <state relative-caret-position="1188">
+          <caret line="55" column="84" lean-forward="false" selection-start-line="55" selection-start-column="84" selection-end-line="55" selection-end-column="84" />
           <folding>
             <element signature="e#635#866#0" expanded="false" />
           </folding>
@@ -839,35 +868,31 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Evolutionary_Minority_Game.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="191">
-          <caret line="256" column="59" lean-forward="false" selection-start-line="256" selection-start-column="59" selection-end-line="256" selection-end-column="59" />
+        <state relative-caret-position="1551">
+          <caret line="294" column="0" lean-forward="false" selection-start-line="294" selection-start-column="0" selection-end-line="294" selection-end-column="0" />
           <folding>
             <element signature="e#273#731#0" expanded="false" />
             <element signature="e#733#870#0" expanded="false" />
             <element signature="e#872#1047#0" expanded="false" />
+            <element signature="e#1049#1461#0" expanded="false" />
             <element signature="e#1553#1978#0" expanded="false" />
             <element signature="e#1980#2516#0" expanded="false" />
             <element signature="e#2518#3074#0" expanded="false" />
+            <element signature="e#3076#3614#0" expanded="false" />
             <element signature="e#3616#3980#0" expanded="false" />
             <element signature="e#4017#4443#0" expanded="false" />
             <element signature="e#4521#5431#0" expanded="false" />
-            <element signature="e#5433#6118#0" expanded="false" />
-            <element signature="e#6120#6615#0" expanded="false" />
-            <element signature="e#6716#7603#0" expanded="false" />
-            <element signature="e#7736#8348#0" expanded="false" />
-            <element signature="e#8437#10943#0" expanded="false" />
-            <element signature="e#11513#11973#0" expanded="false" />
-            <element signature="e#11975#12309#0" expanded="false" />
-            <element signature="e#14985#15650#0" expanded="false" />
+            <element signature="e#5433#6120#0" expanded="false" />
+            <element signature="e#6122#6617#0" expanded="false" />
+            <element signature="e#6718#7605#0" expanded="false" />
+            <element signature="e#7738#8350#0" expanded="false" />
+            <element signature="e#8439#10945#0" expanded="false" />
+            <element signature="e#10999#11513#0" expanded="false" />
+            <element signature="e#11515#11975#0" expanded="false" />
+            <element signature="e#11977#12311#0" expanded="false" />
+            <element signature="e#12313#15262#0" expanded="false" />
+            <element signature="e#15264#15929#0" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="11" column="31" lean-forward="false" selection-start-line="11" selection-start-column="31" selection-end-line="11" selection-end-column="31" />
-          <folding />
         </state>
       </provider>
     </entry>

@@ -118,7 +118,7 @@ vector<Agent> Experiment::initialize_agents(int agents_identifier) {
         for(int j = 0; j < strategies_per_agent; j++){
             Strategies.push_back(Strategy {0, num_indicies_in_strategy});
         }
-        Agents.push_back(Agent{Strategies, i+agents_identifier});
+        Agents.push_back(Agent{Strategies, i + agents_identifier});
         /*
         i is a perfectly unique identifier; we only have to deal in complexity after initialization, where we could
         get random numbers in the range of 1 billion, and still be fine for memories of up to 15 bits.
@@ -249,12 +249,12 @@ void Experiment::write_attendance_history(){
 
 void Experiment::write_minority_game_observables(int NUM_DAYS_AGENTS_PLAY, int NUM_DIFF_AGENT_POPS, int NUM_DIFF_MEMORY_LENGTHS, int NUM_STRATEGIES_PER_AGENT, int NUM_DIFF_STRATEGY_SETS) {
 
-    ofstream file("Sin_predict Variance for Memory from 2 to 16, Pop from 101 to 701, 10 Strategy Sets and 1000 Iterations.txt");
+    ofstream file("Sin_predict Variance for Memory from 2 to 16, Pop from 101 to 701, 10 Strategy Sets and 5000 Iterations.txt");
     int agent_pop = 0;
-    for (int a = 2; a <= NUM_DIFF_MEMORY_LENGTHS; a+=2) {
-            int NUM_INDICES_IN_STRATEGY = a; //int(floor(pow(2, a) + .5));
-            cout << "Just started " << NUM_INDICES_IN_STRATEGY << "th memory length run" << endl;
-            for (int b = 1; b < NUM_DIFF_AGENT_POPS; b++) {
+    for (int a = 2; a <= NUM_DIFF_MEMORY_LENGTHS; a++) {
+        int NUM_INDICES_IN_STRATEGY = a; //int(floor(pow(2, a) + .5));
+        cout << "Just started " << NUM_INDICES_IN_STRATEGY << "th memory length run" << endl;
+        for (int b = 1; b < NUM_DIFF_AGENT_POPS; b++) {
                 agent_pop = (100 * b) + 1;
                 double Alpha = 0;
                 double Variance = 0;
@@ -270,15 +270,19 @@ void Experiment::write_minority_game_observables(int NUM_DAYS_AGENTS_PLAY, int N
                 Experiment environment{agent_pop, NUM_STRATEGIES_PER_AGENT, NUM_INDICES_IN_STRATEGY, agents_strategy_set, 42};
                 //Use agent pop as agents_identifier; so long as it changes each time, it will assign different strategies.
                 environment.run_minority_game(NUM_DAYS_AGENTS_PLAY);
-
+                /*
+                running the simulation on this line over time means we are successfully taking the variance of the time
+                and then averaging over the total number of simulations.
+                */
                 Alpha += pow(2, double(NUM_INDICES_IN_STRATEGY)) / agent_pop;
-                Variance += Analysis::variance(environment.nonbinary_history);
-                Variance_over_agent_pop += Analysis::variance(environment.nonbinary_history)/agent_pop;
+                Variance += Analysis::unexpanded_variance(environment.nonbinary_history);
+                Variance_over_agent_pop += Analysis::unexpanded_variance(environment.nonbinary_history)/agent_pop;
                 successRate += Analysis::successRate(environment.nonbinary_history, agent_pop);
                 elementRange += ((double) Analysis::numberOfUniqueElements(environment.nonbinary_history) /
                                        pow(2, double(NUM_INDICES_IN_STRATEGY)));
             }
             file << Alpha / NUM_DIFF_STRATEGY_SETS << ", "
+                 << agent_pop << ", "
                  << Variance / NUM_DIFF_STRATEGY_SETS<< ", "
                  << Variance_over_agent_pop / NUM_DIFF_STRATEGY_SETS << ", "
                  << successRate / NUM_DIFF_STRATEGY_SETS << ", "

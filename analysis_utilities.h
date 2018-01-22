@@ -29,6 +29,15 @@ struct Analysis{
         return squared_mean (v) - (m * m);
     }
 
+    template <typename T>
+    static double unexpanded_variance (const T& v) {
+        typedef typename T::value_type Number;
+        if (v.empty()) return 0.0;
+        auto m = mean(v);
+        return static_cast<double> (std::accumulate (v.cbegin(), v.cend(), 0, [&m] (const Number& accumulator, const Number& next) {return accumulator + (next - m)*(next - m);})) / static_cast<double> (v.size());
+    }
+
+
 /*
     // Version 1, using find
     template <typename T>
