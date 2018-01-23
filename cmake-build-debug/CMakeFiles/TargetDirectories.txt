@@ -1,4 +1,0 @@
-C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/cmake-build-debug/CMakeFiles/Minority_Game_Programming.dir
-C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/cmake-build-debug/CMakeFiles/Minority_Game_UnitTests.dir
-C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/K-2SO/OneDrive/University/Thesis/Minority Game Programming Repository/cmake-build-debug/CMakeFiles/rebuild_cache.dir

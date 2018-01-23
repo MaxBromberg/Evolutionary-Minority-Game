@@ -90,22 +90,75 @@ void Agent::weighted_update(const std::vector<signum> &history, const int& last_
     for(int i = 0; i < strategies.size(); i++){
         if (Agent::sin_predict(i, strategies[i].num_indicies_in_strategy, history) == sgn(last_market_value)) {
             strategies[i].strategy_score += abs(last_market_value);
+            total_wins++; //We don't care about the fail case, as we're just looking for percentage of total
         } else {
             strategies[i].strategy_score -= abs(last_market_value);
+        }//Updates all strategies in vector with the amount they were in/correct by.
+    }
+}
+
+int Agent::streak(const int& streak_length){
+    if(accumulate(last_n_actions.end()-streak_length, last_n_actions.end(), 0) == streak_length){
+        return 1;
+    }else if (accumulate(last_n_actions.begin()-streak_length, last_n_actions.end(), 0) == 0){
+        return -1;
+    }
+    return 0;
+}
+
+int Agent::percentage_pass(const int& evolution_history_length, const double& threshold) {
+    double evaluation = (double) accumulate(last_n_actions.end()-evolution_history_length, last_n_actions.end(), 0)/ (double) evolution_history_length;
+    if( evaluation >= threshold){
+        return 1;
+    }else if( evaluation < threshold){
+        return -1;
+    }
+    return 0; //Should never get here
+}
+
+void Agent::agent_memory_boost(int test_result){
+    if(test_result == 1){
+        //does this work?
+        //for_each(strategies.begin(), strategies.end(), [](int strategy_score, int num_indicies_in_strategy){strategy_score++; num_indicies_in_strategy++;});
+        for(int i = 0; i < strategies.size(); i++){
+            strategies[i].num_indicies_in_strategy++; //upping the memory
+            strategies[i].strategy_score = 0; //reseting strategy score
         }
     }
-} //Updates all strategies in vector with the amount they were in/correct by.
+}
 
-int market_evaluation(const std::vector<Agent>& Agents, const std::vector<signum>& history){
+void Agent::agent_add_strategy(int test_result) {
+    if(test_result == 1) {
+        strategies.push_back(Strategy{0, strategies[0].num_indicies_in_strategy});
+    }
+}
+
+int Experiment::market_evaluation(){
     int market_evaluation = 0;
-    for(int agent_index = 0; agent_index < Agents.size(); agent_index++){
+    for(int agent_index = 0; agent_index < agents.size(); agent_index++){
         vector<int> strategy_scores;
-        for(int i = 0; i < Agents[agent_index].strategies.size(); i++){
-            strategy_scores.push_back(Agents[agent_index].strategies[i].strategy_score);
+        for(int i = 0; i < agents[agent_index].strategies.size(); i++){
+            strategy_scores.push_back(agents[agent_index].strategies[i].strategy_score);
         }//Likely better way to find the max element...
-
         auto index_of_best_strategy = std::max_element(std::begin(strategy_scores), std::end(strategy_scores))-std::begin(strategy_scores);
-        market_evaluation += Agents[agent_index].sin_predict(index_of_best_strategy, Agents[agent_index].strategies[index_of_best_strategy].num_indicies_in_strategy, history);
+        if(agents[agent_index].sin_predict(index_of_best_strategy, agents[agent_index].strategies[index_of_best_strategy].num_indicies_in_strategy, history) == 1) {
+            market_evaluation++;
+            agents[agent_index].last_n_actions.push_back(1);
+        }else{
+            market_evaluation--;
+            agents[agent_index].last_n_actions.push_back(0);
+        }
+
+        /*
+         * Inefficient update for maintaining the last n values in the vector. I would just use a modulus, but we want to possibly have continuous updates,
+         * or alternatively use some subsection to test if they are continually off. Still, this is massively inefficient...
+         *
+         * For values less than 60, we can simply use bitshift operations on unsigned long ints to get the same results as storing massive binary arrays
+         */
+
+        if(agents[agent_index].last_n_actions.size() > evolutionary_history_length){
+            agents[agent_index].last_n_actions.erase(agents[agent_index].last_n_actions.begin());
+        }
     }
     //assert(abs(market_evaluation) <= Agents.size()); //failed before, though seemingly without reason
     return market_evaluation;
@@ -114,11 +167,13 @@ int market_evaluation(const std::vector<Agent>& Agents, const std::vector<signum
 vector<Agent> Experiment::initialize_agents(int agents_identifier) {
     vector<Agent> Agents;
     for(int i = 0; i < agent_count; i++){
+        vector<signum> empty_last_n_actions;
         vector<Strategy> Strategies;
+        int empty_total_wins = 0;
         for(int j = 0; j < strategies_per_agent; j++){
             Strategies.push_back(Strategy {0, num_indicies_in_strategy});
         }
-        Agents.push_back(Agent{Strategies, i + agents_identifier});
+        Agents.push_back(Agent{Strategies, empty_last_n_actions, empty_total_wins, i + agents_identifier});
         /*
         i is a perfectly unique identifier; we only have to deal in complexity after initialization, where we could
         get random numbers in the range of 1 billion, and still be fine for memories of up to 15 bits.
@@ -132,10 +187,11 @@ vector<Agent> Experiment::linear_memory_dist_agent_init(int agents_identifier) {
     vector<Agent> Agents;
     for(int i = 0; i < agent_count; i++){
         vector<Strategy> Strategies;
+        vector<signum> last_n_actions;
         for(int j = 0; j < strategies_per_agent; j++){
             Strategies.push_back(Strategy {0, (i % num_indicies_in_strategy)+1});//1 is the minimum memory
         }
-        Agents.push_back(Agent{Strategies, i + agents_identifier});
+        Agents.push_back(Agent{Strategies, last_n_actions, 0,  i + agents_identifier});
     }
     return Agents;
 }//gives even memory composition per agent (all strategies of a given agent have same memory length)
@@ -148,11 +204,12 @@ vector<Agent> Experiment::exponential_memory_dist_agent_init(double base, double
     cout<<"Total memory ought to equal = " << pow(base, exponential_increment*exp_factor*agent_count)<<endl;
     cout<<"exponential increment = " << exponential_increment<<endl;
     for(int i = 0; i < agent_count; i++){
+        vector<signum> last_n_actions;
         vector<Strategy> Strategies;
         for(int j = 0; j < strategies_per_agent; j++){
             Strategies.push_back(Strategy {0, (int) floor(pow(base, (i*exponential_increment))+0.5)} );
         }
-        Agents.push_back(Agent{Strategies, i + agents_identifier});
+        Agents.push_back(Agent{Strategies, last_n_actions, 0, i + agents_identifier});
     }
     return Agents;
 } //Presently over emphasizes the last drop, and under emphasizes the first allocation. Also the exp_factor adjusts the memory range
@@ -164,14 +221,15 @@ vector<Agent> Experiment::weighted_rnd_memory_dist_agent_init(double weight, int
     uniform_int_distribution<int> seed_generator;
     for(int i = 0; i < agent_count; i++){
         vector<Strategy> Strategies;
+        vector<signum> last_n_actions;
         for(int j = 0; j < strategies_per_agent; j++){
             Strategies.push_back(Strategy{0, random_generate(weight, num_indicies_in_strategy, seed_generator(gen))});
         }
-        Agents.push_back(Agent{Strategies, i + agents_identifier});
+        Agents.push_back(Agent{Strategies, last_n_actions, 0, i + agents_identifier});
     }
     return Agents;
 } //weight designed to range between -1 and 1, but can go really anywhere... (0 neutral)
-
+/*
 vector<Agent> Experiment::bell_curve_memory_dist_agent_init(double kurtosis, int agents_identifier) {
     assert(num_indicies_in_strategy < 32);
     vector<Agent> Agents;
@@ -215,31 +273,44 @@ vector<Agent> Experiment::bell_curve_memory_dist_agent_init(double kurtosis, int
     cout<<"integral = "<<integral<<endl;
     return Agents;
 } //kurtosis > 1 will increase kurtosis, < 1 decrease
-
-Experiment::Experiment(int agent_population, int num_strategies_per_agent, int memory, int agents_identifier, int seed) {
-    assert(agent_population % 2 == 1);//compiled to bitshift
+*/
+Experiment::Experiment(int agent_population, int num_strategies_per_agent, int memory, int agents_identifier, int evolution_memory, int seed) {
     agent_count = agent_population;
     strategies_per_agent = num_strategies_per_agent;
     num_indicies_in_strategy = memory;
+    evolutionary_history_length = evolution_memory;
     history = binaryMarketHistoryGenerator(memory, seed);
     nonbinary_history = marketHistoryGenerator(history, agent_population, seed);
     agents = Experiment::initialize_agents(agents_identifier);
 }
 
 void Experiment::run_minority_game(int number_of_runs){
-    for(int i = 0; i < number_of_runs; i++){
-        auto market_count = market_evaluation(agents, history);
-        auto binary_market_value = market_count > 0 ? -1 : 1;
-        for(int j = 0; j < agents.size(); j++){
-            agents[j].weighted_update(history, binary_market_value);
-        }
-        nonbinary_history.push_back(market_count);
-        history.push_back(binary_market_value);
+    for (int i = 0; i < number_of_runs; i++) {
+        auto market_count = market_evaluation();
+        if (market_count != 0) {
+            one_minority_game_run(market_count, i);
+        }else{
+            mt19937 gen(i);
+            uniform_int_distribution<int> dist(-agent_count , agent_count);
+            one_minority_game_run(dist(gen), i);}
+        //we hope this will not make a substantial difference, but this function structure allows us to see how many times it happens (if we want)
     }
 }
 
+void Experiment::one_minority_game_run(int market_count, int i) {
+    auto binary_market_value = market_count > 0 ? -1 : 1;
+    for (int j = 0; j < agents.size(); j++) {
+        agents[j].weighted_update(history, binary_market_value);
+        if (i > evolutionary_history_length) {
+            agents[j].agent_memory_boost(agents[j].streak(evolutionary_history_length));
+        }
+    }
+    nonbinary_history.push_back(market_count);
+    history.push_back(binary_market_value);
+}
+
 void Experiment::write_attendance_history(){
-    ofstream Attendance("Market History for 301 N, 7 m, 2 s, 5000 runs.txt");
+    ofstream Attendance("Evolutionary Market History for 10000 runs.txt");
     for(int i = num_indicies_in_strategy; i < nonbinary_history.size(); i++) {
         Attendance << i << ", "
                    << nonbinary_history[i] << ", "
@@ -247,7 +318,33 @@ void Experiment::write_attendance_history(){
     }
 }
 
-void Experiment::write_minority_game_observables(int NUM_DAYS_AGENTS_PLAY, int NUM_DIFF_AGENT_POPS, int NUM_DIFF_MEMORY_LENGTHS, int NUM_STRATEGIES_PER_AGENT, int NUM_DIFF_STRATEGY_SETS) {
+void Experiment::write_memory_distribution() {
+    vector<int> memory_counts;
+    for (int i = 0; i < agent_count; i++) {
+        for (int j = 0; j < strategies_per_agent; j++) {
+            memory_counts.push_back(agents[i].strategies[j].num_indicies_in_strategy);
+        }
+    }
+    vector<vector<int>> memory_frequencies = Analysis::frequencyHistogram(memory_counts);
+    debug_print(memory_frequencies);
+
+    int sum_of_changes = 0;
+    double default_random_changes = agent_count*(pow(2, -evolutionary_history_length));
+    ofstream memory_distribution("Evolutionary Memory Distribution.txt");
+    for (int i = 0; i < memory_frequencies.size(); i++) {
+        if(i > 2) {
+            sum_of_changes += memory_frequencies[i][1];
+        }
+        memory_distribution << memory_frequencies[i][0] << ", "
+                            << memory_frequencies[i][1] << endl;
+    }
+    //Applicable print outs only for streak applications
+    cout << "Sum of memory shifts = " << sum_of_changes << endl;
+    cout << "default random changes = " << default_random_changes << endl;
+    cout << "their ratio: = " << (double) sum_of_changes/default_random_changes << endl;
+}
+
+void Experiment::write_minority_game_observables(int NUM_DAYS_AGENTS_PLAY, int NUM_DIFF_AGENT_POPS, int NUM_DIFF_MEMORY_LENGTHS, int NUM_STRATEGIES_PER_AGENT, int EVOLUTIONARY_MEMORY, int NUM_DIFF_STRATEGY_SETS) {
 
     ofstream file("Sin_predict Variance for Memory from 2 to 16, Pop from 101 to 701, 10 Strategy Sets and 5000 Iterations.txt");
     int agent_pop = 0;
@@ -267,7 +364,7 @@ void Experiment::write_minority_game_observables(int NUM_DAYS_AGENTS_PLAY, int N
                     //assert(((agents_strategy_set + NUM_STRATEGIES_PER_AGENT) * pow(2, NUM_INDICES_IN_STRATEGY) + 1) < pow(2, 31));
                     //assert shouldn't even be necessary foe sin_predict, as an overflown bit is still a bit
 
-                Experiment environment{agent_pop, NUM_STRATEGIES_PER_AGENT, NUM_INDICES_IN_STRATEGY, agents_strategy_set, 42};
+                Experiment environment{agent_pop, NUM_STRATEGIES_PER_AGENT, NUM_INDICES_IN_STRATEGY, agents_strategy_set, EVOLUTIONARY_MEMORY, 42};
                 //Use agent pop as agents_identifier; so long as it changes each time, it will assign different strategies.
                 environment.run_minority_game(NUM_DAYS_AGENTS_PLAY);
                 /*
@@ -292,20 +389,18 @@ void Experiment::write_minority_game_observables(int NUM_DAYS_AGENTS_PLAY, int N
 
 }
 
-void Experiment::write_memory_distribution() {
-    vector<int> memory_counts;
-    for (int i = 0; i < agent_count; i++) {
-        for (int j = 0; j < strategies_per_agent; j++) {
-            memory_counts.push_back(agents[i].strategies[j].num_indicies_in_strategy);
-        }
-    }
-    vector<vector<int>> memory_frequencies = Analysis::frequencyHistogram(memory_counts);
-    debug_print(memory_frequencies);
+//Evolutionary Updates
+void Experiment::del_agent(int agent_index) {
+    agents.erase(agents.begin() + agent_index);
+} //perhaps a bit redundant to have a function for it
 
-    ofstream memory_distribution("Memory Distribution.txt");
-    for (int i = 0; i < memory_frequencies.size(); i++) {
-        memory_distribution << memory_frequencies[i][0] << ", "
-                            << memory_frequencies[i][1] << endl;
+void Experiment::add_agent(int num_strategies_for_agent, int num_indicies_per_strategy) {
+    vector<Strategy> strategies;
+    vector<signum> last_n_strategies;
+    for (int i = 0; i < num_strategies_for_agent; ++i) {
+        strategies.push_back(Strategy{0, num_indicies_per_strategy});
     }
+
+    agents.push_back(Agent{strategies, last_n_strategies, 0, int(agents.size() + 1)});
 }
 
