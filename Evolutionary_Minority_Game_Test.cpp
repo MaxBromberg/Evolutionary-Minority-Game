@@ -23,7 +23,7 @@ enum{
 static const double euler_e = 2.71828182846;
 
 TEST_CASE ("Random Bool Vector") {
-    auto v = RandomBoolVector(10, 0, 1, -1);
+    auto v = random_bool_vector(10, 0, 1, -1);
 
     REQUIRE (v.size() == 10);
     for (auto e : v) {
@@ -31,13 +31,13 @@ TEST_CASE ("Random Bool Vector") {
             FAIL (e);
     }
 
-    auto v2 = RandomBoolVector(10, 1, 1, -1);
+    auto v2 = random_bool_vector(10, 1, 1, -1);
     REQUIRE (v != v2);
 
     std::vector<std::vector<int>> v3;
 
     for (int i = 0; i < 10; ++i) {
-        v3.emplace_back (RandomBoolVector (10, i, 1, -1));
+        v3.emplace_back (random_bool_vector(10, i, 1, -1));
     }
 
 }
@@ -51,14 +51,14 @@ TEST_CASE("BinaryArrayToStrategyIndex"){
     REQUIRE(BinaryArrayToStrategyIndex(empty_vector.begin(), empty_vector.end()) == 0);
 }
 
-TEST_CASE("BinaryVectorLastNToStrategyIndex"){
-    vector<signum> binary_history = binaryMarketHistoryGenerator(TEST_MEMORY_LENGTH, TEST_RNG_SEED);
-    REQUIRE(BinaryVectorLastNToStrategyIndex(binary_history, TEST_MEMORY_LENGTH) >= 0);
-    REQUIRE(BinaryVectorLastNToStrategyIndex(binary_history, TEST_MEMORY_LENGTH) <= floor(pow(2, (double)TEST_MEMORY_LENGTH)+0.5));
+TEST_CASE("signum_vector_to_bits"){
+    vector<signum> binary_history = random_signum_vector(TEST_MEMORY_LENGTH, TEST_RNG_SEED);
+    REQUIRE(signum_vector_to_bits(binary_history, TEST_MEMORY_LENGTH) >= 0);
+    REQUIRE(signum_vector_to_bits(binary_history, TEST_MEMORY_LENGTH) <= floor(pow(2, (double)TEST_MEMORY_LENGTH)+0.5));
 }
 
 TEST_CASE("BinaryMarketHistoryGenerator"){
-    vector<signum> binary_market_history = binaryMarketHistoryGenerator(TEST_MEMORY_LENGTH, TEST_RNG_SEED);
+    vector<signum> binary_market_history = random_signum_vector(TEST_MEMORY_LENGTH, TEST_RNG_SEED);
     CHECK_FALSE(binary_market_history.empty());
     REQUIRE(BinaryArrayToStrategyIndex(binary_market_history.begin(), binary_market_history.end()) >= 0);
     if(TEST_MEMORY_LENGTH % 2 == 1){
@@ -66,9 +66,9 @@ TEST_CASE("BinaryMarketHistoryGenerator"){
     }
 }
 
-TEST_CASE("marketHistoryGenerator") {
-    vector<signum> binary_market_history = binaryMarketHistoryGenerator(TEST_MEMORY_LENGTH, TEST_RNG_SEED);
-    vector<int> market_history = marketHistoryGenerator(binary_market_history, TEST_POPULATION, TEST_RNG_SEED);
+TEST_CASE("market_historygenerator") {
+    vector<signum> binary_market_history = random_signum_vector(TEST_MEMORY_LENGTH, TEST_RNG_SEED);
+    vector<int> market_history = market_historygenerator(binary_market_history, TEST_POPULATION, TEST_RNG_SEED);
     CHECK_FALSE(market_history.empty());
     REQUIRE(BinaryArrayToStrategyIndex(market_history.begin(), market_history.end()) >= 0);
     if (TEST_MEMORY_LENGTH % 2 == 1) {
@@ -79,12 +79,12 @@ TEST_CASE("marketHistoryGenerator") {
 TEST_CASE ("Numerics") {
     std::vector<int> v (100, 5);
     std::vector<int> v2;
-    std::vector<int> v3 = RandomBoolVector(10000, 0, 1, -1);
+    std::vector<int> v3 = random_bool_vector(10000, 0, 1, -1);
     std::vector<int> v4;
 
     for (int i = 0; i < 100; ++i) {
         v2.push_back (i % 2 ? 2 : 0);
-        std:: vector<int> Random_Bool_Vector = RandomBoolVector(1000, 0, 1, -1);
+        std:: vector<int> Random_Bool_Vector = random_bool_vector(1000, 0, 1, -1);
         v4.push_back(std::accumulate(Random_Bool_Vector.begin(), Random_Bool_Vector.end(), 0));
     };
 
@@ -125,12 +125,12 @@ TEST_CASE ("Numerics") {
     }
 
     SECTION ("literature variance") {
-        REQUIRE (Analysis::literatureVariance(v) == 0.0);
-        REQUIRE (Analysis::literatureVariance(v2) == 1.0);
-        REQUIRE (Analysis::literatureVariance(v3) < 0.55);
-        REQUIRE (Analysis::literatureVariance(v3) > 0.45);
-        //REQUIRE (Analysis::literatureVariance(v4)/v4.size() < 1.05);
-        //REQUIRE (Analysis::literatureVariance(v4)/v4.size() > 0.95);
+        REQUIRE (Analysis::variance_literature(v) == 0.0);
+        REQUIRE (Analysis::variance_literature(v2) == 1.0);
+        REQUIRE (Analysis::variance_literature(v3) < 0.55);
+        REQUIRE (Analysis::variance_literature(v3) > 0.45);
+        //REQUIRE (Analysis::variance_literature(v4)/v4.size() < 1.05);
+        //REQUIRE (Analysis::variance_literature(v4)/v4.size() > 0.95);
 
     }
 }
@@ -138,7 +138,7 @@ TEST_CASE ("Numerics") {
 TEST_CASE("Frequency Analysis") {
     std::vector<int> v (100,5);
     std::vector<int> v2;
-    std::vector<int> v3 = RandomBoolVector(100, 0, 1, -1);
+    std::vector<int> v3 = random_bool_vector(100, 0, 1, -1);
 
     for (int i = 0; i < 100; ++i) {
         v2.push_back (i % 2 ? 2 : 0);
@@ -148,20 +148,20 @@ TEST_CASE("Frequency Analysis") {
     SECTION("Frequency Histogram Function") {
         debug_print(Analysis::frequencyHistogram(v));
         debug_print(Analysis::frequencyHistogram(v2));
-        debug_print(Analysis::frequencyHistogram(v3));
+        debug_print(Analysis::frequency_histogram(v3));
     }
     */
 
     SECTION("Unique Element Frequency Function"){
-        REQUIRE(Analysis::numberOfUniqueElements(v) == 1);
-        REQUIRE(Analysis::numberOfUniqueElements(v2) == 2);
-        REQUIRE(Analysis::numberOfUniqueElements(v3) == 2);
+        REQUIRE(Analysis::number_of_unique_elements(v) == 1);
+        REQUIRE(Analysis::number_of_unique_elements(v2) == 2);
+        REQUIRE(Analysis::number_of_unique_elements(v3) == 2);
     }
 }
 
 TEST_CASE ("Market Initialization") {
     SECTION ("Binary History Generator") {
-        auto v = binaryMarketHistoryGenerator (10, TEST_RNG_SEED);
+        auto v = random_signum_vector(10, TEST_RNG_SEED);
         for (auto e : v) {
             if (e != -1 && e != 1) {
                 FAIL();
@@ -169,7 +169,7 @@ TEST_CASE ("Market Initialization") {
         }
         REQUIRE (v.size() == 10);
 
-        REQUIRE (binaryMarketHistoryGenerator (10, TEST_RNG_SEED) == v);
+        REQUIRE (random_signum_vector(10, TEST_RNG_SEED) == v);
     }//Not exactly worth doing tests on the non-binary version, as it isn't really used....
 }
 
@@ -180,9 +180,9 @@ TEST_CASE("Experiment Struct") {
         REQUIRE(environment1.agent_count == TEST_POPULATION);
         REQUIRE(environment1.strategies_per_agent == TEST_NUM_STRATEGIES_AGENT);
         REQUIRE(environment1.num_indicies_in_strategy == TEST_MEMORY_LENGTH);
-        REQUIRE(environment1.history == binaryMarketHistoryGenerator(TEST_MEMORY_LENGTH, TEST_RNG_SEED));
+        REQUIRE(environment1.history == random_signum_vector(TEST_MEMORY_LENGTH, TEST_RNG_SEED));
         REQUIRE(environment1.nonbinary_history ==
-                marketHistoryGenerator(environment1.history, TEST_POPULATION, TEST_RNG_SEED));
+                        market_historygenerator(environment1.history, TEST_POPULATION, TEST_RNG_SEED));
         REQUIRE(environment1.evolutionary_history_length == TEST_EVOLUTION_MEMORY);
     }
     SECTION("Agent Initialization") {
@@ -289,8 +289,8 @@ TEST_CASE("Agent Struct"){
     }
     Agent Agent1 = Agent{Strategies, last_n_actions, 0, 0};
     Agent Agent2 = Agent{Strategies, last_n_actions, 0, 0};
-    vector<signum> binary_history = binaryMarketHistoryGenerator(TEST_MEMORY_LENGTH,TEST_RNG_SEED);
-    vector<signum> binary_history_2 = binaryMarketHistoryGenerator(TEST_MEMORY_LENGTH,TEST_RNG_SEED + 1);
+    vector<signum> binary_history = random_signum_vector(TEST_MEMORY_LENGTH, TEST_RNG_SEED);
+    vector<signum> binary_history_2 = random_signum_vector(TEST_MEMORY_LENGTH, TEST_RNG_SEED + 1);
 
     SECTION("Constrcutor"){
         CHECK_FALSE(Agent1.strategies.empty());
@@ -316,7 +316,7 @@ TEST_CASE("Agent Struct"){
         REQUIRE((Agent1.predict(0,TEST_MEMORY_LENGTH, binary_history)) == Agent1.predict(0,TEST_MEMORY_LENGTH,binary_history));
         //cout<<"Predictions of all strategies of sample agent: "<<endl;
         //debug_print(predictions); //easier to just see randomness than require it.
-        REQUIRE(Analysis::numberOfUniqueElements(predictions) == 2);
+        REQUIRE(Analysis::number_of_unique_elements(predictions) == 2);
         //REQUIRE(market_evaluation != market_evaluation_2); //as this is probable for high Strategies/agent
     }
 
@@ -325,7 +325,7 @@ TEST_CASE("Agent Struct"){
         REQUIRE((Agent1.high_resolution_predict(0,TEST_MEMORY_LENGTH, binary_history)) == Agent1.high_resolution_predict(0,TEST_MEMORY_LENGTH,binary_history));
         //cout<<"High Resolution Predictions of sample agent: "<<endl;
         //debug_print(high_resolution_predictions); //easier to just see randomness than require it.
-        REQUIRE(Analysis::numberOfUniqueElements(high_resolution_predictions) == 2);
+        REQUIRE(Analysis::number_of_unique_elements(high_resolution_predictions) == 2);
 
         vector<int> distribution;
         int distRange = 10000;
@@ -344,13 +344,13 @@ TEST_CASE("Agent Struct"){
                         Agent1.sin_predict(0, TEST_MEMORY_LENGTH, binary_history));
         //cout<<"Alt Predictions of sample agent: "<<endl;
         //debug_print(alt_predictions); //easier to just see randomness than require it.
-        REQUIRE(Analysis::numberOfUniqueElements(alt_predictions) == 2);
+        REQUIRE(Analysis::number_of_unique_elements(alt_predictions) == 2);
     }
 
     SECTION("Update Function"){
         int first_strategy_score_before = Agent1.strategies[0].strategy_score;
         int last_strategy_score_before = Agent1.strategies[TEST_NUM_STRATEGIES_AGENT-1].strategy_score;
-        Agent1.update(binary_history, 1);
+        Agent1.update(<#initializer#>, binary_history);
         CHECK_FALSE(first_strategy_score_before == Agent1.strategies[0].strategy_score);
         CHECK_FALSE(last_strategy_score_before == Agent1.strategies[TEST_NUM_STRATEGIES_AGENT-1].strategy_score);
         REQUIRE(abs(first_strategy_score_before - Agent1.strategies[0].strategy_score) == 1);
@@ -359,7 +359,7 @@ TEST_CASE("Agent Struct"){
         //testing response to new binary history
         int first_strategy_score_before_2 = Agent1.strategies[0].strategy_score;
         int last_strategy_score_before_2 = Agent1.strategies[TEST_NUM_STRATEGIES_AGENT - 1].strategy_score;
-        Agent1.update(binary_history_2, -1);
+        Agent1.update(<#initializer#>, binary_history_2);
         CHECK_FALSE(first_strategy_score_before_2 == Agent1.strategies[0].strategy_score);
         CHECK_FALSE(last_strategy_score_before_2 == Agent1.strategies[TEST_NUM_STRATEGIES_AGENT - 1].strategy_score);
         REQUIRE(abs(first_strategy_score_before_2 - Agent1.strategies[0].strategy_score) == 1);
@@ -393,7 +393,7 @@ TEST_CASE("Agent Struct"){
         }
         Agent1 = Agent{Strategies, last_n_actions, 0, 0};
         Agent2 = Agent{Strategies, last_n_actions, 0, 0};
-        binary_history = binaryMarketHistoryGenerator(TEST_MEMORY_LENGTH,TEST_RNG_SEED);
+        binary_history = random_signum_vector(TEST_MEMORY_LENGTH, TEST_RNG_SEED);
         predictions.clear();
         for(int i = 0; i < TEST_NUM_STRATEGIES_AGENT; i++){
             predictions.push_back(Agent1.predict(i, TEST_MEMORY_LENGTH, binary_history));
@@ -401,7 +401,7 @@ TEST_CASE("Agent Struct"){
         market_evaluation = accumulate(predictions.begin(), predictions.end(), 0);
         //--------------Reinitialization complete--------------------------
 
-        Agent1.update(binary_history, sgn(market_evaluation));
+        Agent1.update(<#initializer#>, binary_history);
         Agent2.weighted_update(binary_history, market_evaluation);
         if(sgn(Agent2.strategies[0].strategy_score) != 0) {
             REQUIRE(Agent1.strategies[0].strategy_score == sgn(Agent2.strategies[0].strategy_score));
@@ -410,7 +410,7 @@ TEST_CASE("Agent Struct"){
 }
 
 TEST_CASE("Evolutionary Tests"){
-    vector<signum> last_n_actions = binaryMarketHistoryGenerator(20, 23);
+    vector<signum> last_n_actions = random_signum_vector(20, 23);
     vector<Strategy> Strategies;
     for(int j = 0; j < TEST_NUM_STRATEGIES_AGENT; j++){
         Strategies.push_back(Strategy {0, TEST_MEMORY_LENGTH});
@@ -439,7 +439,7 @@ TEST_CASE("Evolutionary Tests"){
 }
 
 TEST_CASE("Agent Evolutionary Updates"){
-    vector<signum> last_n_actions = binaryMarketHistoryGenerator(20, 23);
+    vector<signum> last_n_actions = random_signum_vector(20, 23);
     vector<Strategy> Strategies;
     for(int j = 0; j < TEST_NUM_STRATEGIES_AGENT; j++){
         Strategies.push_back(Strategy {0, TEST_MEMORY_LENGTH});

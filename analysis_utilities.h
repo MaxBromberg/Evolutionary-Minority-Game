@@ -8,57 +8,54 @@
 
 using namespace std;
 
-struct Analysis{
+namespace Analysis{
 
     template <typename T>
-    static double mean(const T &v) {
+    int sgn(T val) {
+        return (T(0) < val) - (val < T(0));
+    }
+
+    template <typename T>
+    static inline double mean(const T &v) {
         if (v.empty()) return 0.0;
         return static_cast<double> (std::accumulate (v.cbegin(), v.cend(), 0)) / static_cast<double> (v.size());
     }
 
     template <typename T>
-    static double squared_mean (const T& v) {
+    static inline double squared_mean (const T& v) {
         typedef typename T::value_type Number;
         if (v.empty()) return 0.0;
         return static_cast<double> (std::accumulate (v.cbegin(), v.cend(), 0, [] (const Number& accumulator, const Number& next) {return accumulator + next * next;})) / static_cast<double> (v.size());
     }
 
     template <typename T>
-    static double variance (const T& v) {
+    static inline double variance (const T& v) {
         auto m = mean(v);
         return squared_mean (v) - (m * m);
     }
 
     template <typename T>
-    static double unexpanded_variance (const T& v) {
+    static inline int variance_literature(const vector<T> &obv){
+        vector<T> sqObvMinusObvMean(obv.size()); //implement generate
+        double variance;
+        double obvMean = Analysis::mean(obv);
+        for(int i = 0; i < sqObvMinusObvMean.size(); i++){
+            sqObvMinusObvMean[i] = (obv[i]-obvMean)*(obv[i]-obvMean);
+        }
+        variance = Analysis::mean(sqObvMinusObvMean);
+        return variance;
+    }
+
+    template <typename T>
+    static inline double unexpanded_variance (const T& v) {
         typedef typename T::value_type Number;
         if (v.empty()) return 0.0;
         auto m = mean(v);
         return static_cast<double> (std::accumulate (v.cbegin(), v.cend(), 0, [&m] (const Number& accumulator, const Number& next) {return accumulator + (next - m)*(next - m);})) / static_cast<double> (v.size());
     }
 
-
-/*
-    // Version 1, using find
     template <typename T>
-    static std::vector<std::vector<T>> frequencyHistogram (const std::vector<T>& v){
-        std::vector<std::vector<T>> frequencyHistogram;
-        std::vector<T> temp;
-        for(int i = 0; i < v.size(); i++) {
-            temp.push_back(v[i]);
-            temp.push_back(std::count(v.cbegin(), v.cend(), v[i]));
-            frequencyHistogram.push_back(temp);
-            for(; std::find(frequencyHistogram.begin(), frequencyHistogram.end(), v[i]) != v.cend(); ){
-                i++;
-            }
-            temp.clear();
-        }
-    return frequencyHistogram;
-    }
-*/
-    //Version 2, using sort. Possibly faster for larger vectors.
-    template <typename T>
-    static std::vector<std::vector<int>> frequencyHistogram (const std::vector<T>& v){
+    static inline std::vector<std::vector<int>> frequency_histogram(const std::vector<T> &v){
         std::vector<std::vector<int>> frequencyHistogram;
         std::vector<int> temp;
         std::vector<T> sortedV = v;
@@ -76,7 +73,7 @@ struct Analysis{
     }
 
     template <typename T>
-    static int numberOfUniqueElements (const std::vector<T>& v){
+    static inline int number_of_unique_elements(const std::vector<T> &v){
         std::vector<T> tempV = v;
         std::sort(tempV.begin(),tempV.end());
         int uniqueCount = std::unique(tempV.begin(), tempV.end()) - tempV.begin();
@@ -84,19 +81,7 @@ struct Analysis{
     }
 
     template <typename T>
-    static double literatureVariance(const vector<T>& obv){
-        vector<T> sqObvMinusObvMean(obv.size()); //implement generate
-        double variance;
-        double obvMean = Analysis::mean(obv);
-        for(int i = 0; i < sqObvMinusObvMean.size(); i++){
-            sqObvMinusObvMean[i] = (obv[i]-obvMean)*(obv[i]-obvMean);
-        }
-        variance = Analysis::mean(sqObvMinusObvMean);
-        return variance;
-    }
-
-    template <typename T>
-    static double successRate(const vector<T>& obv, int agentPop){
+    static inline double success_rate(const vector<T> &obv, int agentPop){
         double successRate = 0;
         for(auto e : obv){
             successRate += (agentPop - abs(e))/(double)(2*agentPop);
@@ -104,7 +89,7 @@ struct Analysis{
         return successRate/obv.size();
     }
 
-    static vector<int> attendance(const vector<int>& obv, int agentPop) {
+    static inline vector<int> attendance(const vector<int>& obv, int agentPop) {
         vector<int> attendance;
         for (int i = 0; i < obv.size(); i++) {
             attendance.push_back((agentPop / 2) - obv[i]);
@@ -112,4 +97,4 @@ struct Analysis{
         return attendance;
     }
 
-};
+}
