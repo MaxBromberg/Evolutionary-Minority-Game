@@ -8,9 +8,14 @@
 #include <fstream>
 #include "debug_utilities.h"
 #include "Evolutionary_Minority_Game.h"
+#include "Agents and Evolution Strategies.h"
 #include "analysis_utilities.h"
 
 using namespace std;
+
+// ***************************************************************
+//  Utilities Implementation
+// ***************************************************************
 
 template <typename Iter>
 unsigned int sign_array_to_bits (Iter begin, Iter end) {
@@ -62,142 +67,8 @@ int random_generate(double weight, int range, int seed){
     return memory;
 }
 
-//The New
-signum AlphaAgent::predict(const int strategy_index, const int num_indicies_in_strategy, const std::vector<signum>& history) const {
-    //deterministically returns the strategy's value associated with the market history and strategy selection from the index
-    mt19937 generator ((unsigned int) ( (id + strategy_index) * (signum_vector_to_bits(history,
-                                                                                                                num_indicies_in_strategy)+1)));
-    uniform_int_distribution<int> bit_distribution(0,1);
-    return bit_distribution(generator) ? 1 : -1;
-}
-
-signum AlphaAgent::high_resolution_predict(const int strategy_index, const int num_indicies_in_strategy, const std::vector<signum>& history) const {
-    //deterministically returns the strategy's value associated with the market history and strategy selection from the index
-    mt19937 generator ((unsigned int) ( (id + strategy_index) * (signum_vector_to_bits(history,
-                                                                                                                num_indicies_in_strategy)+1)));
-    uniform_int_distribution<int> bit_distribution(0, 100000);
-    return bit_distribution(generator) < 50000 ? 1 : -1;
-}
-
-signum AlphaAgent::sin_predict(const int strategy_index, const int num_indicies_in_strategy,
-                          const std::vector<signum> &history) const {
-    //deterministically returns the strategy's value associated with the market history and strategy selection from the index
-    //TODO this overlaps between agents!!! for example id = 0 strategy_index 1 and id = 1 strategy_index = 0
-    double sin_seed = sin((double) ( (id + strategy_index) * (signum_vector_to_bits(history, num_indicies_in_strategy)+1)));
-    //plus one to prevent 0 case problems
-    auto result = ((int)(sin_seed*10000.0) & 1) ? 1 : -1;
-    //printf ("sin_predict %i %i %i %i\n", strategy_index, num_indicies_in_strategy, signum_vector_to_bits (history, num_indicies_in_strategy) + 1, result);
-    return result;
-}
-signum AlphaAgent::sin_predict2(const int strategy_index, const int num_indicies_in_strategy,
-                          int history_index) const {
-    //deterministically returns the strategy's value associated with the market history and strategy selection from the index
-    double sin_seed = sin((double) ( (id + strategy_index) * (history_index +1)));
-    //plus one to prevent 0 case problems
-    auto result = ((int)(sin_seed*10000.0) & 1) ? 1 : -1;
-    //printf ("sin_predict2 %i %i %i %i\n", strategy_index, num_indicies_in_strategy, history_index + 1, result);
-    return result;
-}
-signum AlphaAgent::sin_predict3(const int strategy_index, const int num_indicies_in_strategy,
-                                int history_index) const {
-    //deterministically returns the strategy's value associated with the market history and strategy selection from the index
-    double sin_seed = sin((double) ( strategies[strategy_index].id * (history_index + 1)));
-    //plus one to prevent 0 case problems
-    auto result = ((int)(sin_seed*10000.0) & 1) ? 1 : -1;
-    //printf ("sin_predict2 %i %i %i %i\n", strategy_index, num_indicies_in_strategy, history_index + 1, result);
-    return result;
-}
-
-void AlphaAgent::update(const std::vector<signum> &history, const int& market_prediction) {
-    for(int i = 0; i < strategies.size(); i++){
-        if (sin_predict(i, strategies[i].num_indicies_in_strategy, history) == market_prediction) {
-            strategies[i].strategy_score++;
-        } else {
-            strategies[i].strategy_score--;
-        }
-    }
-} //Updates all strategies in vector
-
-void AlphaAgent::weighted_update(const std::vector<signum> &history, const int& last_market_value) {
-    //TODO : You are calling this with the binary market result, not with the market prediction
-    for(int i = 0; i < strategies.size(); i++){
-        if (sin_predict(i, strategies[i].num_indicies_in_strategy, history) == Analysis::sgn(last_market_value)) {
-            strategies[i].strategy_score += abs(last_market_value);
-            total_wins++; //We don't care about the fail case, as we're just looking for percentage of total
-        } else {
-            strategies[i].strategy_score -= abs(last_market_value);
-        }//Updates all strategies in vector with the amount they were in/correct by.
-    }
-}
-
-int AlphaAgent::streak(const int& streak_length){
-    if(accumulate(last_n_actions.end()-streak_length, last_n_actions.end(), 0) == streak_length){
-        return 1;
-    }else if (accumulate(last_n_actions.begin()-streak_length, last_n_actions.end(), 0) == 0){
-        return -1;
-    }
-    return 0;
-}
-
-int AlphaAgent::percentage_pass(const int& evolution_history_length, const double& threshold) {
-    double evaluation = (double) accumulate(last_n_actions.end()-evolution_history_length, last_n_actions.end(), 0)/ (double) evolution_history_length;
-    if( evaluation >= threshold){
-        return 1;
-    }else if( evaluation < threshold){
-        return -1;
-    }
-    return 0; //Should never get here
-}
-
-void AlphaAgent::agent_memory_boost(int test_result){
-    if(test_result == 1){
-        //does this work?
-        //for_each(strategies.begin(), strategies.end(), [](int strategy_score, int num_indicies_in_strategy){strategy_score++; num_indicies_in_strategy++;});
-        for(int i = 0; i < strategies.size(); i++){
-            strategies[i].num_indicies_in_strategy++; //upping the memory
-            strategies[i].strategy_score = 0; //reseting strategy score
-        }
-    }
-}
-
-void AlphaAgent::agent_add_strategy(int test_result) {
-    if(test_result == 1) {
-        strategies.push_back(Strategy{0, strategies[0].num_indicies_in_strategy});
-    }
-}
-
-int Experiment::market_evaluation(){
-    int market_evaluation = 0;
-    for(int agent_index = 0; agent_index < agents.size(); agent_index++){
-        vector<int> strategy_scores;
-        for(int i = 0; i < agents[agent_index].strategies.size(); i++){
-            strategy_scores.push_back(agents[agent_index].strategies[i].strategy_score);
-        }//Likely better way to find the max element...
-        auto index_of_best_strategy = std::max_element(std::begin(strategy_scores), std::end(strategy_scores))-std::begin(strategy_scores);
-        //printf ("best strategy %li \n", index_of_best_strategy);
-        if(agents[agent_index].sin_predict(index_of_best_strategy, agents[agent_index].strategies[index_of_best_strategy].num_indicies_in_strategy, history) == 1) {
-            market_evaluation++;
-            agents[agent_index].last_n_actions.push_back(1);
-        }else{
-            market_evaluation--;
-            agents[agent_index].last_n_actions.push_back(0); // TODO: Shouldn't this be -1
-        }
-
-        /*
-         * Inefficient update for maintaining the last n values in the vector. I would just use a modulus, but we want to possibly have continuous updates,
-         * or alternatively use some subsection to test if they are continually off. Still, this is massively inefficient...
-         *
-         * For values less than 60, we can simply use bitshift operations on unsigned long ints to get the same results as storing massive binary arrays
-         */
-
-        if(agents[agent_index].last_n_actions.size() > evolutionary_history_length){
-            agents[agent_index].last_n_actions.erase(agents[agent_index].last_n_actions.begin());
-        }
-    }
-    //assert(abs(market_evaluation) <= Agents.size()); //failed before, though seemingly without reason
-    return market_evaluation;
-}
-
+//Old code, just for reference
+/*
 vector<AlphaAgent> Experiment::initialize_agents(int agents_identifier) {
     vector<AlphaAgent> Agents;
     for(int i = 0; i < agent_count; i++){
@@ -211,7 +82,7 @@ vector<AlphaAgent> Experiment::initialize_agents(int agents_identifier) {
         /*
         i is a perfectly unique identifier; we only have to deal in complexity after initialization, where we could
         get random numbers in the range of 1 billion, and still be fine for memories of up to 15 bits.
-        */ //Note on identifier range, allocation
+         //Note on identifier range, allocation
     }
     return Agents;
 }
@@ -307,7 +178,7 @@ vector<Agent> Experiment::bell_curve_memory_dist_agent_init(double kurtosis, int
     cout<<"integral = "<<integral<<endl;
     return Agents;
 } //kurtosis > 1 will increase kurtosis, < 1 decrease
-*/
+
 Experiment::Experiment(int agent_population, int num_strategies_per_agent, int memory, int agents_identifier, int evolution_memory, int seed) {
     agent_count = agent_population;
     strategies_per_agent = num_strategies_per_agent;
@@ -410,7 +281,7 @@ void Experiment::write_minority_game_observables(int NUM_DAYS_AGENTS_PLAY, int N
                 /*
                 running the simulation on this line over time means we are successfully taking the variance of the time
                 and then averaging over the total number of simulations.
-                */
+
                 Alpha += pow(2, double(NUM_INDICES_IN_STRATEGY)) / agent_pop;
                 Variance += Analysis::unexpanded_variance(environment.nonbinary_history);
                 Variance_over_agent_pop += Analysis::unexpanded_variance(environment.nonbinary_history)/agent_pop;
@@ -428,18 +299,76 @@ void Experiment::write_minority_game_observables(int NUM_DAYS_AGENTS_PLAY, int N
     }
 
 }
+*/
 
-//Evolutionary Updates
-void Experiment::del_agent(int agent_index) {
-    agents.erase(agents.begin() + agent_index);
-} //perhaps a bit redundant to have a function for it
-
-void Experiment::add_agent(int num_strategies_for_agent, int num_indicies_per_strategy) {
-    vector<Strategy> strategies;
-    vector<signum> last_n_strategies;
-    for (int i = 0; i < num_strategies_for_agent; ++i) {
-        strategies.push_back(Strategy{0, num_indicies_per_strategy});
+void ExperimentState::write_mg_observables(int num_days, int num_strategies_per_agent, int seed, int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop, int agent_pop_interval, int max_memory, int min_memory, int memory_interval){
+    assert(max_memory < 32);
+    assert(min_agent_pop % 2 == 1);
+    ofstream Observables("MG Observables for Memory from 2 to 16, Pop from 101 to 701, 25 Strategy Sets and 10000 Iterations.txt");
+    for (int memory = min_memory; memory <= max_memory; memory += memory_interval) {
+        printf("Started %i memory run of %i total \n", memory, max_memory);
+        for (int agent_pop = min_agent_pop; agent_pop <= max_agent_pop; agent_pop += agent_pop_interval) {
+            double Alpha = pow(2, double(memory)) / agent_pop;;
+            double Variance = 0;
+            double Variance_over_agent_pop = 0;
+            double unexpanded_Variance_over_agent_pop = 0;
+            double successRate = 0;
+            double elementRange = 0;
+            for (int strategy_set = 1; strategy_set < num_diff_strategy_sets*agent_pop*num_strategies_per_agent; strategy_set += agent_pop*num_strategies_per_agent) {
+                ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
+                                           std::unique_ptr<EvolutionStrategy> {new Creationism{}},
+                                           alpha_agents(agent_pop, num_strategies_per_agent, memory, strategy_set)};
+                experiment.simulate(num_days);
+                vector<int> non_binary_history;
+                for (int i = 0; i < experiment.market_history.index_of_current_day(); ++i) {
+                   non_binary_history.emplace_back(experiment.market_history.market_count_at_day_i(i));
+                }
+                assert(!non_binary_history.empty());
+                Variance += Analysis::unexpanded_variance(non_binary_history);
+                unexpanded_Variance_over_agent_pop += Variance/agent_pop;
+                Variance_over_agent_pop += Analysis::variance(non_binary_history)/agent_pop;
+                successRate += Analysis::success_rate(non_binary_history, agent_pop);
+                elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / Alpha);
+            }
+            Observables << Alpha<< ", "
+                        << agent_pop << ", "
+                        << memory << ", "
+                        << Variance / num_diff_strategy_sets<< ", "
+                        << Variance_over_agent_pop / num_diff_strategy_sets << ", "
+                        << unexpanded_Variance_over_agent_pop / num_diff_strategy_sets << ", "
+                        << successRate / num_diff_strategy_sets  << ", "
+                        << elementRange / num_diff_strategy_sets << endl;
+        }
     }
-
-    agents.push_back(AlphaAgent{strategies, last_n_strategies, 0, int(agents.size() + 1)});
 }
+
+// *****************************************************************
+//  Initializations
+// *****************************************************************
+std::vector<MarketDay> basic_pre_history(int size, int seed, int num_agents) {
+    auto binary_pre_history = random_signum_vector (size, seed);
+    auto market_pre_history = market_history_generator (binary_pre_history, num_agents, seed);
+    std::vector<MarketDay> result;
+
+    for (int i  = 0; i != size; ++i) {
+        result.emplace_back (i - size, market_pre_history[i], binary_pre_history[i]);
+    }
+    return std::move (result);
+} //Generates Prehistory (i.e. initial random market data on which the agents make their first few decisions
+
+AgentPool alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{i*strategy_set_incrementor, num_strategies_per_agent, num_indicies_in_strategy}});
+    }
+    return std::move (agents);
+} //initializes agent pool with alpha agents
+
+AgentPool random_agents(int agent_pop) {
+    AgentPool agents;
+    for (int i = 0; i < agent_pop; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new RandomAgent{i}});
+    }
+    return std::move (agents);
+} //
+
