@@ -301,41 +301,39 @@ void Experiment::write_minority_game_observables(int NUM_DAYS_AGENTS_PLAY, int N
 }
 */
 
-void ExperimentState::write_mg_observables(int num_days, int num_strategies_per_agent, int seed, int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop, int agent_pop_interval, int max_memory, int min_memory, int memory_interval){
+void ExperimentState::write_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+                                           int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop,
+                                           int agent_pop_interval, int max_memory, int min_memory,
+                                           int memory_interval){
     assert(max_memory < 32);
     assert(min_agent_pop % 2 == 1);
-    ofstream Observables("MG Observables for Memory from 2 to 16, Pop from 101 to 701, 25 Strategy Sets and 10000 Iterations.txt");
+    ofstream Observables("Random Observables for Memory from 2 to 16, Pop from 101 to 701, 10 Strategy Sets and 2000 Iterations.txt");
     for (int memory = min_memory; memory <= max_memory; memory += memory_interval) {
         printf("Started %i memory run of %i total \n", memory, max_memory);
         for (int agent_pop = min_agent_pop; agent_pop <= max_agent_pop; agent_pop += agent_pop_interval) {
             double Alpha = pow(2, double(memory)) / agent_pop;;
-            double Variance = 0;
             double Variance_over_agent_pop = 0;
-            double unexpanded_Variance_over_agent_pop = 0;
             double successRate = 0;
             double elementRange = 0;
             for (int strategy_set = 1; strategy_set < num_diff_strategy_sets*agent_pop*num_strategies_per_agent; strategy_set += agent_pop*num_strategies_per_agent) {
                 ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
-                                           std::unique_ptr<EvolutionStrategy> {new Creationism{}},
-                                           alpha_agents(agent_pop, num_strategies_per_agent, memory, strategy_set)};
+                                             std::unique_ptr<EvolutionStrategy> {new Creationism{}},
+                                            //alpha_agents(agent_pop, num_strategies_per_agent, memory, strategy_set)};
+                                             random_agents(agent_pop)};
                 experiment.simulate(num_days);
                 vector<int> non_binary_history;
                 for (int i = 0; i < experiment.market_history.index_of_current_day(); ++i) {
                    non_binary_history.emplace_back(experiment.market_history.market_count_at_day_i(i));
                 }
                 assert(!non_binary_history.empty());
-                Variance += Analysis::unexpanded_variance(non_binary_history);
-                unexpanded_Variance_over_agent_pop += Variance/agent_pop;
                 Variance_over_agent_pop += Analysis::variance(non_binary_history)/agent_pop;
                 successRate += Analysis::success_rate(non_binary_history, agent_pop);
-                elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / Alpha);
+                elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop*2);
             }
             Observables << Alpha<< ", "
                         << agent_pop << ", "
                         << memory << ", "
-                        << Variance / num_diff_strategy_sets<< ", "
                         << Variance_over_agent_pop / num_diff_strategy_sets << ", "
-                        << unexpanded_Variance_over_agent_pop / num_diff_strategy_sets << ", "
                         << successRate / num_diff_strategy_sets  << ", "
                         << elementRange / num_diff_strategy_sets << endl;
         }
@@ -345,6 +343,7 @@ void ExperimentState::write_mg_observables(int num_days, int num_strategies_per_
 // *****************************************************************
 //  Initializations
 // *****************************************************************
+
 std::vector<MarketDay> basic_pre_history(int size, int seed, int num_agents) {
     auto binary_pre_history = random_signum_vector (size, seed);
     auto market_pre_history = market_history_generator (binary_pre_history, num_agents, seed);

@@ -56,7 +56,7 @@ public:
 };
 
 typedef std::vector<std::unique_ptr<Agent>> AgentPool;
-
+typedef std::unique_ptr<int> fptr;
 /*
 class StrategyAgent : public Agent {
 public:

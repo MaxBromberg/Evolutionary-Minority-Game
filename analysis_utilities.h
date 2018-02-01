@@ -18,40 +18,16 @@ namespace Analysis{
     template <typename T>
     static inline double mean(const T &v) {
         if (v.empty()) return 0.0;
-        return static_cast<double> (std::accumulate (v.cbegin(), v.cend(), 0)) / static_cast<double> (v.size());
-    }
-
-    template <typename T>
-    static inline double squared_mean (const T& v) {
-        typedef typename T::value_type Number;
-        if (v.empty()) return 0.0;
-        return static_cast<double> (std::accumulate (v.cbegin(), v.cend(), 0, [] (const Number& accumulator, const Number& next) {return accumulator + next * next;})) / static_cast<double> (v.size());
+        return static_cast<double> (std::accumulate (v.cbegin(), v.cend(), 0.0)) / static_cast<double> (v.size());
     }
 
     template <typename T>
     static inline double variance (const T& v) {
-        auto m = mean(v);
-        return squared_mean (v) - (m * m);
-    }
-
-    template <typename T>
-    static inline int variance_literature(const vector<T> &obv){
-        vector<T> sqObvMinusObvMean(obv.size()); //implement generate
-        double variance;
-        double obvMean = Analysis::mean(obv);
-        for(int i = 0; i < sqObvMinusObvMean.size(); i++){
-            sqObvMinusObvMean[i] = (obv[i]-obvMean)*(obv[i]-obvMean);
-        }
-        variance = Analysis::mean(sqObvMinusObvMean);
-        return variance;
-    }
-
-    template <typename T>
-    static inline double unexpanded_variance (const T& v) {
-        typedef typename T::value_type Number;
         if (v.empty()) return 0.0;
         auto m = mean(v);
-        return static_cast<double> (std::accumulate (v.cbegin(), v.cend(), 0, [&m] (const Number& accumulator, const Number& next) {return accumulator + (next - m)*(next - m);})) / static_cast<double> (v.size());
+        auto variance = 0.0;
+        for(const auto& e : v){variance += (e - m)*(e - m);};
+        return variance/v.size();
     }
 
     template <typename T>
@@ -80,6 +56,8 @@ namespace Analysis{
         return uniqueCount;
     }
 
+
+    //mg specific functions
     template <typename T>
     static inline double success_rate(const vector<T> &obv, int agentPop){
         double successRate = 0;
