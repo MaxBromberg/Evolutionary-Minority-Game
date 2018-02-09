@@ -13,60 +13,6 @@
 
 using namespace std;
 
-// ***************************************************************
-//  Utilities Implementation
-// ***************************************************************
-
-template <typename Iter>
-unsigned int sign_array_to_bits (Iter begin, Iter end) {
-    int output = 0;
-    for (auto iter = begin; iter != end; ++iter) {
-        if (*iter == 1) output += 1 << (iter - begin);
-    }
-    return output;
-}
-
-vector<int> random_bool_vector(int size, int seed, int true_value, int false_value) { // generates a vector of random bools, as defined in true/false val
-    mt19937 generator (seed);
-    uniform_int_distribution<int> bitDistribution (0, 1);
-
-    vector<int> v (size);
-    std::generate (v.begin(), v.end(), [&bitDistribution, &generator, true_value, false_value] () {return bitDistribution (generator) ? true_value : false_value;});
-    return v;
-}
-
-uint64_t signum_vector_to_bits(const std::vector<signum> &v, int n) {
-    return sign_array_to_bits (v.end() - n, v.end());
-}
-
-vector<signum> random_signum_vector(int NumIndicesInStrategy, int seed){ //fills a vector with +/-1
-    return random_bool_vector(NumIndicesInStrategy, seed, 1, -1);
-}
-
-vector<int> market_history_generator(const vector<signum> &source, int agentPopulation, int seed){
-    mt19937 generator {static_cast<unsigned int>(seed)};
-    uniform_int_distribution<int> distribution {0, agentPopulation};
-
-    vector<int> result (source.size());
-    std::transform (source.begin(), source.end(), result.begin(), [&] (int i) {
-        int rand = distribution (generator);
-        return i * rand;
-    });
-    return result;
-}//Initializes market history to rand val (-Agentpop, Agent Pop). Keeping it for conformity
-
-int random_generate(double weight, int range, int seed){
-    mt19937 generator(seed);
-    uniform_int_distribution<int> memory_dist (1, range);
-    auto memory = (int) (floor(memory_dist(generator) + weight*memory_dist(generator)));
-    if( memory < 1){
-        return random_generate(weight, range, seed + 1);
-    }else if (memory > range){
-        return random_generate(weight, range, seed + 1);
-    }
-    return memory;
-}
-
 //Old code, just for reference
 /*
 vector<AlphaAgent> Experiment::initialize_agents(int agents_identifier) {
@@ -307,10 +253,13 @@ void ExperimentState::write_mg_observables(int num_days, int num_strategies_per_
                                            int memory_interval){
     assert(max_memory < 32);
     assert(min_agent_pop % 2 == 1);
-    ofstream Observables("Random Observables for Memory from 2 to 16, Pop from 101 to 701, 10 Strategy Sets and 2000 Iterations.txt");
+    ofstream Observables("Observables for Memory from 2 to 16, Pop from 101 to 1001, 10 Strategy Sets and 5000 Iterations.txt");
+    ofstream means("Means of Memory from 2 to 16, Pop from 101 to 1001, 10 Strategy Sets and 5000 Iterations.txt");
     for (int memory = min_memory; memory <= max_memory; memory += memory_interval) {
         printf("Started %i memory run of %i total \n", memory, max_memory);
         for (int agent_pop = min_agent_pop; agent_pop <= max_agent_pop; agent_pop += agent_pop_interval) {
+            double mean = 0;
+            //mean - just to test variance theory
             double Alpha = pow(2, double(memory)) / agent_pop;;
             double Variance_over_agent_pop = 0;
             double successRate = 0;
@@ -318,25 +267,60 @@ void ExperimentState::write_mg_observables(int num_days, int num_strategies_per_
             for (int strategy_set = 1; strategy_set < num_diff_strategy_sets*agent_pop*num_strategies_per_agent; strategy_set += agent_pop*num_strategies_per_agent) {
                 ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
                                              std::unique_ptr<EvolutionStrategy> {new Creationism{}},
-                                            //alpha_agents(agent_pop, num_strategies_per_agent, memory, strategy_set)};
-                                             random_agents(agent_pop)};
+                                             alpha_agents(agent_pop, num_strategies_per_agent, memory, strategy_set)};
+                                             //random_agents(agent_pop, memory)};
+                                             //random_agents(agent_pop, 10000+strategy_set)}; //10000 rng resolution atm, and addition leads to entirely new construction, and thus new seed effect each time
                 experiment.simulate(num_days);
                 vector<int> non_binary_history;
-                for (int i = 0; i < experiment.market_history.index_of_current_day(); ++i) {
+                for (int i = 32; i < experiment.market_history.index_of_current_day(); ++i) { //from 32 to account for prehistory
                    non_binary_history.emplace_back(experiment.market_history.market_count_at_day_i(i));
                 }
                 assert(!non_binary_history.empty());
+                mean += Analysis::mean(non_binary_history);
                 Variance_over_agent_pop += Analysis::variance(non_binary_history)/agent_pop;
                 successRate += Analysis::success_rate(non_binary_history, agent_pop);
                 elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop*2);
+
+                means << Alpha << ", "
+                      << agent_pop << ", "
+                      << memory << ", "
+                      << Analysis::mean(non_binary_history) << endl; //only gives different values for diff strategy sets for non-rnd agents
             }
-            Observables << Alpha<< ", "
+
+
+
+            Observables << Alpha << ", "
                         << agent_pop << ", "
                         << memory << ", "
+                        << mean / num_diff_strategy_sets << ", "
                         << Variance_over_agent_pop / num_diff_strategy_sets << ", "
                         << successRate / num_diff_strategy_sets  << ", "
                         << elementRange / num_diff_strategy_sets << endl;
         }
+    }
+}
+
+void write_market_histories(int rng_resolution, int rng_seed, int min_agent_pop, int max_agent_pop, int pop_interval, int runtime){
+    ofstream Market_Histories("7 Market_Histories.txt");
+    vector<vector<int>> market_histories;
+    for (int agent_pop = min_agent_pop; agent_pop <= max_agent_pop; agent_pop += pop_interval) {
+        ExperimentState experiment {basic_pre_history(32, rng_seed, agent_pop), std::unique_ptr<EvolutionStrategy> {new Creationism {}}, random_agents(agent_pop, rng_resolution)};
+        //ExperimentState experiment {basic_pre_history(32, rng_seed, agent_pop), std::unique_ptr<EvolutionStrategy> {new Creationism {}}, alpha_agents(agent_pop, 2, 15, 10000)};
+        experiment.simulate(runtime);
+
+        vector<int> market_history;
+        for (int i = 32; i < runtime; ++i) {
+            market_history.push_back(experiment.return_market_history().market_count_at_day_i(i));
+        }
+        printf("Mean of %i pop size attendance history = %lf \n", agent_pop, Analysis::mean(market_history));
+        market_histories.emplace_back(market_history);
+    }
+
+    for (int j = 32; j < runtime; ++j) {
+        for (int k = 0; k < market_histories.size(); ++k) {
+            Market_Histories << market_histories[k][j] << ", ";
+        }
+        Market_Histories << endl;
     }
 }
 
@@ -363,11 +347,20 @@ AgentPool alpha_agents(int agent_population, int num_strategies_per_agent, int n
     return std::move (agents);
 } //initializes agent pool with alpha agents
 
-AgentPool random_agents(int agent_pop) {
+/*
+AgentPool random_agents(int agent_pop, int num_indicies_in_strategy) {
     AgentPool agents;
     for (int i = 0; i < agent_pop; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new RandomAgent{i}});
+        agents.push_back (std::unique_ptr<Agent> {new RandomAgent{i, num_indicies_in_strategy}});
     }
     return std::move (agents);
 } //
+*/
 
+AgentPool random_agents(int agent_pop, int rng_resolution) {
+    AgentPool agents;
+    for (int i = 0; i < agent_pop; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new RandomAgent{i+123, rng_resolution}});
+    }
+    return std::move (agents);
+}

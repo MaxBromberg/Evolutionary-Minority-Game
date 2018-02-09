@@ -41,6 +41,7 @@ TEST_CASE ("Random Bool Vector") {
     }
 
 }
+//TODO Create tests for all existing functions independently.
 //
 //TEST_CASE("BinaryArrayToStrategyIndex"){
 //    vector<signum> binary_vector = {1, -1, 1, -1, 1, 1};

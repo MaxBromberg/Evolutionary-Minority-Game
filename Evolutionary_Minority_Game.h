@@ -10,19 +10,11 @@
 #include <random>
 #include <fstream>
 #include "analysis_utilities.h"
+#include "Minority_Game_Utilities.h"
 
 
 typedef int signum; //To hold the +/-// 1s, and indicate return type. (binary history --> history)
-
-// ***************************************************************************
-//  Utilities
-// ***************************************************************************
-
-std::vector<int> random_bool_vector(int size, int seed, int true_value = 1, int false_value = 0);
-uint64_t signum_vector_to_bits(const std::vector<signum> &v, int n);
-std::vector<signum> random_signum_vector(int size, int seed);
-std::vector<int> market_history_generator(const std::vector<signum> &source, int agentPopulation, int seed);
-int random_generate(double weight, int range, int seed);
+typedef std::vector<std::unique_ptr<Agent>> AgentPool;
 
 // ***************************************************************************
 //  Minority Game Engine
@@ -52,11 +44,13 @@ public:
     virtual ~Agent() {}
     virtual signum get_prediction(const MarketHistory &history) = 0;
     virtual void update(const MarketHistory &history, signum market_result) = 0;
+    virtual double win_percentage_of_streak() = 0;
+    virtual void weighted_update(const MarketHistory &history, signum binary_market_result) = 0;
+    virtual void agent_memory_boost() = 0;
+    virtual void agent_add_strategy(int num_indicies_in_new_strategy) = 0;
     virtual void print() = 0;
 };
 
-typedef std::vector<std::unique_ptr<Agent>> AgentPool;
-typedef std::unique_ptr<int> fptr;
 /*
 class StrategyAgent : public Agent {
 public:
@@ -82,6 +76,9 @@ public:
 static inline Agent* create_agent (AgentPool& pool, Agent* new_agent) {
     pool.push_back (std::unique_ptr<Agent> {new_agent});
     return new_agent;
+}
+static inline void delete_agent (AgentPool& pool, int agent_index) {
+    pool.erase (pool.begin() + agent_index);
 }
 
 class EvolutionStrategy {
@@ -146,6 +143,8 @@ public:
     int market_count() const {return history.back().market_count();}
     int market_result() const {return history.back().result();}
     int market_count_at_day_i(int i) const {return history[i].market_count();}
+    int population_at_n(int n) const { return history[n].agents().size(); }
+    int history_size() const { return history.size();}
 
 //Neither market history functions work, as for whatever reason the history.size inside evaluates to prehistory size. Not sure why.
     vector<int> nonbinary_market_history() const {
@@ -156,6 +155,7 @@ public:
         }
         return nonbinary_history;
     }
+
     vector<signum > binary_market_history() const {
         vector<signum> binary_history;
         for (int i = num_days_pre_history; i < history.size()-num_days_pre_history; ++i) {
@@ -200,6 +200,7 @@ public:
         market_history.last_day().reset_agents (std::move (first_generation));
     }
 
+    MarketHistory return_market_history(){ return market_history; }
     void simulate_day() {
         const int index_of_day = market_history.index_of_current_day();
         // Evolution
@@ -247,10 +248,20 @@ public:
 
     void write_last_n_market_history(int num_days_printed) { market_history.write_market_history(num_days_printed); }
 
-    void write_mg_observables(int num_days, int num_strategies_per_agent, int seed, int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop, int agent_pop_interval, int min_memory, int max_memory, int memory_interval);
+    void write_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+                              int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop,
+                              int agent_pop_interval, int min_memory, int max_memory, int memory_interval);
+
+    void write_agent_populations(){
+        ofstream agentpops("agent population history.txt");
+        for (int i = 0; i < market_history.history_size(); ++i) {
+            agentpops << i << ", "
+                      << market_history.population_at_n(i) << endl;
+        }
+    }
 };
 
 std::vector<MarketDay> basic_pre_history(int size, int seed, int num_agents);
 AgentPool alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor);
-AgentPool random_agents(int agent_pop);
-
+AgentPool random_agents(int agent_pop, int memory);
+void write_market_histories(int rng_resolution, int rng_seed, int min_agent_pop, int max_agent_pop, int pop_interval, int runtime);
