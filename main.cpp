@@ -1,6 +1,4 @@
 #include "Evolutionary_Minority_Game.h"
-#include <random>
-#include "Agents and Evolution Strategies.h"
 
 enum {
     MAX_AGENT_POP = 1001,
@@ -9,7 +7,7 @@ enum {
     MAX_MEMORY = 16,
     MIN_MEMORY = 2,
     MEMORY_INTERVAL = 1,
-    RUN_TIME = 5032, //+32 to account for prehistory
+    RUN_TIME = 1032, //+32 to account for prehistory
     NUM_STRATEGIES_PER_AGENT = 2,
     RNG_SEED = 42,
     NUM_DIFF_STRATEGY_SETS = 10,
@@ -25,12 +23,11 @@ int foo (std::function<int(double)> f) {
 */
 
 int main() {
-    ExperimentState experiment {basic_pre_history(32, RNG_SEED, MIN_AGENT_POP), std::unique_ptr<EvolutionStrategy> {new Creationism {}}, random_agents(MAX_AGENT_POP, 10000)};
-
-    experiment.write_mg_observables(RUN_TIME, NUM_STRATEGIES_PER_AGENT, RNG_SEED,
+    write_mg_observables(RUN_TIME, NUM_STRATEGIES_PER_AGENT, RNG_SEED,
                                     NUM_DIFF_STRATEGY_SETS, MAX_AGENT_POP, MIN_AGENT_POP,
                                     AGENT_POP_INTERVAL, MAX_MEMORY, MIN_MEMORY, MEMORY_INTERVAL);
 
+    //ExperimentState experiment {basic_pre_history(32, RNG_SEED, MIN_AGENT_POP), std::unique_ptr<EvolutionStrategy> {new Creationism {}}, random_agents(MAX_AGENT_POP, 10000)};
     //experiment.simulate (RUN_TIME);
     //experiment.write_last_n_market_history(5000);
     //experiment.print();

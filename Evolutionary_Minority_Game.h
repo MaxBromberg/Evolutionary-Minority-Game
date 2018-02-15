@@ -14,28 +14,10 @@
 
 
 typedef int signum; //To hold the +/-// 1s, and indicate return type. (binary history --> history)
-typedef std::vector<std::unique_ptr<Agent>> AgentPool;
 
 // ***************************************************************************
 //  Minority Game Engine
 // ***************************************************************************
-
-/*
-class IStrategy {
-    int score = 0;
-    signum last_prediction = 0;
-    virtual signum do_prediction (const MarketHistory& history) = 0;
-public:
-    virtual ~IStrategy() = 0;
-    void add_to_score (int value) {score += value;}
-    int get_score() {return score;}
-    signum get_last_prediction() {return last_prediction;}
-    signum predict(const MarketHistory& history) {
-        last_prediction = do_prediction (history);
-        return last_prediction;
-    }
-};
- */
 
 class MarketHistory;
 
@@ -50,6 +32,8 @@ public:
     virtual void agent_add_strategy(int num_indicies_in_new_strategy) = 0;
     virtual void print() = 0;
 };
+
+typedef std::vector<std::unique_ptr<Agent>> AgentPool;
 
 /*
 class StrategyAgent : public Agent {
@@ -72,14 +56,28 @@ public:
     }
 };
  */ //Blueprint for generalizing the functionality of strategies in the agent
+/*
+class IStrategy {
+    int score = 0;
+    signum last_prediction = 0;
+    virtual signum do_prediction (const MarketHistory& history) = 0;
+public:
+    virtual ~IStrategy() = 0;
+    void add_to_score (int value) {score += value;}
+    int get_score() {return score;}
+    signum get_last_prediction() {return last_prediction;}
+    signum predict(const MarketHistory& history) {
+        last_prediction = do_prediction (history);
+        return last_prediction;
+    }
+};
+ */
 
 static inline Agent* create_agent (AgentPool& pool, Agent* new_agent) {
     pool.push_back (std::unique_ptr<Agent> {new_agent});
     return new_agent;
-}
-static inline void delete_agent (AgentPool& pool, int agent_index) {
-    pool.erase (pool.begin() + agent_index);
-}
+} //Does not let itself to be put in the cpp file, for whatever reason...
+static inline void delete_agent (AgentPool& pool, int agent_index);
 
 class EvolutionStrategy {
 public:
@@ -91,95 +89,44 @@ class MarketDay {
     int m_index;
     int m_market_prediction;
     signum m_result;
-    std::vector<Agent*> m_agents;
+    std::vector<Agent *> m_agents;
 public:
-    MarketDay(int index, int market_prediction, signum result) :
-            m_index {index}, m_market_prediction {market_prediction}, m_result {result}, m_agents{} { }
+    MarketDay(int index, int market_prediction, signum result);
 
-    MarketDay (int index, std::vector<Agent*> agents, int market_prediction, signum result) :
-        m_index {index}, m_market_prediction {market_prediction}, m_result {result}, m_agents {std::move (agents)} {}
+    MarketDay(int index, std::vector<Agent *> agents, int market_prediction, signum result);
 
-    signum result() const {return m_result;}
-    int market_count() const {return m_market_prediction;}
-    const std::vector<Agent*>& agents() const {return m_agents;};
+    signum result() const;
 
-    void print() {
-        printf ("Day %i : market_predicition %i result %i\n", m_index, m_market_prediction, m_result);
-    }
+    int market_count() const;
 
-    void reset_agents (std::vector<Agent*> agents) {
-        m_agents = std::move (agents);
-    }
+    const std::vector<Agent *> &agents() const;
+
+    void print();
+
+    void reset_agents(std::vector<Agent *> agents);
 };
 
 class MarketHistory {
     std::vector<MarketDay> history;
     int num_days_pre_history;
 public:
-    MarketHistory (std::vector<MarketDay> pre_history) :
-            history(std::move(pre_history)),
-            num_days_pre_history(history.size())
-    {}
-
-    int index_of_current_day() const {
-      return history.size() - num_days_pre_history;
-    }
-
-    uint64_t last_n_results_as_bits(int n) const {
-        assert (n < 32);
-        assert (history.size() >= n);
-
-        unsigned int output = 0;
-        auto begin = history.end() - n;
-        for (auto iter = begin; iter != history.end(); ++iter) {
-            if (iter->result() == 1) output += 1 << (iter - begin);
-        }
-        return output;
-    }
-
-    const MarketDay& last_day() const {return history.back();}
-    MarketDay& last_day() {return history.back();}
-    signum last_result() const { return history.back().result(); }
-    int market_count() const {return history.back().market_count();}
-    int market_result() const {return history.back().result();}
-    int market_count_at_day_i(int i) const {return history[i].market_count();}
-    int population_at_n(int n) const { return history[n].agents().size(); }
-    int history_size() const { return history.size();}
-
+    explicit MarketHistory (std::vector<MarketDay> pre_history);
+    int index_of_current_day() const;
+    uint64_t last_n_results_as_bits(int n) const;
+    const MarketDay& last_day() const;
+    MarketDay& last_day();
+    signum last_result() const;
+    int market_count() const;
+    int market_result() const;
+    int market_count_at_day_i(int i) const;
+    int population_at_n(int n) const;
+    int history_size() const;
 //Neither market history functions work, as for whatever reason the history.size inside evaluates to prehistory size. Not sure why.
-    vector<int> nonbinary_market_history() const {
-        vector<int> nonbinary_history;
-        printf("history size = %i, num days of prehistory = %i", history.size(), num_days_pre_history);
-        for (int i = num_days_pre_history; i < history.size() - num_days_pre_history; ++i) {
-            nonbinary_history.push_back(history[i].market_count());
-        }
-        return nonbinary_history;
-    }
-
-    vector<signum > binary_market_history() const {
-        vector<signum> binary_history;
-        for (int i = num_days_pre_history; i < history.size()-num_days_pre_history; ++i) {
-            binary_history.push_back(history[i].result());
-        }
-        return binary_history;
-    }
-
-    void add_day (MarketDay new_day) {history.emplace_back (std::move (new_day)); }
-
-    void print() {
-        for (int i = 0; i < history.size(); ++i) {
-            history[i].print();
-        }
-    }
-
-    void write_market_history(int last_num_days_printed) {
-        ofstream attendance_history("Market History.txt");
-        for (int i = history.size() + num_days_pre_history - last_num_days_printed; i < history.size(); ++i) {
-            attendance_history << i << ", "
-                               << history[i].market_count() << endl;
-        }
-    }
-
+    vector<int> nonbinary_market_history() const;
+    vector<signum > binary_market_history() const;
+    void add_day (MarketDay new_day);
+    void print();
+    void write_market_history(int last_num_days_printed);
 };
 
 class ExperimentState {
@@ -188,80 +135,26 @@ class ExperimentState {
     MarketHistory market_history;
 
 public:
-    ExperimentState (std::vector<MarketDay> pre_history, std::unique_ptr<EvolutionStrategy> evolution, AgentPool agents) :
-            agent_pool (std::move (agents)),
-            evolution_strategy (std::move (evolution)),
-            market_history (std::move (pre_history))
-    {
-        std::vector<Agent*> first_generation;
-        for (auto& a : agent_pool) {
-            first_generation.push_back (a.get());
-        }
-        market_history.last_day().reset_agents (std::move (first_generation));
-    }
-
-    MarketHistory return_market_history(){ return market_history; }
-    void simulate_day() {
-        const int index_of_day = market_history.index_of_current_day();
-        // Evolution
-        auto agent_generation = evolution_strategy->select_next_generation (market_history, agent_pool);
-        //assert (agent_generation.size() == history.last_day().agents().size());
-        assert (agent_generation.empty() == false);
-
-        // Agent prediction
-        int market_count = 0;
-        for (auto a : agent_generation) {
-            market_count += a->get_prediction(market_history);
-        }
-
-        // Market decision if 0 (only relevant for evolutionary models with even agent populations)
-        if (market_count == 0) {
-            printf("market count == 0 !!! -> %i\n", index_of_day);
-            std::mt19937 gen(index_of_day);
-            while (market_count == 0) {
-                auto agent_count = agent_generation.size();
-                std::uniform_int_distribution<int> dist(-agent_count, agent_count);
-                market_count = dist(gen);
-            }
-        }
-        assert (market_count != 0);
-        signum binary_market_result = market_count > 0 ? -1 : 1; // As we're registering the minority
-
-        // Agent updates
-        for (auto a : agent_generation) {
-            a->update(market_history, binary_market_result);
-        }
-
-        // Finalizing
-        market_history.add_day (MarketDay {market_history.index_of_current_day(), std::move (agent_generation), market_count, market_count > 0 ? -1 : 1});
-    }
-    void simulate (int num_days) { for (;num_days > 0; --num_days) simulate_day(); }
-
-    void print() {
-        printf ("Market History:\n");
-        market_history.print();
-        printf ("Agents:\n");
-        for (auto& a : agent_pool) {
-            a->print();
-        }
-    }
-
-    void write_last_n_market_history(int num_days_printed) { market_history.write_market_history(num_days_printed); }
-
-    void write_mg_observables(int num_days, int num_strategies_per_agent, int seed,
-                              int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop,
-                              int agent_pop_interval, int min_memory, int max_memory, int memory_interval);
-
-    void write_agent_populations(){
-        ofstream agentpops("agent population history.txt");
-        for (int i = 0; i < market_history.history_size(); ++i) {
-            agentpops << i << ", "
-                      << market_history.population_at_n(i) << endl;
-        }
-    }
+    ExperimentState (std::vector<MarketDay> pre_history, std::unique_ptr<EvolutionStrategy> evolution, AgentPool agents);
+    MarketHistory* return_market_history();
+    void simulate_day();
+    void simulate (int num_days);
+    void print();
+    void write_last_n_market_history(int num_days_printed);
+    void write_agent_populations();
+    void write_mg_observables_speedtest(int num_days, int num_strategies_per_agent, int seed,
+                          int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop,
+                          int agent_pop_interval, int max_memory, int min_memory,
+                          int memory_interval);
 };
 
+//Initializations
 std::vector<MarketDay> basic_pre_history(int size, int seed, int num_agents);
 AgentPool alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor);
 AgentPool random_agents(int agent_pop, int memory);
+
+//Main Functions
 void write_market_histories(int rng_resolution, int rng_seed, int min_agent_pop, int max_agent_pop, int pop_interval, int runtime);
+void write_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+                          int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop,
+                          int agent_pop_interval, int min_memory, int max_memory, int memory_interval);
