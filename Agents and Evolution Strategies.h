@@ -140,3 +140,14 @@ public:
     }
 }; //Should spawn a slightly modified strategy set, same preferences
 */
+
+
+
+
+//----------Initialization Mutator Methods for different Memory distributions-----------
+vector<Strategy> linear_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment);
+vector<Strategy> exponential_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment, double alpha);
+vector<Strategy> weighted_random_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment, double weight);
+vector<Strategy> stocastic_exponential_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, double Lambda);
+vector<Strategy> stocastic_poisson_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory);
+vector<Strategy> stocastic_random_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory);

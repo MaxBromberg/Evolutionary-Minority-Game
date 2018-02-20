@@ -7,7 +7,6 @@
 #include <fstream>
 #include "Minority_Game_Utilities.h"
 
-typedef int signum;
 
 // ***************************************************************
 //  Utilities Implementation
@@ -51,14 +50,15 @@ std::vector<int> market_history_generator(const std::vector<signum> &source, int
     return result;
 }//Initializes market history to rand val (-Agentpop, Agent Pop). Keeping it for conformity
 
-int random_generate(double weight, int range, int seed){
+int random_generate(double weight, int min, int max, int seed){
     std::mt19937 generator(seed);
-    std::uniform_int_distribution<int> memory_dist (1, range);
-    auto memory = (int) (floor(memory_dist(generator) + weight*memory_dist(generator)));
-    if( memory < 1){
-        return random_generate(weight, range, seed + 1);
-    }else if (memory > range){
-        return random_generate(weight, range, seed + 1);
+    std::uniform_int_distribution<int> random_gen(min, max);
+    auto random_number = (int) (floor(random_gen(generator) + weight*random_gen(generator)));
+    //this does make two different numbers for weight and origional
+    if( random_number < 1){
+        return random_generate(weight, min, max, seed + 1);
+    }else if (random_number > max-min){
+        return random_generate(weight, min, max, seed + 1);
     }
-    return memory;
+    return random_number;
 }

@@ -142,15 +142,22 @@ public:
     void print();
     void write_last_n_market_history(int num_days_printed);
     void write_agent_populations();
-    void write_mg_observables_speedtest(int num_days, int num_strategies_per_agent, int seed,
-                          int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop,
-                          int agent_pop_interval, int max_memory, int min_memory,
-                          int memory_interval);
 };
 
-//Initializations
+//*****************************Initializations*************************************
 std::vector<MarketDay> basic_pre_history(int size, int seed, int num_agents);
+//_____________________Alpha_Agent_Initializations________________________________
 AgentPool alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor);
+AgentPool linear_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory, int agent_increment);
+AgentPool exponential_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory, int agent_increment, double alpha);
+AgentPool weighted_random_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory, int agent_increment, double alpha);
+AgentPool stochastic_exponential_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory, double lambda);
+AgentPool stocastic_poisson_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory);
+AgentPool stochastic_random_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory);
+//_____________________Darwinian_Agent_Initializations____________________________
+
+
+//_____________________Other_Agent_Initializations________________________________
 AgentPool random_agents(int agent_pop, int memory);
 
 //Main Functions

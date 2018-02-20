@@ -10,3 +10,7 @@ set(TEST_SOURCE Evolutionary_Minority_Game_Test.cpp "Agents and Evolution Strate
 
 add_executable(Minority_Game_Programming main.cpp ${API_SOURCE} )
 add_executable(Minority_Game_UnitTests test_main.cpp ${API_SOURCE} ${TEST_SOURCE} )
+
+set(BUILD_2 Scratch_File)
+set(SOURCE_FILES_2 Scratch_File.cpp)
+add_executable(${BUILD_2} ${SOURCE_FILES_2})

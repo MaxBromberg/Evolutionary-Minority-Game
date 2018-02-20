@@ -135,6 +135,19 @@ Minority_Game_UnitTests/fast:
 	$(MAKE) -f CMakeFiles\Minority_Game_UnitTests.dir\build.make CMakeFiles/Minority_Game_UnitTests.dir/build
 .PHONY : Minority_Game_UnitTests/fast
 
+#=============================================================================
+# Target rules for targets named Scratch_File
+
+# Build rule for target.
+Scratch_File: cmake_check_build_system
+	$(MAKE) -f CMakeFiles\Makefile2 Scratch_File
+.PHONY : Scratch_File
+
+# fast build rule for target.
+Scratch_File/fast:
+	$(MAKE) -f CMakeFiles\Scratch_File.dir\build.make CMakeFiles/Scratch_File.dir/build
+.PHONY : Scratch_File/fast
+
 Agents_and_Evolution_Strategies.obj: Agents_and_Evolution_Strategies.cpp.obj
 
 .PHONY : Agents_and_Evolution_Strategies.obj
@@ -252,6 +265,33 @@ Minority_Game_Utilities.cpp.s:
 	$(MAKE) -f CMakeFiles\Minority_Game_UnitTests.dir\build.make CMakeFiles/Minority_Game_UnitTests.dir/Minority_Game_Utilities.cpp.s
 .PHONY : Minority_Game_Utilities.cpp.s
 
+Scratch_File.obj: Scratch_File.cpp.obj
+
+.PHONY : Scratch_File.obj
+
+# target to build an object file
+Scratch_File.cpp.obj:
+	$(MAKE) -f CMakeFiles\Scratch_File.dir\build.make CMakeFiles/Scratch_File.dir/Scratch_File.cpp.obj
+.PHONY : Scratch_File.cpp.obj
+
+Scratch_File.i: Scratch_File.cpp.i
+
+.PHONY : Scratch_File.i
+
+# target to preprocess a source file
+Scratch_File.cpp.i:
+	$(MAKE) -f CMakeFiles\Scratch_File.dir\build.make CMakeFiles/Scratch_File.dir/Scratch_File.cpp.i
+.PHONY : Scratch_File.cpp.i
+
+Scratch_File.s: Scratch_File.cpp.s
+
+.PHONY : Scratch_File.s
+
+# target to generate assembly for a file
+Scratch_File.cpp.s:
+	$(MAKE) -f CMakeFiles\Scratch_File.dir\build.make CMakeFiles/Scratch_File.dir/Scratch_File.cpp.s
+.PHONY : Scratch_File.cpp.s
+
 main.obj: main.cpp.obj
 
 .PHONY : main.obj
@@ -315,6 +355,7 @@ help:
 	@echo ... Minority_Game_Programming
 	@echo ... Minority_Game_UnitTests
 	@echo ... edit_cache
+	@echo ... Scratch_File
 	@echo ... rebuild_cache
 	@echo ... Agents_and_Evolution_Strategies.obj
 	@echo ... Agents_and_Evolution_Strategies.i
@@ -328,6 +369,9 @@ help:
 	@echo ... Minority_Game_Utilities.obj
 	@echo ... Minority_Game_Utilities.i
 	@echo ... Minority_Game_Utilities.s
+	@echo ... Scratch_File.obj
+	@echo ... Scratch_File.i
+	@echo ... Scratch_File.s
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s
