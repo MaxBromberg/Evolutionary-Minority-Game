@@ -24,3 +24,5 @@ void debug_print (const T& v, typename std::enable_if<std::is_arithmetic<T>::val
     }
     std::cout << "]" << std::endl;
 }
+
+static inline void debug_console_message(){ std::cout << "Line Accessed" << std::endl; }

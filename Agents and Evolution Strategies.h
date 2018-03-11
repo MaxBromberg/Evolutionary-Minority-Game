@@ -38,6 +38,9 @@ struct AlphaAgent : public Agent {
 
     virtual void print() override;
 
+    //defined to be in compliance with the overall strategy
+    virtual int return_num_strategies();
+    virtual int return_memory(int strategy_index);
     virtual void agent_memory_boost();
     virtual void agent_add_strategy(int num_indicies_in_new_strategy);
     virtual double win_percentage_of_streak();
@@ -56,6 +59,9 @@ struct DarwinianAgent : public Agent{
     virtual signum get_prediction(const MarketHistory &history) override;
     virtual void update(const MarketHistory &history, signum binary_market_result) override;
     virtual void print() override;
+
+    virtual int return_num_strategies();
+    virtual int return_memory(int strategy_index);
     virtual void agent_memory_boost();
     virtual void agent_add_strategy(int num_indicies_in_new_strategy);
     virtual void weighted_update(const MarketHistory &history, signum binary_market_result);
@@ -84,6 +90,8 @@ public:
     */
 
     //the following are not used; just but it in because it's the superclass.
+    virtual int return_num_strategies();
+    virtual int return_memory(int strategy_index);
     virtual void agent_memory_boost();
     virtual void agent_add_strategy(int num_indicies_in_new_strategy);
     virtual double win_percentage_of_streak();
@@ -151,3 +159,20 @@ vector<Strategy> weighted_random_mem_dist_init(int id, int num_strategies, int m
 vector<Strategy> stocastic_exponential_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, double Lambda);
 vector<Strategy> stocastic_poisson_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory);
 vector<Strategy> stocastic_random_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory);
+
+//*****************************Initializations******************************************
+
+//_____________________Alpha_Agent_Initializations________________________________
+AgentPool alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor);
+AgentPool linear_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory);
+AgentPool exponential_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, double alpha);
+AgentPool weighted_random_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, double alpha);
+AgentPool stochastic_exponential_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, double lambda);
+AgentPool stocastic_poisson_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory);
+AgentPool stochastic_random_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory);
+//_____________________Darwinian_Agent_Initializations____________________________
+
+
+//_____________________Other_Agent_Initializations________________________________
+AgentPool random_agents(int agent_pop, int memory);
+

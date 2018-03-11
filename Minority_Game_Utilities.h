@@ -22,3 +22,14 @@ uint64_t signum_vector_to_bits(const std::vector<signum> &v, int n);
 std::vector<signum> random_signum_vector(int size, int seed);
 std::vector<int> market_history_generator(const std::vector<signum> &source, int agentPopulation, int seed);
 int random_generate(double weight, int min, int max, int seed);
+
+template <typename T>
+void write_frequencies(const vector<T> &v){
+    ofstream Frequencies("Frequency Histogram.txt");
+    vector<vector<int>> Frequency_values = Analysis::frequency_histogram(v);
+    for (int i = 0; i < Frequency_values.size(); ++i) {
+        Frequencies << Frequency_values[i][0] << ", "
+                    << Frequency_values[i][1] << endl;
+    }
+}
+

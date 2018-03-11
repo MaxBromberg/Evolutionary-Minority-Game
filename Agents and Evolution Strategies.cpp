@@ -6,107 +6,6 @@
 //                               Agents Methods
 // ***************************************************************************
 
-//----------Initialization Mutator Methods for different Memory distributions-----------
-
-vector<Strategy> linear_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment){
-    assert(max_memory < 32);
-    assert(min_memory <= min_memory);
-    vector<Strategy> strategies;
-    for (int i = 0; i < num_strategies; ++i) {
-        strategies.emplace_back (Strategy {(id * num_strategies) + i,
-                                           (min_memory + ((int)floor((i*agent_increment*(max_memory-min_memory)/(agent_pop*num_strategies))+0.5)))});
-    }//Agent increment is the agent index, counting up from 1
-    return strategies;
-}
-
-vector<Strategy> exponential_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment, double alpha){
-    assert(max_memory < 32);
-    assert(min_memory <= min_memory);
-    double exp_increment = (log(max_memory/min_memory)/(alpha*num_strategies*agent_pop));
-    vector<Strategy> strategies;
-    for (int i = 0; i < num_strategies; ++i) {
-        strategies.emplace_back (Strategy {(id * num_strategies) + i,
-                                           (min_memory + ((int)floor(exp(alpha*i*agent_increment*exp_increment))))});
-    }//Agent increment is the agent index, counting up from 1
-    return strategies;
-}//Allots strategies in exponential distribution
-
-vector<Strategy> poisson_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment, double alpha){
-    assert(max_memory < 32);
-    assert(min_memory <= min_memory);
-    double exp_increment = (log(max_memory/min_memory)/(alpha*num_strategies*agent_pop));
-    vector<Strategy> strategies;
-    for (int i = 0; i < num_strategies; ++i) {
-        strategies.emplace_back (Strategy {(id * num_strategies) + i,
-                                           (min_memory + ((int)floor(exp(alpha*i*agent_increment*exp_increment))))});
-    }//Agent increment is the agent index, counting up from 1
-    return strategies;
-}//Allots strategies in exponential distribution
-
-vector<Strategy> weighted_random_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment, double weight){
-    assert(max_memory < 32);
-    assert(min_memory <= min_memory);
-    vector<Strategy> strategies;
-    for (int i = 0; i < num_strategies; ++i) {
-        strategies.emplace_back (Strategy {(id * num_strategies) + i,
-                                           random_generate(weight, min_memory, max_memory, ((id * num_strategies) + i))});
-    }//Agent increment is the agent index, counting up from 1
-    return strategies;
-}//Allots strategies in exponential distribution
-
-vector<Strategy> stocastic_exponential_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, double Lambda){
-    assert(max_memory < 32);
-    assert(min_memory <= min_memory);
-    std::default_random_engine generator;
-    std::exponential_distribution<double> distribution(Lambda);
-
-    vector<Strategy> strategies;
-    for (int i = 0; i < num_strategies; ++i) {
-        double exp_distributed_number = distribution(generator);
-        strategies.emplace_back (Strategy {(id*num_strategies) + i,
-                                           (int)floor(min_memory + ((max_memory-min_memory)*exp_distributed_number)) } );
-        }
-    return strategies;
-}//This will stochastically allot strategies along an exponential dist, but not confine agents to particular range of memory length
-
-vector<Strategy> stocastic_poisson_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory){
-    assert(max_memory < 32);
-    assert(min_memory <= min_memory);
-    std::default_random_engine generator;
-    std::poisson_distribution<int> distribution((max_memory - min_memory)/2);
-
-    vector<Strategy> strategies;
-    for (int i = 0; i < num_strategies; ++i) {
-        double poisson_distributed_number = distribution(generator);
-        while (poisson_distributed_number < min_memory || poisson_distributed_number > max_memory) { poisson_distributed_number = distribution(generator); }
-            strategies.emplace_back(Strategy {(id * num_strategies) + i,
-                                              (int) floor(min_memory +
-                                                          ((max_memory - min_memory) * poisson_distributed_number))});
-        }
-    return strategies;
-}//This will stochastically allot strategies along a poisson dist, but not confine agents to particular range of memory length
-
-vector<Strategy> stocastic_random_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory){
-    assert(max_memory < 32);
-    assert(min_memory <= min_memory);
-    std::default_random_engine generator;
-    std::uniform_int_distribution<int> distribution(min_memory, max_memory);
-
-    vector<Strategy> strategies;
-    for (int i = 0; i < num_strategies; ++i) {
-        double randomly_distributed_number = distribution(generator);
-        strategies.emplace_back (Strategy {(id*num_strategies) + i, (int)randomly_distributed_number } );
-    }
-    return strategies;
-}//This will stochastically allot strategies along an exponential dist, but not confine agents to particular range of memory length
-
-/*
- * The above methods raise the question as to how the distribution of memory useage will work, when the overall distribution
- * of memory follows a particular distribution (as defined above, random, poisson or exponential) how will the agents
- * accommodate the evolutionarily proven to be best distribution of memory lengths.
- * I.e. How will the agents adaptation to a static initial distribution of memory lengths lead to a best fit
- * (perhaps measured by a total hamming distance from the optimal memory distribution given their best distribution)
- */
 //*****************************Alpha Agent*************************************
 
 AlphaAgent::AlphaAgent (std::vector<Strategy> s, int w, int i) :
@@ -118,7 +17,6 @@ AlphaAgent::AlphaAgent (int id, int num_strategies, int num_indicies_in_strategy
         strategies.emplace_back (Strategy {(id * num_strategies) + i, num_indicies_in_strategy});
     }
 }
-
 
 signum AlphaAgent::sin_predict(const int strategy_index, int history_index) const {
     //deterministically returns the strategy's value associated with the market history and strategy selection from the index
@@ -172,9 +70,87 @@ void AlphaAgent::print() {
     printf ("\n");
 }
 
+int AlphaAgent::return_num_strategies(){return strategies.size(); }
+int AlphaAgent::return_memory(int strategy_index) { return strategies[strategy_index].num_indicies_in_strategy; }
 void AlphaAgent::agent_memory_boost(){};
 void AlphaAgent::agent_add_strategy(int num_indicies_in_new_strategy){};
 double AlphaAgent::win_percentage_of_streak(){};
+
+//--------------------Alpha Agent Memory Distribution Initializer-----------------------
+AgentPool alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{i*strategy_set_incrementor, num_strategies_per_agent, num_indicies_in_strategy}});
+    }
+    return std::move (agents);
+} //initializes agent pool with alpha agents
+
+AgentPool linear_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{linear_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, agent_population, i), 0, i}});
+    }
+    return std::move (agents);
+}
+
+AgentPool exponential_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, double alpha) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{exponential_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, agent_population, i, alpha), 0, i}});
+    }
+    return std::move (agents);
+}
+
+AgentPool weighted_random_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, double alpha) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{weighted_random_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, agent_population, i, alpha), 0, i}});
+    }
+    return std::move (agents);
+}
+
+AgentPool stochastic_exponential_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, double lambda) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{stocastic_exponential_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, lambda), 0, i}});
+    }
+    return std::move (agents);
+}
+
+AgentPool stocastic_poisson_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{stocastic_poisson_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory), 0, i}});
+    }
+    return std::move (agents);
+}
+
+AgentPool stochastic_random_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{stocastic_random_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory), 0, i}});
+    }
+    return std::move (agents);
+}
+
+/*
+AgentPool random_agents(int agent_pop, int num_indicies_in_strategy) {
+    AgentPool agents;
+    for (int i = 0; i < agent_pop; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new RandomAgent{i, num_indicies_in_strategy}});
+    }
+    return std::move (agents);
+}
+*/ //Alternative random_agents fct
+
+AgentPool random_agents(int agent_pop, int rng_resolution) {
+    AgentPool agents;
+    for (int i = 0; i < agent_pop; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new RandomAgent{i+123, rng_resolution}});
+    }
+    return std::move (agents);
+}
+
 
 //*****************************Darwinian Agent*************************************
 DarwinianAgent::DarwinianAgent (std::vector<Strategy>& strategies, int evol_period, int tot_wins, int i) :
@@ -234,6 +210,9 @@ void DarwinianAgent::print() {
     printf ("\n");
 }
 
+int DarwinianAgent::return_num_strategies(){return strategies.size(); }
+int DarwinianAgent::return_memory(int strategy_index) { return strategies[strategy_index].num_indicies_in_strategy; }
+
 void DarwinianAgent::agent_memory_boost(){
     //does this work? -- will the strategy score update without adding
     //for_each(strategies.begin(), strategies.end(), [](int strategy_score, int num_indicies_in_strategy){strategy_score++; num_indicies_in_strategy++;});
@@ -281,6 +260,8 @@ virtual void print() {printf ("RandomAgent seed %i, num_indicies_in strategy = %
 */
 
 //the following are not used; just but it in because it's the superclass.
+int RandomAgent::return_num_strategies(){};
+int RandomAgent::return_memory(int strategy_index){};
 void RandomAgent::agent_memory_boost(){};
 void RandomAgent::agent_add_strategy(int num_indicies_in_new_strategy){};
 double RandomAgent::win_percentage_of_streak(){};
@@ -333,4 +314,116 @@ std::vector<Agent*> CyclicEvolution::select_next_generation (const MarketHistory
     return std::move (next_gen);
 }
 void CyclicEvolution::evolutionary_update(){};
+
+
+// *****************************************************************
+//  Initializations
+// *****************************************************************
+
+//----------Initialization Mutator Methods for different Memory distributions-----------
+
+vector<Strategy> linear_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment){
+    assert(max_memory < 32);
+    assert(min_memory <= max_memory);
+    vector<Strategy> strategies;
+    int num_elements_per_memory = ((int)floor((agent_pop/(max_memory-min_memory))+0.5));
+    auto memory_counter = min_memory+(int)floor(((double)agent_increment/(double)num_elements_per_memory)+0.5);
+    for (int i = 0; i < num_strategies; ++i) {
+        strategies.emplace_back(Strategy {(id * num_strategies) + i, memory_counter});
+    }
+//                                           (min_memory + ((int)floor((i*agent_increment*(max_memory-min_memory)/(agent_pop*num_strategies))+0.5)))});
+    //Agent increment is the agent index, counting up from 1
+    //cout<<num_elements_per_memory<<endl;
+    return strategies;
+}
+
+vector<Strategy> exponential_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment, double alpha){
+    assert(max_memory < 32);
+    assert(min_memory <= max_memory);
+    double exp_increment = (log(max_memory/min_memory)/(alpha*num_strategies*agent_pop));
+    vector<Strategy> strategies;
+    for (int i = 0; i < num_strategies; ++i) {
+        strategies.emplace_back (Strategy {(id * num_strategies) + i,
+                                           (min_memory + ((int)floor(exp(alpha*i*agent_increment*exp_increment))))});
+    }//Agent increment is the agent index, counting up from 1
+    return strategies;
+}//Allots strategies in exponential distribution
+
+vector<Strategy> poisson_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment, double alpha){
+    assert(max_memory < 32);
+    assert(min_memory <= max_memory);
+    double exp_increment = (log(max_memory/min_memory)/(alpha*num_strategies*agent_pop));
+    vector<Strategy> strategies;
+    for (int i = 0; i < num_strategies; ++i) {
+        strategies.emplace_back (Strategy {(id * num_strategies) + i,
+                                           (min_memory + ((int)floor(exp(alpha*i*agent_increment*exp_increment))))});
+    }//Agent increment is the agent index, counting up from 1
+    return strategies;
+}//Allots strategies in poisson distribution
+
+vector<Strategy> weighted_random_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment, double weight){
+    assert(max_memory < 32);
+    assert(min_memory <= max_memory);
+    vector<Strategy> strategies;
+    for (int i = 0; i < num_strategies; ++i) {
+        strategies.emplace_back (Strategy {(id * num_strategies) + i,
+                                           random_generate(weight, min_memory, max_memory, ((id * num_strategies) + i))});
+    }//Agent increment is the agent index, counting up from 1
+    return strategies;
+}//Allots strategies in weighted random distribution
+
+vector<Strategy> stocastic_exponential_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, double Lambda){
+    assert(max_memory < 32);
+    assert(min_memory <= max_memory);
+    std::default_random_engine generator;
+    std::exponential_distribution<double> distribution(Lambda);
+
+    vector<Strategy> strategies;
+    for (int i = 0; i < num_strategies; ++i) {
+        double exp_distributed_number = distribution(generator);
+        strategies.emplace_back (Strategy {(id*num_strategies) + i,
+                                           (int)floor(min_memory + ((max_memory-min_memory)*exp_distributed_number)) } );
+    }
+    return strategies;
+}//This will stochastically allot strategies along an exponential dist, but not confine agents to particular range of memory length
+
+vector<Strategy> stocastic_poisson_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory){
+    assert(max_memory < 32);
+    assert(min_memory <= max_memory);
+    std::default_random_engine generator;
+    std::poisson_distribution<int> distribution((max_memory - min_memory)/2);
+
+    vector<Strategy> strategies;
+    for (int i = 0; i < num_strategies; ++i) {
+        double poisson_distributed_number = distribution(generator);
+        while (poisson_distributed_number < min_memory || poisson_distributed_number > max_memory) { poisson_distributed_number = distribution(generator); }
+        strategies.emplace_back(Strategy {(id * num_strategies) + i,
+                                          (int) floor(min_memory +
+                                                      ((max_memory - min_memory) * poisson_distributed_number))});
+    }
+    return strategies;
+}//This will stochastically allot strategies along a poisson dist, but not confine agents to particular range of memory length
+
+vector<Strategy> stocastic_random_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory){
+    assert(max_memory < 32);
+    assert(min_memory <= max_memory);
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(min_memory, max_memory);
+
+    vector<Strategy> strategies;
+    for (int i = 0; i < num_strategies; ++i) {
+        double randomly_distributed_number = distribution(generator);
+        strategies.emplace_back (Strategy {(id*num_strategies) + i, (int)randomly_distributed_number } );
+    }
+    return strategies;
+}//This will stochastically allot strategies along an exponential dist, but not confine agents to particular range of memory length
+
+/*
+ * The above methods raise the question as to how the distribution of memory useage will work, when the overall distribution
+ * of memory follows a particular distribution (as defined above, random, poisson or exponential) how will the agents
+ * accommodate the evolutionarily proven to be best distribution of memory lengths.
+ * I.e. How will the agents adaptation to a static initial distribution of memory lengths lead to a best fit
+ * (perhaps measured by a total hamming distance from the optimal memory distribution given their best distribution)
+ */
+
 

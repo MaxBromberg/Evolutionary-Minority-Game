@@ -11,62 +11,6 @@
 
 using namespace std;
 
-//Old code, just for reference
-/*
-vector<Agent> Experiment::bell_curve_memory_dist_agent_init(double kurtosis, int agents_identifier) {
-    assert(num_indicies_in_strategy < 32);
-    vector<Agent> Agents;
-
-    double integral = 0; //numerically compute integral
-    int should_be_agent_pop = 0;
-    for(int i = 0; i < num_indicies_in_strategy; i++) {
-        double exponent = -((((i - num_indicies_in_strategy / 2) / ((double) num_indicies_in_strategy / 2)) *
-                             ((i - num_indicies_in_strategy / 2) / ((double) num_indicies_in_strategy / 2))) *
-                            3.14159265 * kurtosis);
-        double unitary_normal_dist_elemt = pow(2.71828182846, exponent); //element 0,1
-        integral += (int) floor(((double) num_indicies_in_strategy) * unitary_normal_dist_elemt + 0.5);
-    }
-
-
-    for(int i = 0; i < num_indicies_in_strategy; i++) {
-        double exponent = -((((i - num_indicies_in_strategy / 2) / ((double) num_indicies_in_strategy / 2)) *
-                             ((i - num_indicies_in_strategy / 2) / ((double) num_indicies_in_strategy / 2))) * 3.14159265 * kurtosis);
-        double unitary_normal_dist_elemt = pow(2.71828182846, exponent); //element 0,1
-        double unrounded_memory_value = (num_indicies_in_strategy * unitary_normal_dist_elemt);
-        auto memory_value = (int) floor(((double) num_indicies_in_strategy) * unitary_normal_dist_elemt + 0.5);
-
-        for (int j = 0; j < (int) floor(((memory_value/integral)*agent_count)+0.5); j++) {
-            vector<Strategy> Strategies;
-            for(int k = 0; k < strategies_per_agent; k++){
-                Strategies.push_back(Strategy{0, (int) floor((memory_value/2)+0.5) });
-            }
-            Agents.push_back(Agent{Strategies, i + agents_identifier});
-        }
-        should_be_agent_pop += (int) floor(((memory_value/integral)*agent_count)+0.5);
-
-        cout << "(int) floor((memory_value/integral)*agent_count) = "<<(int) floor(((memory_value/integral)*agent_count)+0.5) <<endl;
-        cout << "(int) floor((memory_value/2)+0.5) = "<<(int) floor((memory_value/2)+0.5) <<endl;
-        cout << "exponent = " << exponent << endl;
-        cout << "unitary_normal_dist_elemt = " << unitary_normal_dist_elemt << endl;
-        cout << "unfloored Memory Value = " << unrounded_memory_value << endl;
-        cout << "Memory Value = " << memory_value << endl;
-        cout << endl;
-    }
-    cout<<"should_be_agent_pop = "<<should_be_agent_pop<<endl;
-    cout<<"integral = "<<integral<<endl;
-    return Agents;
-} //kurtosis > 1 will increase kurtosis, < 1 decrease
-
-void Experiment::write_attendance_history(){
-    ofstream Attendance("Evolutionary Market History for 10000 runs.txt");
-    for(int i = num_indicies_in_strategy; i < nonbinary_history.size(); i++) {
-        Attendance << i << ", "
-                   << nonbinary_history[i] << ", "
-                   << history[i] << endl;
-    }
-}
-*/
-
 typedef int signum; //To hold the +/-// 1s, and indicate return type. (binary history --> history)
 typedef std::vector<std::unique_ptr<Agent>> AgentPool;
 
@@ -130,6 +74,17 @@ int MarketDay::market_count() const {return m_market_prediction;}
 const std::vector<Agent*>& MarketDay::agents() const {return m_agents;};
 void MarketDay::print() {printf ("Day %i : market_prediction %i result %i\n", m_index, m_market_prediction, m_result); }
 void MarketDay::reset_agents (std::vector<Agent*> agents) { m_agents = std::move (agents); }
+
+const std::vector<int> MarketDay::generate_memory_vector() const {
+    std::vector<int> memories;
+    for (auto e : m_agents) {
+        for (int i = 0; i < e->return_num_strategies(); ++i) {
+            memories.emplace_back(e->return_memory(i));
+        }
+    }
+    assert(!memories.empty());
+    return memories;
+}
 
 // Market History Implementations
 //********************************
@@ -197,6 +152,8 @@ void MarketDay::reset_agents (std::vector<Agent*> agents) { m_agents = std::move
         }
     }
 
+    vector<int> MarketHistory::return_memories_at_date(int date) const { return (history[date].generate_memory_vector()); }
+
 
 // Experiment State Member Implementations
 //********************************
@@ -234,6 +191,7 @@ void ExperimentState::simulate_day() {
         while (market_count == 0) {
             auto agent_count = agent_generation.size();
             std::uniform_int_distribution<int> dist(-(int)floor(agent_count*0.2), (int)floor(agent_count*0.2));
+            //that 0.2 is there because that's more realistic to the actual range of values generated in simulation
             market_count = dist(gen);
         }
     }
@@ -270,6 +228,8 @@ void ExperimentState::write_agent_populations(){
     }
 }
 
+void ExperimentState::write_memory_frequencies(int date){ debug_print(Analysis::frequency_histogram(market_history.return_memories_at_date(date))); write_frequencies(market_history.return_memories_at_date(date)); }
+
 // *****************************************************************
 //  Initializations
 // *****************************************************************
@@ -284,80 +244,6 @@ std::vector<MarketDay> basic_pre_history(int size, int seed, int num_agents) {
     }
     return std::move (result);
 } //Generates Prehistory (i.e. initial random market data on which the agents make their first few decisions
-
-AgentPool alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor) {
-    AgentPool agents;
-    for (int i = 0; i < agent_population; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{i*strategy_set_incrementor, num_strategies_per_agent, num_indicies_in_strategy}});
-    }
-    return std::move (agents);
-} //initializes agent pool with alpha agents
-
-AgentPool linear_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory, int agent_increment) {
-    AgentPool agents;
-    for (int i = 0; i < agent_population; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{linear_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, agent_population, agent_increment), num_strategies_per_agent, num_indicies_in_strategy}});
-    }
-    return std::move (agents);
-}
-
-AgentPool exponential_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory, int agent_increment, double alpha) {
-    AgentPool agents;
-    for (int i = 0; i < agent_population; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{exponential_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, agent_population, agent_increment, alpha), num_strategies_per_agent, num_indicies_in_strategy}});
-    }
-    return std::move (agents);
-}
-
-AgentPool weighted_random_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory, int agent_increment, double alpha) {
-    AgentPool agents;
-    for (int i = 0; i < agent_population; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{weighted_random_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, agent_population, agent_increment, alpha), num_strategies_per_agent, num_indicies_in_strategy}});
-    }
-    return std::move (agents);
-}
-
-AgentPool stochastic_exponential_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory, double lambda) {
-    AgentPool agents;
-    for (int i = 0; i < agent_population; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{stocastic_exponential_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, lambda), num_strategies_per_agent, num_indicies_in_strategy}});
-    }
-    return std::move (agents);
-}
-
-AgentPool stocastic_poisson_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory) {
-    AgentPool agents;
-    for (int i = 0; i < agent_population; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{stocastic_poisson_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory), num_strategies_per_agent, num_indicies_in_strategy}});
-    }
-    return std::move (agents);
-}
-
-AgentPool stochastic_random_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory) {
-    AgentPool agents;
-    for (int i = 0; i < agent_population; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{stocastic_random_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory), num_strategies_per_agent, num_indicies_in_strategy}});
-    }
-    return std::move (agents);
-}
-
-/*
-AgentPool random_agents(int agent_pop, int num_indicies_in_strategy) {
-    AgentPool agents;
-    for (int i = 0; i < agent_pop; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new RandomAgent{i, num_indicies_in_strategy}});
-    }
-    return std::move (agents);
-}
-*/ //Alternative random_agents fct
-
-AgentPool random_agents(int agent_pop, int rng_resolution) {
-    AgentPool agents;
-    for (int i = 0; i < agent_pop; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new RandomAgent{i+123, rng_resolution}});
-    }
-    return std::move (agents);
-}
 
 // *****************************************************************
 // Main Functions

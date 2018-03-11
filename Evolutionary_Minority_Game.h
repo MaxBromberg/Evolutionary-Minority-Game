@@ -12,7 +12,6 @@
 #include "analysis_utilities.h"
 #include "Minority_Game_Utilities.h"
 
-
 typedef int signum; //To hold the +/-// 1s, and indicate return type. (binary history --> history)
 
 // ***************************************************************************
@@ -26,11 +25,15 @@ public:
     virtual ~Agent() {}
     virtual signum get_prediction(const MarketHistory &history) = 0;
     virtual void update(const MarketHistory &history, signum market_result) = 0;
+    virtual void print() = 0;
+
+//Strategies should be their own class and inherent to Agents, rather than the repeat virtual declarations below
+    virtual int return_num_strategies() = 0;
+    virtual int return_memory(int strategy_index) = 0;
     virtual double win_percentage_of_streak() = 0;
     virtual void weighted_update(const MarketHistory &history, signum binary_market_result) = 0;
     virtual void agent_memory_boost() = 0;
     virtual void agent_add_strategy(int num_indicies_in_new_strategy) = 0;
-    virtual void print() = 0;
 };
 
 typedef std::vector<std::unique_ptr<Agent>> AgentPool;
@@ -92,18 +95,13 @@ class MarketDay {
     std::vector<Agent *> m_agents;
 public:
     MarketDay(int index, int market_prediction, signum result);
-
     MarketDay(int index, std::vector<Agent *> agents, int market_prediction, signum result);
-
     signum result() const;
-
     int market_count() const;
-
     const std::vector<Agent *> &agents() const;
-
     void print();
-
     void reset_agents(std::vector<Agent *> agents);
+    const vector<int> generate_memory_vector() const;
 };
 
 class MarketHistory {
@@ -127,6 +125,7 @@ public:
     void add_day (MarketDay new_day);
     void print();
     void write_market_history(int last_num_days_printed);
+    vector<int> return_memories_at_date(int date) const;
 };
 
 class ExperimentState {
@@ -142,24 +141,11 @@ public:
     void print();
     void write_last_n_market_history(int num_days_printed);
     void write_agent_populations();
+    void write_memory_frequencies(int date);
 };
 
 //*****************************Initializations*************************************
 std::vector<MarketDay> basic_pre_history(int size, int seed, int num_agents);
-//_____________________Alpha_Agent_Initializations________________________________
-AgentPool alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor);
-AgentPool linear_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory, int agent_increment);
-AgentPool exponential_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory, int agent_increment, double alpha);
-AgentPool weighted_random_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory, int agent_increment, double alpha);
-AgentPool stochastic_exponential_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory, double lambda);
-AgentPool stocastic_poisson_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory);
-AgentPool stochastic_random_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int max_memory, int min_memory);
-//_____________________Darwinian_Agent_Initializations____________________________
-
-
-//_____________________Other_Agent_Initializations________________________________
-AgentPool random_agents(int agent_pop, int memory);
-
 //Main Functions
 void write_market_histories(int rng_resolution, int rng_seed, int min_agent_pop, int max_agent_pop, int pop_interval, int runtime);
 void write_mg_observables(int num_days, int num_strategies_per_agent, int seed,

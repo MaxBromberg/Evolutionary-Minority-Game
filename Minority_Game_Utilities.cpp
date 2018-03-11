@@ -7,7 +7,6 @@
 #include <fstream>
 #include "Minority_Game_Utilities.h"
 
-
 // ***************************************************************
 //  Utilities Implementation
 // ***************************************************************
@@ -40,6 +39,7 @@ std::vector<signum> random_signum_vector(int NumIndicesInStrategy, int seed){ //
 
 std::vector<int> market_history_generator(const std::vector<signum> &source, int agentPopulation, int seed){
     std::mt19937 generator {static_cast<unsigned int>(seed)};
+    //std::uniform_int_distribution<int> distribution {0, (int)floor((agentPopulation*0.2)+0.5)};
     std::uniform_int_distribution<int> distribution {0, agentPopulation};
 
     std::vector<int> result (source.size());
@@ -62,3 +62,4 @@ int random_generate(double weight, int min, int max, int seed){
     }
     return random_number;
 }
+
