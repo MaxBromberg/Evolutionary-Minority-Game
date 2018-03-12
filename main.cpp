@@ -2,7 +2,7 @@
 #include "Agents and Evolution Strategies.h"
 
 enum {
-    MAX_AGENT_POP = 1001,
+    MAX_AGENT_POP = 10001,
     MIN_AGENT_POP = 101,
     AGENT_POP_INTERVAL = 100,
     MAX_MEMORY = 16,
@@ -30,7 +30,7 @@ int main() {
 //                                    AGENT_POP_INTERVAL, MAX_MEMORY, MIN_MEMORY, MEMORY_INTERVAL);
 
     ExperimentState experiment {basic_pre_history(32, RNG_SEED, MIN_AGENT_POP),
-                                std::unique_ptr<EvolutionStrategy> {new Creationism {}}, linear_mem_alpha_agents(MAX_AGENT_POP, NUM_STRATEGIES_PER_AGENT, STRATEGY_SET_INCREMENTOR, MAX_MEMORY, MIN_MEMORY)};
+                                std::unique_ptr<EvolutionStrategy> {new Creationism {}}, weighted_random_mem_alpha_agents(MAX_AGENT_POP, NUM_STRATEGIES_PER_AGENT, STRATEGY_SET_INCREMENTOR, MAX_MEMORY, MIN_MEMORY, 0.2)};
     experiment.simulate(100);
     experiment.write_memory_frequencies(32);
 //    experiment.simulate (RUN_TIME);

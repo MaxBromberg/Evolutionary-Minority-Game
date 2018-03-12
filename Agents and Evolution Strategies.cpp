@@ -88,7 +88,7 @@ AgentPool alpha_agents(int agent_population, int num_strategies_per_agent, int n
 AgentPool linear_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory) {
     AgentPool agents;
     for (int i = 0; i < agent_population; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{linear_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, agent_population, i), 0, i}});
+        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{linear_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, i), 0, i}});
     }
     return std::move (agents);
 }
@@ -104,7 +104,7 @@ AgentPool exponential_mem_alpha_agents(int agent_population, int num_strategies_
 AgentPool weighted_random_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, double alpha) {
     AgentPool agents;
     for (int i = 0; i < agent_population; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{weighted_random_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, agent_population, i, alpha), 0, i}});
+        agents.push_back (std::unique_ptr<Agent> {new AlphaAgent{weighted_random_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, alpha), 0, i}});
     }
     return std::move (agents);
 }
@@ -322,46 +322,30 @@ void CyclicEvolution::evolutionary_update(){};
 
 //----------Initialization Mutator Methods for different Memory distributions-----------
 
-vector<Strategy> linear_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment){
+vector<Strategy> linear_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_increment) {
     assert(max_memory < 32);
     assert(min_memory <= max_memory);
     vector<Strategy> strategies;
-    int num_elements_per_memory = ((int)floor((agent_pop/(max_memory-min_memory))+0.5));
-    auto memory_counter = min_memory+(int)floor(((double)agent_increment/(double)num_elements_per_memory)+0.5);
-    for (int i = 0; i < num_strategies; ++i) {
-        strategies.emplace_back(Strategy {(id * num_strategies) + i, memory_counter});
+    for (int i = (num_strategies - 1); i >= 0; --i) {
+        strategies.emplace_back(Strategy {(id * num_strategies) + i,
+                                          min_memory + ((agent_increment + (((num_strategies - 1) * agent_increment) - i)) % (max_memory - min_memory))});
     }
-//                                           (min_memory + ((int)floor((i*agent_increment*(max_memory-min_memory)/(agent_pop*num_strategies))+0.5)))});
-    //Agent increment is the agent index, counting up from 1
-    //cout<<num_elements_per_memory<<endl;
     return strategies;
 }
 
 vector<Strategy> exponential_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment, double alpha){
     assert(max_memory < 32);
     assert(min_memory <= max_memory);
-    double exp_increment = (log(max_memory/min_memory)/(alpha*num_strategies*agent_pop));
+    double exp_increment = (log(max_memory/min_memory))/(alpha*num_strategies*agent_pop);
     vector<Strategy> strategies;
-    for (int i = 0; i < num_strategies; ++i) {
+    for (int i = (num_strategies-1); i >= 0; --i) {
         strategies.emplace_back (Strategy {(id * num_strategies) + i,
-                                           (min_memory + ((int)floor(exp(alpha*i*agent_increment*exp_increment))))});
+                                           (int)(floor(min_memory + (exp(alpha*(agent_increment+(((num_strategies-1)*agent_increment) - i))*exp_increment))))});
     }//Agent increment is the agent index, counting up from 1
     return strategies;
 }//Allots strategies in exponential distribution
 
-vector<Strategy> poisson_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment, double alpha){
-    assert(max_memory < 32);
-    assert(min_memory <= max_memory);
-    double exp_increment = (log(max_memory/min_memory)/(alpha*num_strategies*agent_pop));
-    vector<Strategy> strategies;
-    for (int i = 0; i < num_strategies; ++i) {
-        strategies.emplace_back (Strategy {(id * num_strategies) + i,
-                                           (min_memory + ((int)floor(exp(alpha*i*agent_increment*exp_increment))))});
-    }//Agent increment is the agent index, counting up from 1
-    return strategies;
-}//Allots strategies in poisson distribution
-
-vector<Strategy> weighted_random_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_pop, int agent_increment, double weight){
+vector<Strategy> weighted_random_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, double weight){
     assert(max_memory < 32);
     assert(min_memory <= max_memory);
     vector<Strategy> strategies;
@@ -375,14 +359,15 @@ vector<Strategy> weighted_random_mem_dist_init(int id, int num_strategies, int m
 vector<Strategy> stocastic_exponential_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, double Lambda){
     assert(max_memory < 32);
     assert(min_memory <= max_memory);
-    std::default_random_engine generator;
+    std::mt19937 generator(id);
     std::exponential_distribution<double> distribution(Lambda);
 
     vector<Strategy> strategies;
     for (int i = 0; i < num_strategies; ++i) {
         double exp_distributed_number = distribution(generator);
-        strategies.emplace_back (Strategy {(id*num_strategies) + i,
-                                           (int)floor(min_memory + ((max_memory-min_memory)*exp_distributed_number)) } );
+        while(exp_distributed_number > 1.0) { exp_distributed_number = distribution(generator); }
+        strategies.emplace_back(Strategy {(id * num_strategies) + i,
+                                          (int) floor(min_memory + ((max_memory - min_memory) * exp_distributed_number))});
     }
     return strategies;
 }//This will stochastically allot strategies along an exponential dist, but not confine agents to particular range of memory length
@@ -390,7 +375,7 @@ vector<Strategy> stocastic_exponential_mem_dist_init(int id, int num_strategies,
 vector<Strategy> stocastic_poisson_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory){
     assert(max_memory < 32);
     assert(min_memory <= max_memory);
-    std::default_random_engine generator;
+    std::default_random_engine generator(id);
     std::poisson_distribution<int> distribution((max_memory - min_memory)/2);
 
     vector<Strategy> strategies;
@@ -398,8 +383,8 @@ vector<Strategy> stocastic_poisson_mem_dist_init(int id, int num_strategies, int
         double poisson_distributed_number = distribution(generator);
         while (poisson_distributed_number < min_memory || poisson_distributed_number > max_memory) { poisson_distributed_number = distribution(generator); }
         strategies.emplace_back(Strategy {(id * num_strategies) + i,
-                                          (int) floor(min_memory +
-                                                      ((max_memory - min_memory) * poisson_distributed_number))});
+                                          (int) floor(min_memory + poisson_distributed_number)});
+                                        //(int) floor(min_memory + ((max_memory - min_memory) * poisson_distributed_number))});
     }
     return strategies;
 }//This will stochastically allot strategies along a poisson dist, but not confine agents to particular range of memory length
@@ -407,7 +392,7 @@ vector<Strategy> stocastic_poisson_mem_dist_init(int id, int num_strategies, int
 vector<Strategy> stocastic_random_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory){
     assert(max_memory < 32);
     assert(min_memory <= max_memory);
-    std::default_random_engine generator;
+    std::default_random_engine generator(id);
     std::uniform_int_distribution<int> distribution(min_memory, max_memory);
 
     vector<Strategy> strategies;

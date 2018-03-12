@@ -100,6 +100,7 @@ const std::vector<int> MarketDay::generate_memory_vector() const {
     uint64_t MarketHistory::last_n_results_as_bits(int n) const {
         assert (n < 32);
         assert (history.size() >= n);
+        assert (n > 0);
 
         unsigned int output = 0;
         auto begin = history.end() - n;
@@ -228,7 +229,10 @@ void ExperimentState::write_agent_populations(){
     }
 }
 
-void ExperimentState::write_memory_frequencies(int date){ debug_print(Analysis::frequency_histogram(market_history.return_memories_at_date(date))); write_frequencies(market_history.return_memories_at_date(date)); }
+void ExperimentState::write_memory_frequencies(int date){
+    assert(date >= 32); //Because we need to take from beyond the prehistory (i.e. where agents are actually in place)
+    debug_print(Analysis::frequency_histogram(market_history.return_memories_at_date(date)));
+    write_frequencies(market_history.return_memories_at_date(date)); }
 
 // *****************************************************************
 //  Initializations
