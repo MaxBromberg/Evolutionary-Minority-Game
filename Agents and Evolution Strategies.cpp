@@ -33,6 +33,14 @@ signum AlphaAgent::get_prediction(const MarketHistory &history) {
     auto prediction = sin_predict (index_of_best_strategy, (int) history.last_n_results_as_bits(strategies[index_of_best_strategy].num_indicies_in_strategy));
     return prediction;
 }
+signum AlphaAgent::get_thermal_prediction(const MarketHistory &history) {
+    auto index_of_best_strategy = std::max_element (strategies.begin(), strategies.end(), [] (const Strategy& lhs, const Strategy& rhs) {return lhs.strategy_score < rhs.strategy_score;}) - strategies.begin();
+    auto random_history_index = (int)(sin((double)history.index_of_current_day())*((unsigned int) pow(2,(strategies[index_of_best_strategy].num_indicies_in_strategy))));
+    //printf ("best strategy %li \n", index_of_best_strategy);
+    auto prediction = sin_predict (index_of_best_strategy, random_history_index);
+    //Hopefully this all is just compiled to the one return line. Everything is kept separate for conceptual clarity
+    return prediction;
+}
 
 void AlphaAgent::weighted_update(const MarketHistory &history, signum binary_market_result) {
     for (int i = 0; i < strategies.size(); ++i) {
@@ -47,10 +55,36 @@ void AlphaAgent::weighted_update(const MarketHistory &history, signum binary_mar
         }
     }
 }
+void AlphaAgent::weighted_thermal_update(const MarketHistory &history, signum binary_market_result) {
+    for (int i = 0; i < strategies.size(); ++i) {
+        if (sin_predict (i, (int)(sin((double)history.index_of_current_day())*((unsigned int) pow(2,(strategies[i].num_indicies_in_strategy))))) == binary_market_result) {
+            if(i == std::max_element (strategies.begin(), strategies.end(), [] (const Strategy& lhs, const Strategy& rhs) {return lhs.strategy_score < rhs.strategy_score;}) - strategies.begin()){
+                ++total_wins;
+            }
+            strategies[i].strategy_score += history.market_count();
+        }
+        else {
+            strategies[i].strategy_score -= history.market_count();
+        }
+    }
+}
 
 void AlphaAgent::update(const MarketHistory &history, signum binary_market_result) {
     for (int i = 0; i < strategies.size(); ++i) {
         if (sin_predict (i, (int) history.last_n_results_as_bits (strategies[i].num_indicies_in_strategy)) == binary_market_result) {
+            ++strategies[i].strategy_score;
+            if(i == std::max_element (strategies.begin(), strategies.end(), [] (const Strategy& lhs, const Strategy& rhs) {return lhs.strategy_score < rhs.strategy_score;}) - strategies.begin()){
+                ++total_wins;
+            }
+        }
+        else {
+            --strategies[i].strategy_score;
+        }
+    }
+}
+void AlphaAgent::thermal_update(const MarketHistory &history, signum binary_market_result) {
+    for (int i = 0; i < strategies.size(); ++i) {
+        if (sin_predict (i, (int)(sin((double)history.index_of_current_day())*((unsigned int) pow(2,(strategies[i].num_indicies_in_strategy))))) == binary_market_result) {
             ++strategies[i].strategy_score;
             if(i == std::max_element (strategies.begin(), strategies.end(), [] (const Strategy& lhs, const Strategy& rhs) {return lhs.strategy_score < rhs.strategy_score;}) - strategies.begin()){
                 ++total_wins;
@@ -132,32 +166,17 @@ AgentPool stochastic_random_mem_alpha_agents(int agent_population, int num_strat
     }
     return std::move (agents);
 }
-
-/*
-AgentPool random_agents(int agent_pop, int num_indicies_in_strategy) {
-    AgentPool agents;
-    for (int i = 0; i < agent_pop; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new RandomAgent{i, num_indicies_in_strategy}});
-    }
-    return std::move (agents);
-}
-*/ //Alternative random_agents fct
-
-AgentPool random_agents(int agent_pop, int rng_resolution) {
-    AgentPool agents;
-    for (int i = 0; i < agent_pop; ++i) {
-        agents.push_back (std::unique_ptr<Agent> {new RandomAgent{i+123, rng_resolution}});
-    }
-    return std::move (agents);
-}
+//--------------------------------------------------------------------------------------//
 
 
 //*****************************Darwinian Agent*************************************
-DarwinianAgent::DarwinianAgent (std::vector<Strategy>& strategies, int evol_period, int tot_wins, int i) :
-        strategies {std::move(strategies)}, evolution_period {evol_period}, total_wins {tot_wins}, id {i} {};
+DarwinianAgent::DarwinianAgent (std::vector<Strategy> strategies, int tot_wins, int i, int evolutionary_length) :
+        strategies {std::move(strategies)}, total_wins {tot_wins}, id {i}, evolution_period{evolutionary_length} {};
 
-DarwinianAgent::DarwinianAgent (int id, int evol_period, int num_strategies, int num_indicies_in_strategy) :
-        total_wins {0}, id {id}, evolution_period {evol_period} {
+DarwinianAgent::DarwinianAgent (int id, int num_strategies, int num_indicies_in_strategy, int evolutionaty_length) :
+        total_wins {0}, id {id}, evolution_period{evolutionaty_length}{
+    vector<signum> temp;
+    last_n_actions = temp;
     for (int i = 0; i < num_strategies; ++i) {
         strategies.emplace_back(Strategy {(id * num_strategies) + i, num_indicies_in_strategy});
     }
@@ -166,7 +185,7 @@ DarwinianAgent::DarwinianAgent (int id, int evol_period, int num_strategies, int
 signum DarwinianAgent::sin_predict(const int strategy_index, int history_index) const {
     //deterministically returns the strategy's value associated with the market history and strategy selection from the index
     double sin_seed = sin((double) ( strategies[strategy_index].id * (history_index + 1)));
-    //plus one to prevent 0 case problems
+    //plus one to history index to prevent 0 case problems
     auto result = ((int)(sin_seed*10000000.0) & 1) ? 1 : -1;
     return result;
 }
@@ -175,6 +194,13 @@ signum DarwinianAgent::get_prediction(const MarketHistory &history) {
     auto index_of_best_strategy = std::max_element (strategies.begin(), strategies.end(), [] (const Strategy& lhs, const Strategy& rhs) {return lhs.strategy_score < rhs.strategy_score;}) - strategies.begin();
     //printf ("best strategy %li \n", index_of_best_strategy);
     auto prediction = sin_predict (index_of_best_strategy, (int) history.last_n_results_as_bits(strategies[index_of_best_strategy].num_indicies_in_strategy));
+    return prediction;
+}
+signum DarwinianAgent::get_thermal_prediction(const MarketHistory &history) {
+    auto index_of_best_strategy = std::max_element (strategies.begin(), strategies.end(), [] (const Strategy& lhs, const Strategy& rhs) {return lhs.strategy_score < rhs.strategy_score;}) - strategies.begin();
+    auto random_history_index = (int)(sin((double)history.index_of_current_day())*((unsigned int) pow(2,(strategies[index_of_best_strategy].num_indicies_in_strategy))));
+    auto prediction = sin_predict (index_of_best_strategy, random_history_index);
+    //Hopefully this all is just compiled to the one return line. Everything is kept separate for conceptual clarity
     return prediction;
 }
 
@@ -201,28 +227,29 @@ void DarwinianAgent::update(const MarketHistory &history, signum binary_market_r
         }
     }
 }
-
-void DarwinianAgent::print() {
-    printf ("Agent %i total_wins %i\n", id, total_wins);
-    for (auto& s : strategies) {
-        printf ("\tStrategy %i : score %i\n", s.id, s.strategy_score);
+void DarwinianAgent::thermal_update(const MarketHistory &history, signum binary_market_result) {
+    for (int i = 0; i < strategies.size(); ++i) {
+        if (sin_predict (i, (int)(sin((double)history.index_of_current_day())*((unsigned int) pow(2,(strategies[i].num_indicies_in_strategy))))) == binary_market_result) {
+            ++strategies[i].strategy_score;
+            if(i == std::max_element (strategies.begin(), strategies.end(), [] (const Strategy& lhs, const Strategy& rhs) {return lhs.strategy_score < rhs.strategy_score;}) - strategies.begin()){
+                ++total_wins;
+                if(last_n_actions.size() < evolution_period){last_n_actions.emplace_back(1);
+                }else{
+                    last_n_actions.pop_back();
+                    last_n_actions.insert(last_n_actions.begin(), 1);
+                }
+            }
+        }
+        else {
+            --strategies[i].strategy_score;
+            if(last_n_actions.size() < evolution_period){last_n_actions.emplace_back(0);
+            }else{
+                last_n_actions.pop_back();
+                last_n_actions.insert(last_n_actions.begin(), 0);
+            }
+        }
     }
-    printf ("\n");
 }
-
-int DarwinianAgent::return_num_strategies(){return strategies.size(); }
-int DarwinianAgent::return_memory(int strategy_index) { return strategies[strategy_index].num_indicies_in_strategy; }
-
-void DarwinianAgent::agent_memory_boost(){
-    //does this work? -- will the strategy score update without adding
-    //for_each(strategies.begin(), strategies.end(), [](int strategy_score, int num_indicies_in_strategy){strategy_score++; num_indicies_in_strategy++;});
-    for(auto e : strategies){
-        e.num_indicies_in_strategy++; //upping the memory
-        e.strategy_score = 0; //reseting strategy score
-    }
-}
-
-void DarwinianAgent::agent_add_strategy(int num_indicies_in_new_strategy) { strategies.emplace_back(Strategy{0, num_indicies_in_new_strategy}); }
 
 void DarwinianAgent::weighted_update(const MarketHistory &history, signum binary_market_result) {
     for (int i = 0; i < strategies.size(); ++i) {
@@ -240,17 +267,111 @@ void DarwinianAgent::weighted_update(const MarketHistory &history, signum binary
         }
     }
 }
+void DarwinianAgent::weighted_thermal_update(const MarketHistory &history, signum binary_market_result) {
+    for (int i = 0; i < strategies.size(); ++i) {
+        if (sin_predict (i, (int)(sin((double)history.index_of_current_day())*((unsigned int) pow(2,(strategies[i].num_indicies_in_strategy))))) == binary_market_result) {
+            if(i == std::max_element (strategies.begin(), strategies.end(), [] (const Strategy& lhs, const Strategy& rhs) {return lhs.strategy_score < rhs.strategy_score;}) - strategies.begin()){
+                ++total_wins;
+                last_n_actions.emplace_back(1);
+            }
+            strategies[i].strategy_score += history.market_count();
+            last_n_actions.emplace_back(0);
+        }
+        else {
+            strategies[i].strategy_score -= history.market_count();
+            last_n_actions.emplace_back(0);
+        }
+    }
+}
+
+void DarwinianAgent::print() {
+    printf ("Agent %i total_wins %i\n", id, total_wins);
+    for (auto& s : strategies) {
+        printf ("\tStrategy %i : score %i\n", s.id, s.strategy_score);
+    }
+    printf ("\n");
+}
+
+void DarwinianAgent::agent_memory_boost(){
+    //does this work? -- will the strategy score update without adding
+    //for_each(strategies.begin(), strategies.end(), [](int strategy_score, int num_indicies_in_strategy){strategy_score++; num_indicies_in_strategy++;});
+    for(auto e : strategies){
+        e.num_indicies_in_strategy++; //upping the memory
+        e.strategy_score = 0; //reseting strategy score
+    }
+}
+
+void DarwinianAgent::agent_add_strategy(int num_indicies_in_new_strategy) { strategies.emplace_back(Strategy{0, num_indicies_in_new_strategy}); }
 
 double DarwinianAgent::win_percentage_of_streak() { return ((double)accumulate(last_n_actions.cbegin(), last_n_actions.cend(), 0) / (double)last_n_actions.size()); }
+int DarwinianAgent::return_num_strategies(){return strategies.size(); }
+int DarwinianAgent::return_memory(int strategy_index) { return strategies[strategy_index].num_indicies_in_strategy; }
+
+//--------------------Darwinian Agent Memory Distribution Initializer-----------------------
+AgentPool darwinian_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int evoltionary_period) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new DarwinianAgent{i*strategy_set_incrementor, num_strategies_per_agent, num_indicies_in_strategy, evoltionary_period}});
+    }
+    return std::move (agents);
+} //initializes agent pool with alpha agents
+
+AgentPool linear_mem_darwinian_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, int evoltionary_period) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new DarwinianAgent{linear_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, i), 0, i, evoltionary_period}});
+    }
+    return std::move (agents);
+}
+
+AgentPool exponential_mem_darwinian_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, double alpha, int evoltionary_period) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new DarwinianAgent{exponential_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, agent_population, i, alpha), 0, i, evoltionary_period}});
+    }
+    return std::move (agents);
+}
+
+AgentPool weighted_random_mem_darwinian_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, double alpha, int evoltionary_period) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new DarwinianAgent{weighted_random_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, alpha), 0, i, evoltionary_period}});
+    }
+    return std::move (agents);
+}
+
+AgentPool stochastic_exponential_mem_darwinian_agent(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, double lambda, int evoltionary_period) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new DarwinianAgent{stocastic_exponential_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory, lambda), 0, i, evoltionary_period}});
+    }
+    return std::move (agents);
+}
+
+AgentPool stocastic_poisson_mem_darwinian_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, int evoltionary_period) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new DarwinianAgent{stocastic_poisson_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory), 0, i, evoltionary_period}});
+    }
+    return std::move (agents);
+}
+
+AgentPool stochastic_random_mem_darwinian_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, int evoltionary_period) {
+    AgentPool agents;
+    for (int i = 0; i < agent_population; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new DarwinianAgent{stocastic_random_mem_dist_init(i*strategy_set_incrementor, num_strategies_per_agent, max_memory, min_memory), 0, i, evoltionary_period}});
+    }
+    return std::move (agents);
+}
+//--------------------------------------------------------------------------------------//
 
 //*****************************Random Agent*************************************
-
+ 
 RandomAgent::RandomAgent (int seed, int rng_resolution) : seed {seed}, rng_resolution{rng_resolution}, generator {(unsigned int)seed}, dist {0, rng_resolution} {}
 
 signum RandomAgent::get_prediction(const MarketHistory &history) { return dist(generator) < (rng_resolution/2) ? -1 : 1; }
 
 void RandomAgent::print() {printf ("RandomAgent seed %i\n", seed); }
-
 /*
 RandomAgent (int seed, int num_indicies_in_strategy) : seed {seed}, num_indicies_in_strategy {num_indicies_in_strategy} {}
 virtual signum get_prediction(const MarketHistory &history) {
@@ -259,14 +380,36 @@ virtual signum get_prediction(const MarketHistory &history) {
 virtual void print() {printf ("RandomAgent seed %i, num_indicies_in strategy = %i\n", seed, num_indicies_in_strategy); }
 */
 
-//the following are not used; just but it in because it's the superclass.
+//the following are not used (or implemented); just put it in because it's in the superclass.
+signum RandomAgent::get_thermal_prediction(const MarketHistory &history){};
+void RandomAgent::update(const MarketHistory &history, signum market_result){};
+void RandomAgent::thermal_update(const MarketHistory &history, signum market_result){};
 int RandomAgent::return_num_strategies(){};
 int RandomAgent::return_memory(int strategy_index){};
-void RandomAgent::agent_memory_boost(){};
-void RandomAgent::agent_add_strategy(int num_indicies_in_new_strategy){};
 double RandomAgent::win_percentage_of_streak(){};
 void RandomAgent::weighted_update(const MarketHistory &history, signum binary_market_result){};
-void RandomAgent::update(const MarketHistory &history, signum market_result) {};
+void RandomAgent::weighted_thermal_update(const MarketHistory &history, signum binary_market_result){};
+void RandomAgent::agent_memory_boost(){};
+void RandomAgent::agent_add_strategy(int num_indicies_in_new_strategy){};
+
+/*
+AgentPool random_agents(int agent_pop, int num_indicies_in_strategy) {
+    AgentPool agents;
+    for (int i = 0; i < agent_pop; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new RandomAgent{i, num_indicies_in_strategy}});
+    }
+    return std::move (agents);
+}
+*/ //Alternative random_agents fct
+
+AgentPool random_agents(int agent_pop, int rng_resolution) {
+    AgentPool agents;
+    for (int i = 0; i < agent_pop; ++i) {
+        agents.push_back (std::unique_ptr<Agent> {new RandomAgent{i+123, rng_resolution}});
+    }
+    return std::move (agents);
+}
+
 
 // **********************************************************************
 //                           Evolution Methodologies
@@ -288,11 +431,15 @@ std::vector<Agent*> Darwinism::select_next_generation (const MarketHistory& hist
 }
 std::vector<Agent*> Darwinism::evolutionary_update(const MarketHistory& history, AgentPool& agent_pool, double threshold) {
     assert(threshold <= 1 && threshold >= 0);
-    std::vector<Agent*> next_gen;
+    std::vector<Agent*> next_gen = history.last_day().agents();
     for (auto& agent : agent_pool){
         if(agent->win_percentage_of_streak() > threshold) {
             agent->agent_memory_boost();
-            next_gen.push_back (agent.get());
+        }
+    }
+    for (auto& agent : next_gen){
+        if(agent->win_percentage_of_streak() > threshold) {
+            agent->agent_memory_boost();
         }
     }
     return std::move(next_gen);

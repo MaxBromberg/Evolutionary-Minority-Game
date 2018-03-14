@@ -207,8 +207,44 @@ void ExperimentState::simulate_day() {
     // Finalizing
     market_history.add_day (MarketDay {market_history.index_of_current_day(), std::move (agent_generation), market_count, market_count > 0 ? -1 : 1});
 }
+void ExperimentState::thermal_simulate_day() {
+    const int index_of_day = market_history.index_of_current_day();
+    // Evolution
+    auto agent_generation = evolution_strategy->select_next_generation (market_history, agent_pool);
+    //assert (agent_generation.size() == history.last_day().agents().size());
+    assert (!agent_generation.empty());
+
+    // Agent prediction
+    int market_count = 0;
+    for (auto a : agent_generation) {
+        market_count += a->get_thermal_prediction(market_history);
+    }
+
+    // Market decision if 0 (only relevant for evolutionary models with intermittently even agent populations)
+    if (market_count == 0) {
+        printf("market count == 0 !!! -> %i\n", index_of_day);
+        std::mt19937 gen(index_of_day);
+        while (market_count == 0) {
+            auto agent_count = agent_generation.size();
+            std::uniform_int_distribution<int> dist(-(int)floor(agent_count*0.2), (int)floor(agent_count*0.2));
+            //that 0.2 is there because that's more realistic to the actual range of values generated in simulation
+            market_count = dist(gen);
+        }
+    }
+    assert (market_count != 0);
+    signum binary_market_result = market_count > 0 ? -1 : 1; // As we're registering the minority
+
+    // Agent updates
+    for (auto a : agent_generation) {
+        a->thermal_update(market_history, binary_market_result);
+    }
+
+    // Finalizing
+    market_history.add_day (MarketDay {market_history.index_of_current_day(), std::move (agent_generation), market_count, market_count > 0 ? -1 : 1});
+}
 
 void ExperimentState::simulate (int num_days) { for (;num_days > 0; --num_days) simulate_day(); }
+void ExperimentState::thermal_simulate (int num_days) { for (;num_days > 0; --num_days) thermal_simulate_day(); }
 
 void ExperimentState::print() {
     printf ("Market History:\n");
@@ -330,3 +366,53 @@ void write_mg_observables(int num_days, int num_strategies_per_agent, int seed,
     }
 }
 
+void write_thermal_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+                          int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop,
+                          int agent_pop_interval, int max_memory, int min_memory,
+                          int memory_interval){
+    assert(max_memory < 32);
+    assert(min_agent_pop % 2 == 1);
+    ofstream Observables("TMG Observables for Memory from 2 to 16, Pop from 101 to 1001, 10 Strategy Sets and 1000 Iterations.txt");
+    ofstream means("TMG Means of Memory from 2 to 16, Pop from 101 to 1001, 10 Strategy Sets and 1000 Iterations.txt");
+    for (int memory = min_memory; memory <= max_memory; memory += memory_interval) {
+        printf("Started %i memory run of %i total \n", memory, max_memory);
+        for (int agent_pop = min_agent_pop; agent_pop <= max_agent_pop; agent_pop += agent_pop_interval) {
+            double mean = 0;
+            //mean - just to test variance theory
+            double Alpha = pow(2, double(memory)) / agent_pop;;
+            double Variance_over_agent_pop = 0;
+            double successRate = 0;
+            double elementRange = 0;
+            for (int strategy_set = 1; strategy_set < num_diff_strategy_sets*agent_pop*num_strategies_per_agent; strategy_set += agent_pop*num_strategies_per_agent) {
+                ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
+                                           std::unique_ptr<EvolutionStrategy> {new Creationism{}},
+                                           alpha_agents(agent_pop, num_strategies_per_agent, memory, strategy_set)};
+                //random_agents(agent_pop, memory)};
+                //random_agents(agent_pop, 10000+strategy_set)}; //10000 rng resolution atm, and addition leads to entirely new construction, and thus new seed effect each time
+                experiment.thermal_simulate(num_days);
+                vector<int> non_binary_history;
+                for (int i = 32; i < experiment.return_market_history()->index_of_current_day(); ++i) { //from 32 to account for prehistory
+                    non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(i));
+                }
+                assert(!non_binary_history.empty());
+                mean += Analysis::mean(non_binary_history);
+                Variance_over_agent_pop += Analysis::variance(non_binary_history)/agent_pop;
+                successRate += Analysis::success_rate(non_binary_history, agent_pop);
+                elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop*2);
+
+                means << Alpha << ", "
+                      << agent_pop << ", "
+                      << memory << ", "
+                      << Analysis::mean(non_binary_history) << endl; //only gives different values for diff strategy sets for non-rnd agents
+            }
+
+            Observables << Alpha << ", "
+                        << agent_pop << ", "
+                        << memory << ", "
+                        << mean / num_diff_strategy_sets << ", "
+                        << Variance_over_agent_pop / num_diff_strategy_sets << ", "
+                        << successRate / num_diff_strategy_sets  << ", "
+                        << elementRange / num_diff_strategy_sets << endl;
+        }
+    }
+}

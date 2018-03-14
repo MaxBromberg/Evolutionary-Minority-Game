@@ -31,10 +31,13 @@ struct AlphaAgent : public Agent {
     signum sin_predict(const int strategy_index, int history_index) const;
 
     virtual signum get_prediction(const MarketHistory &history) override;
+    virtual signum get_thermal_prediction(const MarketHistory &history) override;
 
     virtual void weighted_update(const MarketHistory &history, signum binary_market_result);
+    virtual void weighted_thermal_update(const MarketHistory &history, signum binary_market_result);
 
     virtual void update(const MarketHistory &history, signum binary_market_result) override;
+    virtual void thermal_update(const MarketHistory &history, signum binary_market_result) override;
 
     virtual void print() override;
 
@@ -53,11 +56,13 @@ struct DarwinianAgent : public Agent{
     int total_wins;
     int id;
 
-    DarwinianAgent (std::vector<Strategy>& strategies, int evol_period, int tot_wins, int i);
-    DarwinianAgent (int id, int evol_period, int num_strategies, int num_indicies_in_strategy);
+    DarwinianAgent (std::vector<Strategy> strategies, int tot_wins, int i, int evolutionaty_length);
+    DarwinianAgent (int id, int num_strategies, int num_indicies_in_strategy, int evolutionaty_length);
     signum sin_predict(const int strategy_index, int history_index) const;
     virtual signum get_prediction(const MarketHistory &history) override;
+    virtual signum get_thermal_prediction(const MarketHistory &history) override;
     virtual void update(const MarketHistory &history, signum binary_market_result) override;
+    virtual void thermal_update(const MarketHistory &history, signum binary_market_result) override;
     virtual void print() override;
 
     virtual int return_num_strategies();
@@ -65,6 +70,7 @@ struct DarwinianAgent : public Agent{
     virtual void agent_memory_boost();
     virtual void agent_add_strategy(int num_indicies_in_new_strategy);
     virtual void weighted_update(const MarketHistory &history, signum binary_market_result);
+    virtual void weighted_thermal_update(const MarketHistory &history, signum binary_market_result);
     virtual double win_percentage_of_streak();
 };
 
@@ -90,13 +96,16 @@ public:
     */
 
     //the following are not used; just but it in because it's the superclass.
+    virtual signum get_thermal_prediction(const MarketHistory &history);
+    virtual void update(const MarketHistory &history, signum market_result);
+    virtual void thermal_update(const MarketHistory &history, signum market_result);
     virtual int return_num_strategies();
     virtual int return_memory(int strategy_index);
-    virtual void agent_memory_boost();
-    virtual void agent_add_strategy(int num_indicies_in_new_strategy);
     virtual double win_percentage_of_streak();
     virtual void weighted_update(const MarketHistory &history, signum binary_market_result);
-    virtual void update(const MarketHistory &history, signum market_result);
+    virtual void weighted_thermal_update(const MarketHistory &history, signum binary_market_result);
+    virtual void agent_memory_boost();
+    virtual void agent_add_strategy(int num_indicies_in_new_strategy);
 };
 
 // **********************************************************************
@@ -171,7 +180,13 @@ AgentPool stochastic_exponential_mem_alpha_agents(int agent_population, int num_
 AgentPool stocastic_poisson_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory);
 AgentPool stochastic_random_mem_alpha_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory);
 //_____________________Darwinian_Agent_Initializations____________________________
-
+AgentPool darwinian_agents(int agent_population, int num_strategies_per_agent, int num_indicies_in_strategy, int strategy_set_incrementor, int evolutionary_length);
+AgentPool linear_mem_darwinian_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, int evolutionary_length);
+AgentPool exponential_mem_darwinian_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, double alpha, int evolutionary_length);
+AgentPool weighted_random_mem_darwinian_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, double alpha, int evolutionary_length);
+AgentPool stochastic_exponential_mem_darwinian_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, double lambda, int evolutionary_length);
+AgentPool stocastic_poisson_mem_darwinian_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, int evolutionary_length);
+AgentPool stochastic_random_mem_darwinian_agents(int agent_population, int num_strategies_per_agent, int strategy_set_incrementor, int max_memory, int min_memory, int evolutionary_length);
 
 //_____________________Other_Agent_Initializations________________________________
 AgentPool random_agents(int agent_pop, int memory);

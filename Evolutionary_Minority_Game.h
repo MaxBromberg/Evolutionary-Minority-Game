@@ -24,7 +24,9 @@ class Agent {
 public:
     virtual ~Agent() {}
     virtual signum get_prediction(const MarketHistory &history) = 0;
+    virtual signum get_thermal_prediction(const MarketHistory &history) = 0;
     virtual void update(const MarketHistory &history, signum market_result) = 0;
+    virtual void thermal_update(const MarketHistory &history, signum market_result) = 0;
     virtual void print() = 0;
 
 //Strategies should be their own class and inherent to Agents, rather than the repeat virtual declarations below
@@ -32,6 +34,7 @@ public:
     virtual int return_memory(int strategy_index) = 0;
     virtual double win_percentage_of_streak() = 0;
     virtual void weighted_update(const MarketHistory &history, signum binary_market_result) = 0;
+    virtual void weighted_thermal_update(const MarketHistory &history, signum binary_market_result) = 0;
     virtual void agent_memory_boost() = 0;
     virtual void agent_add_strategy(int num_indicies_in_new_strategy) = 0;
 };
@@ -137,7 +140,9 @@ public:
     ExperimentState (std::vector<MarketDay> pre_history, std::unique_ptr<EvolutionStrategy> evolution, AgentPool agents);
     MarketHistory* return_market_history();
     void simulate_day();
+    void thermal_simulate_day();
     void simulate (int num_days);
+    void thermal_simulate (int num_days);
     void print();
     void write_last_n_market_history(int num_days_printed);
     void write_agent_populations();
@@ -149,5 +154,9 @@ std::vector<MarketDay> basic_pre_history(int size, int seed, int num_agents);
 //Main Functions
 void write_market_histories(int rng_resolution, int rng_seed, int min_agent_pop, int max_agent_pop, int pop_interval, int runtime);
 void write_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+                          int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop,
+                          int agent_pop_interval, int min_memory, int max_memory, int memory_interval);
+
+void write_thermal_mg_observables(int num_days, int num_strategies_per_agent, int seed,
                           int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop,
                           int agent_pop_interval, int min_memory, int max_memory, int memory_interval);
