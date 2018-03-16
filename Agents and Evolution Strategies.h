@@ -119,11 +119,12 @@ public:
 }; //Simply returns the previous state
 
 class Darwinism: public EvolutionStrategy {
-    double threshold = 0.9;
+    double win_threshold;
+    double lose_threshold;
 public:
-    Darwinism (double win_threshold_percentage);
-    virtual std::vector<Agent*> select_next_generation (const MarketHistory& history, AgentPool& agent_pool) override;
-    virtual std::vector<Agent*> evolutionary_update(const MarketHistory& history, AgentPool& agent_pool, double threshold);
+    Darwinism (double win_threshold_percentage, double lose_threshold_percentage);
+    virtual std::vector<Agent*> select_next_generation (const MarketHistory& history, AgentPool& agent_pool);
+    virtual std::vector<Agent*> evolutionary_update(const MarketHistory& history, AgentPool& agent_pool, double win_threshold, double lose_threshold);
 
 }; //Simply returns the previous state
 

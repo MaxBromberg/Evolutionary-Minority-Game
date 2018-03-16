@@ -267,6 +267,7 @@ void ExperimentState::write_agent_populations(){
 
 void ExperimentState::write_memory_frequencies(int date){
     assert(date >= 32); //Because we need to take from beyond the prehistory (i.e. where agents are actually in place)
+    std::cout<<"Memory Frequencies:"<<endl;
     debug_print(Analysis::frequency_histogram(market_history.return_memories_at_date(date)));
     write_frequencies(market_history.return_memories_at_date(date)); }
 
@@ -391,7 +392,7 @@ void write_thermal_mg_observables(int num_days, int num_strategies_per_agent, in
                 //random_agents(agent_pop, 10000+strategy_set)}; //10000 rng resolution atm, and addition leads to entirely new construction, and thus new seed effect each time
                 experiment.thermal_simulate(num_days);
                 vector<int> non_binary_history;
-                for (int i = 32; i < experiment.return_market_history()->index_of_current_day(); ++i) { //from 32 to account for prehistory
+                for (int i = 32; i < experiment.return_market_history()->index_of_current_day(); ++i) { //from 32 to account for prehistory VERY IMPORTANT
                     non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(i));
                 }
                 assert(!non_binary_history.empty());

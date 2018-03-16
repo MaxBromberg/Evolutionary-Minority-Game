@@ -210,22 +210,26 @@ void DarwinianAgent::update(const MarketHistory &history, signum binary_market_r
             ++strategies[i].strategy_score;
             if(i == std::max_element (strategies.begin(), strategies.end(), [] (const Strategy& lhs, const Strategy& rhs) {return lhs.strategy_score < rhs.strategy_score;}) - strategies.begin()){
                 ++total_wins;
-                if(last_n_actions.size() < evolution_period){last_n_actions.emplace_back(1);
+                if( last_n_actions.size() < evolution_period){
+                    last_n_actions.emplace_back(1);
                 }else{
                     last_n_actions.pop_back();
                     last_n_actions.insert(last_n_actions.begin(), 1);
+                }
+            }else{
+                if (last_n_actions.size() < evolution_period) {
+                    last_n_actions.emplace_back(0);
+                } else {
+                    last_n_actions.pop_back();
+                    last_n_actions.insert(last_n_actions.begin(), 0);
                 }
             }
         }
         else {
             --strategies[i].strategy_score;
-            if(last_n_actions.size() < evolution_period){last_n_actions.emplace_back(0);
-            }else{
-                last_n_actions.pop_back();
-                last_n_actions.insert(last_n_actions.begin(), 0);
-            }
         }
     }
+    debug_print(last_n_actions);
 }
 void DarwinianAgent::thermal_update(const MarketHistory &history, signum binary_market_result) {
     for (int i = 0; i < strategies.size(); ++i) {
@@ -424,21 +428,22 @@ void Creationism::evolutionary_update(){};
 //*****************************Darwinistic Evolutionary Methodology*************************************
 //*************************(i.e. Modification of memory and agent pool)*********************************
 
-Darwinism::Darwinism (double win_threshold_percentage) : threshold (win_threshold_percentage) {};
+Darwinism::Darwinism (double win_threshold_percentage, double lose_threshold_percentage) : lose_threshold (lose_threshold_percentage), win_threshold (win_threshold_percentage) {};
 std::vector<Agent*> Darwinism::select_next_generation (const MarketHistory& history, AgentPool& agent_pool) {
-    std::vector<Agent*> next_gen = evolutionary_update(history, agent_pool, threshold);
+    std::vector<Agent*> next_gen = evolutionary_update(history, agent_pool, win_threshold, lose_threshold);
     return std::move (next_gen);
 }
-std::vector<Agent*> Darwinism::evolutionary_update(const MarketHistory& history, AgentPool& agent_pool, double threshold) {
-    assert(threshold <= 1 && threshold >= 0);
+std::vector<Agent*> Darwinism::evolutionary_update(const MarketHistory& history, AgentPool& agent_pool, double win_threshold, double lose_threshold) {
+    assert(win_threshold <= 1 && win_threshold >= 0);
+    assert(lose_threshold <= 1 && lose_threshold >= 0);
     std::vector<Agent*> next_gen = history.last_day().agents();
     for (auto& agent : agent_pool){
-        if(agent->win_percentage_of_streak() > threshold) {
+        if(agent->win_percentage_of_streak() >= win_threshold) {
             agent->agent_memory_boost();
         }
     }
     for (auto& agent : next_gen){
-        if(agent->win_percentage_of_streak() > threshold) {
+        if(agent->win_percentage_of_streak() >= win_threshold) {
             agent->agent_memory_boost();
         }
     }
