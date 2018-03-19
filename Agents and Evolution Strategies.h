@@ -44,9 +44,12 @@ struct AlphaAgent : public Agent {
     //defined to be in compliance with the overall strategy
     virtual int return_num_strategies();
     virtual int return_memory(int strategy_index);
-    virtual void agent_memory_boost();
+    virtual void agent_memory_boost(int max_memory);
+    virtual void agent_memory_deduction(int min_memory);
     virtual void agent_add_strategy(int num_indicies_in_new_strategy);
+    virtual void agent_subtract_strategy(int strategy_index);
     virtual double win_percentage_of_streak();
+    virtual int return_evolutionary_period();
 };
 
 struct DarwinianAgent : public Agent{
@@ -67,11 +70,14 @@ struct DarwinianAgent : public Agent{
 
     virtual int return_num_strategies();
     virtual int return_memory(int strategy_index);
-    virtual void agent_memory_boost();
+    virtual void agent_memory_boost(int max_memory);
+    virtual void agent_memory_deduction(int min_memory);
     virtual void agent_add_strategy(int num_indicies_in_new_strategy);
+    virtual void agent_subtract_strategy(int strategy_index);
     virtual void weighted_update(const MarketHistory &history, signum binary_market_result);
     virtual void weighted_thermal_update(const MarketHistory &history, signum binary_market_result);
     virtual double win_percentage_of_streak();
+    virtual int return_evolutionary_period();
 };
 
 class RandomAgent : public Agent {
@@ -104,8 +110,11 @@ public:
     virtual double win_percentage_of_streak();
     virtual void weighted_update(const MarketHistory &history, signum binary_market_result);
     virtual void weighted_thermal_update(const MarketHistory &history, signum binary_market_result);
-    virtual void agent_memory_boost();
+    virtual void agent_memory_boost(int max_memory);
+    virtual void agent_memory_deduction(int min_memory);
     virtual void agent_add_strategy(int num_indicies_in_new_strategy);
+    virtual void agent_subtract_strategy(int strategy_index);
+    virtual int return_evolutionary_period();
 };
 
 // **********************************************************************
@@ -119,12 +128,22 @@ public:
 }; //Simply returns the previous state
 
 class Darwinism: public EvolutionStrategy {
-    double win_threshold;
-    double lose_threshold;
+    double memory_delta;
+    double strategy_delta;
+    double breeding_delta;
+    int max_memory;
+    int min_memory;
+    int max_strategies;
+    int min_strategies;
 public:
-    Darwinism (double win_threshold_percentage, double lose_threshold_percentage);
+    Darwinism (double memory_delta, double strategy_delta, double breeding_delta, int max_mem, int min_mem, int max_stratgies, int min_strategies);
     virtual std::vector<Agent*> select_next_generation (const MarketHistory& history, AgentPool& agent_pool);
-    virtual std::vector<Agent*> evolutionary_update(const MarketHistory& history, AgentPool& agent_pool, double win_threshold, double lose_threshold);
+    virtual std::vector<Agent*> memory_update(const MarketHistory& history, AgentPool& agent_pool);
+    virtual std::vector<Agent*> strategy_update(const MarketHistory& history, AgentPool& agent_pool);
+    virtual std::vector<Agent*> memory_and_strategy_update(const MarketHistory& history, AgentPool& agent_pool);
+    virtual std::vector<Agent*> population_update(const MarketHistory& history, AgentPool& agent_pool);
+    virtual std::vector<Agent*> memory_and_strategy_and_pop_update(const MarketHistory& history, AgentPool& agent_pool);
+    virtual std::vector<Agent*> memory_and_population_update(const MarketHistory& history, AgentPool& agent_pool);
 
 }; //Simply returns the previous state
 
@@ -158,9 +177,6 @@ public:
     }
 }; //Should spawn a slightly modified strategy set, same preferences
 */
-
-
-
 
 //----------Initialization Mutator Methods for different Memory distributions-----------
 vector<Strategy> linear_mem_dist_init(int id, int num_strategies, int max_memory, int min_memory, int agent_increment);

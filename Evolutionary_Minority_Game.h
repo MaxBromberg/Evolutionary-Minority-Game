@@ -35,8 +35,11 @@ public:
     virtual double win_percentage_of_streak() = 0;
     virtual void weighted_update(const MarketHistory &history, signum binary_market_result) = 0;
     virtual void weighted_thermal_update(const MarketHistory &history, signum binary_market_result) = 0;
-    virtual void agent_memory_boost() = 0;
+    virtual void agent_memory_boost(int max_memory) = 0;
+    virtual void agent_memory_deduction(int min_memory) = 0;
     virtual void agent_add_strategy(int num_indicies_in_new_strategy) = 0;
+    virtual void agent_subtract_strategy(int strategy_index) = 0;
+    virtual int return_evolutionary_period() = 0;
 };
 
 typedef std::vector<std::unique_ptr<Agent>> AgentPool;
@@ -105,6 +108,7 @@ public:
     void print();
     void reset_agents(std::vector<Agent *> agents);
     const vector<int> generate_memory_vector() const;
+    const vector<int> generate_strategy_vector() const;
 };
 
 class MarketHistory {
@@ -121,6 +125,8 @@ public:
     int market_result() const;
     int market_count_at_day_i(int i) const;
     int population_at_n(int n) const;
+    double ave_memory_at_n(int n) const;
+    double ave_strategy_count_at_n(int n) const;
     int history_size() const;
 //Neither market history functions work, as for whatever reason the history.size inside evaluates to prehistory size. Not sure why.
     vector<int> nonbinary_market_history() const;
@@ -128,7 +134,10 @@ public:
     void add_day (MarketDay new_day);
     void print();
     void write_market_history(int last_num_days_printed);
+    void labeled_write_market_history(double memory_delta, int evolutionary_period, int last_num_days_printed);
+    void strategy_labeled_write_market_history(double strategy, int evolutionary_period, int last_num_days_printed);
     vector<int> return_memories_at_date(int date) const;
+    vector<int> return_strategies_at_date(int date) const;
 };
 
 class ExperimentState {
@@ -146,7 +155,20 @@ public:
     void print();
     void write_last_n_market_history(int num_days_printed);
     void write_agent_populations();
+    int return_agent_pop(int date);
+    double return_ave_memory(int date);
     void write_memory_frequencies(int date);
+    void labeled_write_last_n_market_history(double memory_delta, int evolutionary_period, int num_days_printed);
+    void strategy_labeled_write_last_n_market_history(double strategy_delta, int evolutionary_period, int num_days_printed);
+    void labeled_write_memory_frequencies(double memory_delta, int evolutionary_period, int date);
+    void write_mean_memories(int end_of_range);
+    void labeled_write_mean_memories(double memory_delta, int evolutionary_period,int end_of_range);
+    void thermal_labeled_write_mean_memories(double memory_delta, int evolutionary_period, int end_of_range);
+    void thermal_labeled_write_memory_frequencies(double memory_delta, int evolutionary_period, int date);
+    void labeled_write_strategy_frequencies(double strategy_delta, int evolutionary_period, int date);
+    void labeled_write_mean_strategies(double strategy_delta, int evolutionary_period, int end_of_range);
+    void thermal_labeled_write_strategy_frequencies(double strategy_delta, int evolutionary_period, int date);
+    void thermal_labeled_write_mean_strategies(double strategy_delta, int evolutionary_period, int end_of_range);
 };
 
 //*****************************Initializations*************************************
@@ -160,3 +182,26 @@ void write_mg_observables(int num_days, int num_strategies_per_agent, int seed,
 void write_thermal_mg_observables(int num_days, int num_strategies_per_agent, int seed,
                           int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop,
                           int agent_pop_interval, int min_memory, int max_memory, int memory_interval);
+
+void write_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+                                       int num_diff_strategy_sets, int max_agent_pop, int min_agent_pop,
+                                       int agent_pop_interval, int max_memory, int min_memory,
+                                       int memory_interval, int evolutionary_length, int memory_delta,
+                                       int strategy_delta, int breeding_delta,
+                                       int max_evol_memory, int min_evol_memory,
+                                       int max_num_strategies, int min_num_strategies);
+
+
+void write_memory_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+                                       int agent_pop, int memory_length, int num_memory_delta_values,
+                                       int init_evolutionary_length, int num_evolutionary_lengths, double memory_delta,
+                                       double strategy_delta, double breeding_delta,
+                                       int max_evol_memory, int min_evol_memory,
+                                       int max_num_strategies, int min_num_strategies);
+
+void thermal_write_memory_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+                                       int agent_pop, int memory_length, int num_memory_delta_values,
+                                       int init_evolutionary_length, int num_evolutionary_lengths, double memory_delta,
+                                       double strategy_delta, double breeding_delta,
+                                       int max_evol_memory, int min_evol_memory,
+                                       int max_num_strategies, int min_num_strategies);
