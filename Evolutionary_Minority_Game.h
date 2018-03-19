@@ -205,3 +205,17 @@ void thermal_write_memory_evolutionary_mg_observables(int num_days, int num_stra
                                        double strategy_delta, double breeding_delta,
                                        int max_evol_memory, int min_evol_memory,
                                        int max_num_strategies, int min_num_strategies);
+
+void thermal_write_strategy_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+                                                        int agent_pop, int memory_length, int num_memory_delta_values,
+                                                        int init_evolutionary_length, int num_evolutionary_lengths, double memory_delta,
+                                                        double strategy_delta, double breeding_delta,
+                                                        int max_evol_memory, int min_evol_memory,
+                                                        int max_num_strategies, int min_num_strategies);
+
+void write_strategy_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+                                              int agent_pop, int memory_length, int num_memory_delta_values,
+                                              int init_evolutionary_length, int num_evolutionary_lengths, double memory_delta,
+                                              double strategy_delta, double breeding_delta,
+                                              int max_evol_memory, int min_evol_memory,
+                                              int max_num_strategies, int min_num_strategies);
