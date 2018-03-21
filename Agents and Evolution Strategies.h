@@ -135,8 +135,10 @@ class Darwinism: public EvolutionStrategy {
     int min_memory;
     int max_strategies;
     int min_strategies;
+    int max_pop;
+    int min_pop;
 public:
-    Darwinism (double memory_delta, double strategy_delta, double breeding_delta, int max_mem, int min_mem, int max_stratgies, int min_strategies);
+    Darwinism (double memory_delta, double strategy_delta, double breeding_delta, int max_mem, int min_mem, int max_stratgies, int min_strategies, int max_pop, int min_pop);
     virtual std::vector<Agent*> select_next_generation (const MarketHistory& history, AgentPool& agent_pool);
     virtual std::vector<Agent*> memory_update(const MarketHistory& history, AgentPool& agent_pool);
     virtual std::vector<Agent*> strategy_update(const MarketHistory& history, AgentPool& agent_pool);
