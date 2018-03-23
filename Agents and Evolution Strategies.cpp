@@ -477,23 +477,53 @@ void Creationism::evolutionary_update(){};
 //*****************************Darwinistic Evolutionary Methodology*************************************
 //*************************(i.e. Modification of memory and agent pool)*********************************
 
-Darwinism::Darwinism (const double memory_delta, const double strategy_delta, const double breeding_delta, const int max_mem, const int min_mem, const int max_strategies, const int min_strategies, const int max_pop, const int min_pop)
-        : memory_delta {memory_delta},  strategy_delta {strategy_delta}, breeding_delta {breeding_delta}, max_memory {max_mem}, min_memory {min_mem}, max_strategies {max_strategies}, min_strategies {min_strategies}, max_pop{max_pop}, min_pop{min_pop}{
-    assert(memory_delta <= 1 && memory_delta >= 0);
-    assert(strategy_delta <= 1 && strategy_delta >= 0);
+Darwinism::Darwinism (const double memory_threshold, const double strategy_threshold, const double breeding_threshold, const int max_mem, const int min_mem, const int max_strategies, const int min_strategies, const int max_pop, const int min_pop)
+        : memory_threshold {memory_threshold},  strategy_threshold {strategy_threshold}, population_threshold{breeding_threshold}, max_memory {max_mem}, min_memory {min_mem}, max_strategies {max_strategies}, min_strategies {min_strategies}, max_pop{max_pop}, min_pop{min_pop}{
+    assert(memory_threshold <= 1 && memory_threshold >= 0);
+    assert(strategy_threshold <= 1 && strategy_threshold >= 0);
+    assert(breeding_threshold <=1 && strategy_threshold >= 0);
+    EvolutionStrategy::memory_threshold = memory_threshold;
+    EvolutionStrategy::strategy_threshold = strategy_threshold;
+    EvolutionStrategy::population_threshold = population_threshold;
 };
 
+
+/////THE RETURN OF THIS FUNCTION MUST BE REPLACED WITH THE BELOW METHODS FOR EVOLUTIONARY IMPLEMENTATIONS/////
 std::vector<Agent*> Darwinism::select_next_generation (const MarketHistory& history, AgentPool& agent_pool) {
-    return population_update(history, agent_pool);
+    return strategy_update(history, agent_pool);
 }
 
+/*
 std::vector<Agent*> Darwinism::memory_update(const MarketHistory& history, AgentPool& agent_pool) {
-    auto memory_win_threshold = (memory_delta+1)/2;
     std::vector<Agent*> next_gen = history.last_day().agents();
     for (auto& agent : next_gen){
-        if(agent->win_percentage_of_streak() > memory_win_threshold) {
+        auto win_percentage = agent->win_percentage_of_streak();
+        if(win_percentage > memory_threshold && win_percentage != 1) {
             agent->agent_memory_boost(max_memory);
-        }else if(agent->win_percentage_of_streak() <= 1-memory_win_threshold){
+            memory_threshold = win_percentage;
+        }else if(agent->win_percentage_of_streak() < memory_threshold){
+            agent->agent_memory_deduction(min_memory);
+        }
+        cout<<"Memory threshold = "<<memory_threshold<<endl;
+        EvolutionStrategy::memory_threshold = memory_threshold;
+    }
+    return std::move(next_gen);
+}
+*/
+
+//Methods for evolutionary thresholds evolving with time
+std::vector<Agent*> Darwinism::memory_update(const MarketHistory& history, AgentPool& agent_pool) {
+    std::vector<Agent*> next_gen = history.last_day().agents();
+    double success_rate = ((double)(next_gen.size() - history.market_count())/(double)(2*next_gen.size()));
+    if(memory_threshold < success_rate){
+        memory_threshold = success_rate;
+        EvolutionStrategy::memory_threshold = memory_threshold;
+    }
+    for (auto& agent : next_gen){
+        auto win_percentage = agent->win_percentage_of_streak();
+        if(win_percentage > memory_threshold && win_percentage != 1) {
+            agent->agent_memory_boost(max_memory);
+        }else{
             agent->agent_memory_deduction(min_memory);
         }
     }
@@ -501,61 +531,66 @@ std::vector<Agent*> Darwinism::memory_update(const MarketHistory& history, Agent
 }
 
 std::vector<Agent*> Darwinism::strategy_update(const MarketHistory& history, AgentPool& agent_pool) {
-    auto strategy_win_threshold = (strategy_delta+1)/2;
-    std::vector<Agent *> next_gen = history.last_day().agents();
-    for (auto &agent : next_gen) {
-        if (agent->win_percentage_of_streak() > strategy_win_threshold) {
+    std::vector<Agent*> next_gen = history.last_day().agents();
+    double success_rate = ((double)(next_gen.size() - history.market_count())/(double)(2*next_gen.size()));
+    if(strategy_threshold < success_rate && success_rate != 1){
+        strategy_threshold = success_rate;
+        EvolutionStrategy::strategy_threshold = strategy_threshold;
+    }
+    for (auto& agent : next_gen){
+        auto win_percentage = agent->win_percentage_of_streak();
+        if(win_percentage > strategy_threshold && win_percentage != 1) {
             if(agent->return_num_strategies() < max_strategies) {
-                agent->agent_add_strategy(agent->return_memory(agent->return_num_strategies() - 1));
-                //Adds a strategy with memory length = to the last strategy's (for static mem distributions)
-//                agent->agent_add_strategy(-1); //creates strategy with the memory length of that agent's best performing strategy
+                agent->agent_add_strategy(-1);
             }
-        } else if (agent->win_percentage_of_streak() <= 1-strategy_win_threshold) {
+        }else{
             if(agent->return_num_strategies() > min_strategies) {
-                agent->agent_subtract_strategy(agent->return_num_strategies()-1); //Just subtracts the last strategy.
-//                auto strategy_to_erase = ((int)lround(abs(sin(history.index_of_current_day()*agent->win_percentage_of_streak()))*agent->return_num_strategies()))-1;
-//                agent->agent_subtract_strategy(strategy_to_erase); //Subtracts a random(ish) strategy.
-//                agent->agent_subtract_strategy(-1); //deletes best performing strategy
+                agent->agent_subtract_strategy(agent->return_num_strategies()-1);
             }
         }
     }
     return std::move(next_gen);
 }
+//__________________________________Evolutionary threshold through static range fcts____________________________________
+//Methods for varying over evolutionary threshold range
+//std::vector<Agent*> Darwinism::memory_update(const MarketHistory& history, AgentPool& agent_pool) {
+//    std::vector<Agent*> next_gen = history.last_day().agents();
+//    for (auto& agent : next_gen){
+//        if(agent->win_percentage_of_streak() > memory_threshold) {
+//            agent->agent_memory_boost(max_memory);
+//        }else if(agent->win_percentage_of_streak() <= 1-memory_threshold){
+//            agent->agent_memory_deduction(min_memory);
+//        }
+//    }
+//    return std::move(next_gen);
+//}
 
-std::vector<Agent*> Darwinism::memory_and_strategy_update(const MarketHistory& history, AgentPool& agent_pool) {
-    std::vector<Agent *> next_gen = history.last_day().agents();
-    auto memory_win_threshold = (memory_delta+1)/2;
-    auto strategy_win_threshold = (strategy_delta+1)/2;
-    for (auto &agent : next_gen) {
-        if(agent->win_percentage_of_streak() >= memory_win_threshold) {
-            agent->agent_memory_boost(max_memory);
-        }else if(agent->win_percentage_of_streak() <= 1-memory_win_threshold){
-            agent->agent_memory_deduction(min_memory);
-        }
-        //Memory boost comes first, as only the existing strategies should be rewarded
-        if (agent->win_percentage_of_streak() >= strategy_win_threshold) {
-            if(agent->return_num_strategies() < max_strategies) {
-                agent->agent_add_strategy(agent->return_memory(agent->return_num_strategies() - 1));
-                //Adds a strategy with memory length = to the last strategy's (for static mem distributions)
-            }
-        } else if (agent->win_percentage_of_streak() <= 1-strategy_win_threshold) {
-            if(agent->return_num_strategies() > min_strategies) {
-                mt19937 generator(12345); //with whatever random seed
-                uniform_int_distribution<int> distribution (0, agent->return_num_strategies()-1);
-                agent->agent_subtract_strategy(distribution(generator)); //Subtracts a random strategy
-//              agent->agent_subtract_strategy(agent->return_num_strategies() - 1); //Just subtracts the last strategy.
-            }
-        }
-    }
-    return std::move(next_gen);
-}
+//std::vector<Agent*> Darwinism::strategy_update(const MarketHistory& history, AgentPool& agent_pool) {
+//    std::vector<Agent *> next_gen = history.last_day().agents();
+//    for (auto &agent : next_gen) {
+//        if (agent->win_percentage_of_streak() > strategy_threshold) {
+//            if(agent->return_num_strategies() < max_strategies) {
+//                agent->agent_add_strategy(agent->return_memory(agent->return_num_strategies() - 1));
+//                //Adds a strategy with memory length = to the last strategy's (for static mem distributions)
+////                agent->agent_add_strategy(-1); //creates strategy with the memory length of that agent's best performing strategy
+//            }
+//        } else if (agent->win_percentage_of_streak() <= strategy_threshold) {
+//            if(agent->return_num_strategies() > min_strategies) {
+//                agent->agent_subtract_strategy(agent->return_num_strategies()-1); //Just subtracts the last strategy.
+////                auto strategy_to_erase = ((int)lround(abs(sin(history.index_of_current_day()*agent->win_percentage_of_streak()))*agent->return_num_strategies()))-1;
+////                agent->agent_subtract_strategy(strategy_to_erase); //Subtracts a random(ish) strategy.
+////                agent->agent_subtract_strategy(-1); //deletes best performing strategy
+//            }
+//        }
+//    }
+//    return std::move(next_gen);
+//}
 
 std::vector<Agent*> Darwinism::population_update(const MarketHistory& history, AgentPool& agent_pool){
     std::vector<Agent *> next_gen = history.last_day().agents();
-    auto breeding_win_threshold = (breeding_delta+1)/2;
     double success_rate = ((double)(next_gen.size() - history.market_count())/(double)(2*next_gen.size()));
     auto last_element = next_gen.size()-1;
-    if(success_rate > breeding_win_threshold) {
+    if(success_rate > population_threshold) {
 //        printf("Before simulation agent pop= %i \n", next_gen.size());
         if(next_gen.size() < max_pop) {
             next_gen.insert(next_gen.begin(), create_agent(agent_pool, new DarwinianAgent
@@ -563,111 +598,18 @@ std::vector<Agent*> Darwinism::population_update(const MarketHistory& history, A
                      next_gen[next_gen.size()-1]->return_num_strategies(),
                      next_gen[last_element]->return_memory(next_gen[last_element]->return_num_strategies() - 1),
                      next_gen[last_element]->return_evolutionary_period()}));
-        } else if (success_rate <= (1 - breeding_win_threshold)) {
+        } else if (success_rate <= population_threshold) {
             if(next_gen.size() > min_pop) {
 //            delete_agent(agent_pool, i);
                 next_gen.erase(next_gen.begin() + last_element);
             }
         }
+//        population_threshold = success_rate; //Creates a dynamic evolutionary regime
+//        EvolutionStrategy::population_threshold = population_threshold;
 //        printf("After simulation agent pop= %i \n", next_gen.size());
     }
     return std::move(next_gen);
 } //creation is done without similarity, just same num. strategies and memory lengths
-
-//std::vector<Agent*> Darwinism::population_update(const MarketHistory& history, AgentPool& agent_pool){
-//    std::vector<Agent *> next_gen = history.last_day().agents();
-//    auto breeding_win_threshold = (breeding_delta+1)/2;
-//    printf("Before simulation agent pop= %i \n", next_gen.size());
-//    for (int i = 0; i < next_gen.size(); ++i) {
-//        if (next_gen[i]->win_percentage_of_streak() >= breeding_win_threshold) {
-//            printf("win percentage of streak for agent %i = %lf \n",i, next_gen[i]->win_percentage_of_streak());
-//            if(next_gen[i]->win_percentage_of_streak()==1){ break; }
-//            if(next_gen.size() < max_pop) {
-//                printf("Generate function called \n");
-//                next_gen.insert(next_gen.begin(), create_agent(agent_pool, new DarwinianAgent
-//                        {(int) (i + next_gen.size()),
-//                         next_gen[i]->return_num_strategies(),
-//                         next_gen[i]->return_memory(next_gen[i]->return_num_strategies() - 1),
-//                         next_gen[i]->return_evolutionary_period()}));
-//            }
-//        } else if (next_gen[i]->win_percentage_of_streak() <= (1 - breeding_win_threshold)) {
-//            if(next_gen.size() > min_pop) {
-////            delete_agent(agent_pool, i);
-//                printf("Destroy function called \n");
-//                next_gen.erase(next_gen.begin() + i);
-//            }
-//        }
-//    }
-//    printf("After simulation agent pop= %i \n", next_gen.size());
-//    return std::move(next_gen);
-//} //creation is done without similarity, just same num. strategies and memory lengths
-
-std::vector<Agent*> Darwinism::memory_and_population_update(const MarketHistory& history, AgentPool& agent_pool){
-    std::vector<Agent *> next_gen = history.last_day().agents();
-    auto breeding_win_threshold = (breeding_delta+1)/2;
-    auto memory_win_threshold = (memory_delta+1)/2;
-    for (int i = 0; i < next_gen.size(); ++i) {
-        if(next_gen[i]->win_percentage_of_streak() >= memory_win_threshold) {
-            next_gen[i]->agent_memory_boost(max_memory);
-        }else if(next_gen[i]->win_percentage_of_streak() <= 1-memory_win_threshold){
-            next_gen[i]->agent_memory_deduction(min_memory);
-        }
-        //Memory Update complete
-        if (next_gen[i]->win_percentage_of_streak() >= breeding_win_threshold) {
-            create_agent(agent_pool, new DarwinianAgent
-                    {(int)(i+next_gen.size()),
-                     next_gen[i]->return_num_strategies(),
-                     next_gen[i]->return_memory(next_gen[i]->return_num_strategies()-1),
-                     next_gen[i]->return_evolutionary_period()});
-        } else if (next_gen[i]->win_percentage_of_streak() <= 1 -  breeding_win_threshold) {
-//            delete_agent(agent_pool, i);
-            next_gen.erase(next_gen.begin()+i);
-        }
-        //Population update complete
-    }
-    return std::move(next_gen);
-} //creation is done without similarity, just same num. strategies and memory lengths
-
-std::vector<Agent*> Darwinism::memory_and_strategy_and_pop_update(const MarketHistory& history, AgentPool& agent_pool) {
-    std::vector<Agent *> next_gen = history.last_day().agents();
-    auto memory_win_threshold = (memory_delta+1)/2;
-    auto strategy_win_threshold = (strategy_delta+1)/2;
-    for (auto &agent : next_gen) {
-        if(agent->win_percentage_of_streak() >= memory_win_threshold) {
-            agent->agent_memory_boost(max_memory);
-        }else if(agent->win_percentage_of_streak() <= 1-memory_win_threshold){
-            agent->agent_memory_deduction(min_memory);
-        }
-        //Memory boost comes first, as only the existing strategies should be rewarded
-        if (agent->win_percentage_of_streak() >= strategy_win_threshold) {
-            if(agent->return_num_strategies() < max_strategies) {
-                agent->agent_add_strategy(agent->return_memory(agent->return_num_strategies() - 1));
-                //Adds a strategy with memory length = to the last strategy's (for static mem distributions)
-            }
-        } else if (agent->win_percentage_of_streak() <= 1-strategy_win_threshold) {
-            if(agent->return_num_strategies() > min_strategies) {
-                mt19937 generator(12345); //with whatever random seed
-                uniform_int_distribution<int> distribution (0, agent->return_num_strategies()-1);
-                agent->agent_subtract_strategy(distribution(generator)); //Subtracts a random strategy
-//              agent->agent_subtract_strategy(agent->return_num_strategies() - 1); //Just subtracts the last strategy.
-            }
-        }
-    }
-    auto breeding_win_threshold = (breeding_delta+1)/2;
-    for (int i = 0; i < next_gen.size(); ++i) {
-        if (next_gen[i]->win_percentage_of_streak() >= breeding_win_threshold) {
-            create_agent(agent_pool, new DarwinianAgent
-                    {(int)(i+next_gen.size()),
-                     next_gen[i]->return_num_strategies(),
-                     next_gen[i]->return_memory(next_gen[i]->return_num_strategies()-1),
-                     next_gen[i]->return_evolutionary_period()});
-        } else if (next_gen[i]->win_percentage_of_streak() <= 1 -  breeding_win_threshold) {
-//            delete_agent(agent_pool, i); //Agent pool does not appear to be be necessary anymore...
-            next_gen.erase(next_gen.begin()+i);
-        }
-    }
-    return std::move(next_gen);
-}
 
 //*****************************Cyclic Evolutionary Methodology*************************************
 //*****************(i.e. oldest agent discarded, new agent created each run)***********************

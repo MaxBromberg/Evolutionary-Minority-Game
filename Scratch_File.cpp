@@ -1,8 +1,10 @@
 #include <iostream>
 #include <vector>
+#include <string>
+#include <random>
+
 #include "debug_utilities.h"
 #include "analysis_utilities.h"
-#include <random>
 
 //Sin vs Uniform_int_dist as bit generators are tested below.
 //using namespace std;
@@ -77,7 +79,6 @@ struct MrStruct{
 
 int main() {
     std::cout << "Scratch File:" << std::endl;
-
     std::cout << "Original Struct Vector Values:" << std::endl;
     std::vector<MrStruct *> MrVector;
     std::vector<MrStruct> Structs;

@@ -128,9 +128,6 @@ public:
 }; //Simply returns the previous state
 
 class Darwinism: public EvolutionStrategy {
-    double memory_delta;
-    double strategy_delta;
-    double breeding_delta;
     int max_memory;
     int min_memory;
     int max_strategies;
@@ -138,14 +135,17 @@ class Darwinism: public EvolutionStrategy {
     int max_pop;
     int min_pop;
 public:
-    Darwinism (double memory_delta, double strategy_delta, double breeding_delta, int max_mem, int min_mem, int max_stratgies, int min_strategies, int max_pop, int min_pop);
+    double population_threshold;
+    double strategy_threshold;
+    double memory_threshold;
+    Darwinism (double memory_threshold, double strategy_threshold, double breeding_threshold, int max_mem, int min_mem, int max_stratgies, int min_strategies, int max_pop, int min_pop);
     virtual std::vector<Agent*> select_next_generation (const MarketHistory& history, AgentPool& agent_pool);
     virtual std::vector<Agent*> memory_update(const MarketHistory& history, AgentPool& agent_pool);
     virtual std::vector<Agent*> strategy_update(const MarketHistory& history, AgentPool& agent_pool);
-    virtual std::vector<Agent*> memory_and_strategy_update(const MarketHistory& history, AgentPool& agent_pool);
     virtual std::vector<Agent*> population_update(const MarketHistory& history, AgentPool& agent_pool);
-    virtual std::vector<Agent*> memory_and_strategy_and_pop_update(const MarketHistory& history, AgentPool& agent_pool);
-    virtual std::vector<Agent*> memory_and_population_update(const MarketHistory& history, AgentPool& agent_pool);
+//    virtual std::vector<Agent*> memory_and_strategy_update(const MarketHistory& history, AgentPool& agent_pool);
+//    virtual std::vector<Agent*> memory_and_strategy_and_pop_update(const MarketHistory& history, AgentPool& agent_pool);
+//    virtual std::vector<Agent*> memory_and_population_update(const MarketHistory& history, AgentPool& agent_pool);
 
 }; //Simply returns the previous state
 
