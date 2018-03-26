@@ -3,32 +3,32 @@
 
 enum {
     PREHISTORY_LENGTH = 32, //I just make it the maximum possible (as int is 4 bytes) to prevent unnecessary edits
-    MAX_AGENT_POP = 1001,
+    MAX_AGENT_POP = 2001,
     MIN_AGENT_POP = 11,
-    INIT_AGENT_POP = 101,
+    INIT_AGENT_POP = 1001,
     AGENT_POP_INTERVAL = 100,
     MAX_MEMORY = 16,
     MIN_MEMORY = 2,
     MEMORY_INTERVAL = 1,
-    RUN_TIME = 20000 + PREHISTORY_LENGTH, //+32 to account for prehistory
+    RUN_TIME = 10000 + PREHISTORY_LENGTH, //+32 to account for prehistory
     NUM_STRATEGIES_PER_AGENT = 2,
     RNG_SEED = 42,
     NUM_DIFF_STRATEGY_SETS = 10,
     STRATEGY_SET_INCREMENTOR = 50000,
-    ITERATED_EVOLUTIONARY_LENGTH = 2, //Must be greater than 1
-    STARTING_EVOLUTIONARY_LENGTH = 5, //Must be greater than 1
-    NUM_EVOL_LENGTHS = 35, //Greater than 1
+    ITERATED_EVOLUTIONARY_LENGTH = 500, //Must be greater than 1
+    STARTING_EVOLUTIONARY_LENGTH = 100, //Must be greater than 1
+    NUM_EVOL_LENGTHS = 2, //Greater than 1
     MAX_EVOL_MEMORY = 20,
-    MIN_EVOL_MEMORY = 1,
+    MIN_EVOL_MEMORY = 2,
     MAX_NUM_STRATEGIES = 20,
     MIN_NUM_STRATEGIES = 2,
     INIT_MEMORY = 2,
-    NUM_MEMORY_ITERATIONS = 5,
-    DELTA_FINAL_MULTIPLE = 20,
+    NUM_MEMORY_ITERATIONS = 8,
+    DELTA_FINAL_MULTIPLE = 35,
 };
 
-double memory_threshold = 0.05;
-double strategy_threshold = 0.025; //now just a percentage, recall...
+double memory_threshold = 0.02;
+double strategy_threshold = 0.00    ; //now just a percentage, recall...
 double breeding_threshold = 0.025;
 
 int main() {
@@ -47,19 +47,12 @@ int main() {
 //    experiment.write_mean_memories(RUN_TIME);
 
     //**************************************Evolutionary Methods*********************************************
-//    write_memory_evolutionary_mg_observables(RUN_TIME, NUM_STRATEGIES_PER_AGENT, RNG_SEED, MAX_AGENT_POP, INIT_MEMORY, STARTING_EVOLUTIONARY_LENGTH, NUM_EVOL_LENGTHS, ITERATED_EVOLUTIONARY_LENGTH,
-//                                             memory_threshold, strategy_threshold, breeding_threshold, MAX_EVOL_MEMORY, MIN_EVOL_MEMORY, MAX_NUM_STRATEGIES, MIN_NUM_STRATEGIES, MAX_AGENT_POP, MIN_AGENT_POP);
-//    thermal_write_memory_evolutionary_mg_observables(RUN_TIME, NUM_STRATEGIES_PER_AGENT, RNG_SEED, MAX_AGENT_POP, INIT_MEMORY, STARTING_EVOLUTIONARY_LENGTH, NUM_EVOL_LENGTHS, ITERATED_EVOLUTIONARY_LENGTH,
-//                                             memory_threshold, strategy_threshold, breeding_threshold, MAX_EVOL_MEMORY, MIN_EVOL_MEMORY, MAX_NUM_STRATEGIES, MIN_NUM_STRATEGIES, MAX_AGENT_POP, MIN_AGENT_POP);
+//    write_memory_evolutionary_mg_observables_over_time(RUN_TIME, NUM_STRATEGIES_PER_AGENT, RNG_SEED, INIT_AGENT_POP, INIT_MEMORY, DELTA_FINAL_MULTIPLE, STARTING_EVOLUTIONARY_LENGTH, 10, 2000,
+//                                                       memory_threshold, strategy_threshold, breeding_threshold, MAX_EVOL_MEMORY, MIN_EVOL_MEMORY, MAX_NUM_STRATEGIES, MIN_NUM_STRATEGIES, MAX_AGENT_POP, MIN_AGENT_POP);
+//    thermal_write_memory_evolutionary_mg_observables_over_time(RUN_TIME, NUM_STRATEGIES_PER_AGENT, RNG_SEED, INIT_AGENT_POP, INIT_MEMORY, DELTA_FINAL_MULTIPLE, STARTING_EVOLUTIONARY_LENGTH, 10, 2000,
+//                                                       memory_threshold, strategy_threshold, breeding_threshold, MAX_EVOL_MEMORY, MIN_EVOL_MEMORY, MAX_NUM_STRATEGIES, MIN_NUM_STRATEGIES, MAX_AGENT_POP, MIN_AGENT_POP);
+    write_population_evolutionary_mg_observables(RUN_TIME, NUM_STRATEGIES_PER_AGENT, RNG_SEED, INIT_AGENT_POP, INIT_MEMORY, NUM_MEMORY_ITERATIONS, DELTA_FINAL_MULTIPLE, STARTING_EVOLUTIONARY_LENGTH, ITERATED_EVOLUTIONARY_LENGTH,
+                                                 NUM_EVOL_LENGTHS, memory_threshold, strategy_threshold, breeding_threshold, MAX_EVOL_MEMORY, MIN_EVOL_MEMORY, MAX_NUM_STRATEGIES, MIN_NUM_STRATEGIES, MAX_AGENT_POP, MIN_AGENT_POP);
 
-    write_strategy_evolutionary_mg_observables(RUN_TIME, NUM_STRATEGIES_PER_AGENT, RNG_SEED, MAX_AGENT_POP, INIT_MEMORY, NUM_MEMORY_ITERATIONS, STARTING_EVOLUTIONARY_LENGTH, ITERATED_EVOLUTIONARY_LENGTH,
-                                                       NUM_EVOL_LENGTHS, memory_threshold, strategy_threshold, breeding_threshold, MAX_EVOL_MEMORY, MIN_EVOL_MEMORY, MAX_NUM_STRATEGIES, MIN_NUM_STRATEGIES, MAX_AGENT_POP, MIN_AGENT_POP);
-    thermal_write_strategy_evolutionary_mg_observables(RUN_TIME, NUM_STRATEGIES_PER_AGENT, RNG_SEED, MAX_AGENT_POP, INIT_MEMORY, NUM_MEMORY_ITERATIONS, STARTING_EVOLUTIONARY_LENGTH, ITERATED_EVOLUTIONARY_LENGTH,
-                                               NUM_EVOL_LENGTHS, memory_threshold, strategy_threshold, breeding_threshold, MAX_EVOL_MEMORY, MIN_EVOL_MEMORY, MAX_NUM_STRATEGIES, MIN_NUM_STRATEGIES, MAX_AGENT_POP, MIN_AGENT_POP);
-
-//    write_population_evolutionary_mg_observables(RUN_TIME, NUM_STRATEGIES_PER_AGENT, RNG_SEED, INIT_AGENT_POP, INIT_MEMORY, NUM_MEMORY_ITERATIONS, DELTA_FINAL_MULTIPLE, STARTING_EVOLUTIONARY_LENGTH, ITERATED_EVOLUTIONARY_LENGTH,
-//                                               NUM_EVOL_LENGTHS, memory_threshold, strategy_threshold, breeding_threshold, MAX_EVOL_MEMORY, MIN_EVOL_MEMORY, MAX_NUM_STRATEGIES, MIN_NUM_STRATEGIES, MAX_AGENT_POP, MIN_AGENT_POP);
-//    thermal_write_population_evolutionary_mg_observables(RUN_TIME, NUM_STRATEGIES_PER_AGENT, RNG_SEED, INIT_AGENT_POP, INIT_MEMORY, NUM_MEMORY_ITERATIONS, DELTA_FINAL_MULTIPLE, STARTING_EVOLUTIONARY_LENGTH, ITERATED_EVOLUTIONARY_LENGTH,
-//                                                 NUM_EVOL_LENGTHS, memory_threshold, strategy_threshold, breeding_threshold, MAX_EVOL_MEMORY, MIN_EVOL_MEMORY, MAX_NUM_STRATEGIES, MIN_NUM_STRATEGIES, MAX_AGENT_POP, MIN_AGENT_POP);
     return 0;
 }

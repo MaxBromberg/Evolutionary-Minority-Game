@@ -202,9 +202,16 @@ void write_thermal_mg_observables(int num_days, int num_strategies_per_agent, in
 
 //These actions are for evolutionary methods that allow for the evolutionary threshold to evolve with the distribution.
 ////Memory Evolution
+//void write_memory_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+//                                              int agent_pop, int memory_length,
+//                                              int init_evolutionary_length, int num_evolutionary_lengths, int iterated_evolutionary_length,
+//                                              double memory_delta, double strategy_delta, double breeding_delta,
+//                                              int max_evol_memory, int min_evol_memory,
+//                                              int max_num_strategies, int min_num_strategies, int max_pop, int min_pop);
+
 void write_memory_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
                                               int agent_pop, int memory_length,
-                                              int init_evolutionary_length, int num_evolutionary_lengths, int iterated_evolutionary_length,
+                                              int num_run_iterations, int Evolutionary_period,
                                               double memory_delta, double strategy_delta, double breeding_delta,
                                               int max_evol_memory, int min_evol_memory,
                                               int max_num_strategies, int min_num_strategies, int max_pop, int min_pop);
@@ -234,6 +241,7 @@ void thermal_write_strategy_evolutionary_mg_observables(int num_days, int num_st
                                                 int max_evol_memory, int min_evol_memory,
                                                 int max_num_strategies, int min_num_strategies, int max_pop, int min_pop);
 
+////Static phi range Methods
 //These methods are for definite ranges, varying over evolutionary threshold without an evolutionary mechanism inducing it.
 void write_memory_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
                                               int agent_pop, int memory_length, int num_memory_delta_values,
@@ -249,21 +257,21 @@ void thermal_write_memory_evolutionary_mg_observables(int num_days, int num_stra
                                               int max_evol_memory, int min_evol_memory,
                                               int max_num_strategies, int min_num_strategies, int max_pop, int min_pop);
 
-void write_strategy_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
-                                                int agent_pop, int memory_length, int num_memory_iterations,
-                                                int num_strategy_delta_values, int starting_evolutionary_length,
-                                                int evolutionary_length, int num_evolutionary_lengths,
-                                                double memory_delta, double strategy_delta, double breeding_delta,
-                                                int max_evol_memory, int min_evol_memory,
-                                                int max_num_strategies, int min_num_strategies, int max_pop, int min_pop);
-
-void thermal_write_strategy_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
-                                              int agent_pop, int memory_length, int num_memory_iterations,
-                                                int num_strategy_delta_values, int starting_evolutionary_length,
-                                              int evolutionary_length, int num_evolutionary_lengths,
-                                                double memory_delta, double strategy_delta, double breeding_delta,
-                                              int max_evol_memory, int min_evol_memory,
-                                              int max_num_strategies, int min_num_strategies, int max_pop, int min_pop);
+//void write_strategy_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+//                                                int agent_pop, int memory_length, int num_memory_iterations,
+//                                                int num_strategy_delta_values, int starting_evolutionary_length,
+//                                                int evolutionary_length, int num_evolutionary_lengths,
+//                                                double memory_delta, double strategy_delta, double breeding_delta,
+//                                                int max_evol_memory, int min_evol_memory,
+//                                                int max_num_strategies, int min_num_strategies, int max_pop, int min_pop);
+//
+//void thermal_write_strategy_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+//                                              int agent_pop, int memory_length, int num_memory_iterations,
+//                                                int num_strategy_delta_values, int starting_evolutionary_length,
+//                                              int evolutionary_length, int num_evolutionary_lengths,
+//                                                double memory_delta, double strategy_delta, double breeding_delta,
+//                                              int max_evol_memory, int min_evol_memory,
+//                                              int max_num_strategies, int min_num_strategies, int max_pop, int min_pop);
 
 void write_population_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
                                                 int agent_pop, int memory_length, int num_memory_iterations,
@@ -273,6 +281,7 @@ void write_population_evolutionary_mg_observables(int num_days, int num_strategi
                                                 int max_evol_memory, int min_evol_memory,
                                                 int max_num_strategies, int min_num_strategies, int max_pop, int min_pop);
 
+
 void thermal_write_population_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
                                                   int agent_pop, int memory_length, int num_memory_iterations,
                                                   int num_breeding_delta_values, int starting_evolutionary_length,
@@ -280,3 +289,18 @@ void thermal_write_population_evolutionary_mg_observables(int num_days, int num_
                                                   double memory_delta, double strategy_delta, double breeding_delta,
                                                   int max_evol_memory, int min_evol_memory,
                                                   int max_num_strategies, int min_num_strategies, int max_pop, int min_pop);
+
+//Static Memory evolution over different run times
+void write_memory_evolutionary_mg_observables_over_time(int num_days, int num_strategies_per_agent, int seed,
+                                       int agent_pop, int memory_length, int num_memory_delta_values,
+                                       int init_evolutionary_length, int num_run_lengths, int iterated_run_length,
+                                              double memory_delta, double strategy_delta, double breeding_delta,
+                                       int max_evol_memory, int min_evol_memory,
+                                       int max_num_strategies, int min_num_strategies, int max_pop, int min_pop);
+
+void thermal_write_memory_evolutionary_mg_observables_over_time(int num_days, int num_strategies_per_agent, int seed,
+                                                        int agent_pop, int memory_length, int num_memory_delta_values,
+                                                        int init_evolutionary_length, int num_run_lengths, int iterated_run_length,
+                                                        double memory_delta, double strategy_delta, double breeding_delta,
+                                                        int max_evol_memory, int min_evol_memory,
+                                                        int max_num_strategies, int min_num_strategies, int max_pop, int min_pop);

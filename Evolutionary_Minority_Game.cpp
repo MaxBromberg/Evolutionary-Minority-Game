@@ -625,6 +625,63 @@ void write_thermal_mg_observables(int num_days, int num_strategies_per_agent, in
     }
 }
 
+void write_memory_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+                                       int agent_pop, int memory_length,
+                                       int num_run_iterations, int Evolutionary_period,
+                                       double memory_delta, double strategy_delta, double breeding_delta,
+                                       int max_evol_memory, int min_evol_memory,
+                                       int max_num_strategies, int min_num_strategies, int max_pop, int min_pop){
+    assert(max_evol_memory < 32);
+    string base("Memory Evolution with ");
+    string runs(" initial runs, num_run_lengths = ");
+    string Agent_pop(", agent_pop = ");
+    string txt(".txt");
+    ofstream Observables(base.append(to_string(num_days-32)) + runs.append(to_string(num_run_iterations)) + Agent_pop.append(to_string(agent_pop))+ txt);
+        for (int num_runs = num_days; num_runs < num_run_iterations*num_days; num_runs+=num_days) {
+
+        double average_alpha = 0;
+        double Variance_over_agent_pop = 0;
+        double mean_memory = 0;
+        double successRate = 0;
+        double elementRange = 0;
+        ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
+                                   std::unique_ptr<EvolutionStrategy> {
+                                           new Darwinism{memory_delta, strategy_delta, breeding_delta,
+                                                         max_evol_memory, min_evol_memory, max_num_strategies,
+                                                         min_num_strategies, max_pop, min_pop}},
+                                   darwinian_agents(agent_pop, num_strategies_per_agent, memory_length, 50000,
+                                                    Evolutionary_period)};
+        experiment.simulate(num_runs);
+        auto memory_threshold = experiment.return_memory_threshold();
+        cout<<"Memory threshold after simulations = "<<memory_threshold<<endl;
+        vector<int> non_binary_history;
+        auto last_day = experiment.return_market_history()->index_of_current_day();
+        for (int j = 32; j < last_day; ++j) { //from 32 to account for prehistory
+            non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(j));
+            mean_memory += experiment.return_market_history()->ave_memory_at_n(j);
+        }
+
+        assert(!non_binary_history.empty());
+        average_alpha = pow(2, experiment.return_ave_memory(last_day)) / (double) experiment.return_agent_pop(last_day);
+        mean_memory /= (last_day - 32);
+        Variance_over_agent_pop += Analysis::variance(non_binary_history) / agent_pop;
+        successRate += Analysis::success_rate(non_binary_history, agent_pop);
+        elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop * 2);
+
+        experiment.labeled_write_last_n_market_history(memory_threshold, Evolutionary_period, num_days);
+        experiment.labeled_write_memory_frequencies(memory_threshold, Evolutionary_period, num_days);
+
+        Observables << Evolutionary_period << ", "
+                    << num_runs << ", "
+                    << average_alpha << ", "
+                    << agent_pop << ", "
+                    << memory_threshold << ", "
+                    << Variance_over_agent_pop << ", "
+                    << mean_memory << ", "
+                    << successRate << ", "
+                    << elementRange << endl;
+    }
+}
 
 void write_memory_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
                                        int agent_pop, int memory_length,
@@ -641,6 +698,9 @@ void write_memory_evolutionary_mg_observables(int num_days, int num_strategies_p
     for (int Evolutionary_period = init_evolutionary_length; Evolutionary_period < ((num_evolutionary_lengths*iterated_evolutionary_length)+init_evolutionary_length) ; Evolutionary_period+=iterated_evolutionary_length) {
         printf("Evolutionary period = %i \n", Evolutionary_period);
 
+//        for (int num_days = 0; num_days < num_run_iterations*intial_run_time; ++num_days) {
+//
+//        }
         double average_alpha = 0;
         double Variance_over_agent_pop = 0;
         double mean_memory = 0;
@@ -670,9 +730,6 @@ void write_memory_evolutionary_mg_observables(int num_days, int num_strategies_p
         successRate += Analysis::success_rate(non_binary_history, agent_pop);
         elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop * 2);
 
-        experiment.labeled_write_last_n_market_history(memory_threshold, Evolutionary_period, num_days);
-        experiment.labeled_write_memory_frequencies(memory_threshold, Evolutionary_period, num_days);
-
         Observables << Evolutionary_period << ", "
                     << average_alpha << ", "
                     << agent_pop << ", "
@@ -683,7 +740,7 @@ void write_memory_evolutionary_mg_observables(int num_days, int num_strategies_p
                     << elementRange << endl;
     }
 }
-//For actual evolutionary method (evolutionary threshold evolves as overall the highest success rate
+//For actual evolutionary method (evolutionary threshold evolves as overall the highest success rate)
 
 void thermal_write_memory_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
                                               int agent_pop, int memory_length,
@@ -744,6 +801,71 @@ void thermal_write_memory_evolutionary_mg_observables(int num_days, int num_stra
 }
 
 //Strategy evolution
+//void write_strategy_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+//                                                int agent_pop, int memory_length, int num_memory_iterations,
+//                                                int starting_evolutionary_length,
+//                                                int evolutionary_length, int num_evolutionary_lengths,
+//                                                double memory_delta, double strategy_delta, double breeding_delta,
+//                                                int max_evol_memory, int min_evol_memory,
+//                                                int max_num_strategies, int min_num_strategies, int max_pop, int min_pop) {
+//    assert(max_evol_memory < 32);
+//    int initial_memory = 2;
+//    for (int memory = initial_memory; memory < memory_length*num_memory_iterations+initial_memory; memory++) {
+//        int Evolutionary_period = starting_evolutionary_length;
+//        printf("Memory = %i \n", memory);
+//        string base("Strategy Evolution with ");
+//        string runs(" runs, ");
+//        string Agent_pop(" evolutions, pop = ");
+//        string Memory(", mem = ");
+//        string txt(".txt");
+//        ofstream Observables(base.append(to_string(num_days-32)) + runs.append(to_string(num_evolutionary_lengths)) + Agent_pop.append(to_string(agent_pop))+ Memory.append(to_string(memory))+txt);
+//        for (int k = starting_evolutionary_length; k < evolutionary_length*num_evolutionary_lengths; k+=evolutionary_length) {
+//            printf("Evolutionary period = %i \n", Evolutionary_period);
+//            double average_alpha = 0;
+//            double Variance_over_agent_pop = 0;
+//            double mean_strategy = 0;
+//            double successRate = 0;
+//            double elementRange = 0;
+//            ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
+//                                       std::unique_ptr<EvolutionStrategy> {
+//                                               new Darwinism{memory_delta, strategy_delta, breeding_delta,
+//                                                             max_evol_memory, min_evol_memory, max_num_strategies,
+//                                                             min_num_strategies, max_pop, min_pop}},
+//                                       darwinian_agents(agent_pop, num_strategies_per_agent, memory, 50000,
+//                                                        Evolutionary_period)};
+//
+//            experiment.simulate(num_days);
+//            auto Strategy_Threshold = experiment.return_strategy_threshold();
+//            cout<<"Strategy threshold after simulations = "<<Strategy_Threshold<<endl;
+//            vector<int> non_binary_history;
+//            auto last_day = experiment.return_market_history()->index_of_current_day();
+//            for (int j = 32; j < last_day; ++j) { //from 32 to account for prehistory
+//                non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(j));
+//                mean_strategy += experiment.return_market_history()->ave_strategy_count_at_n(j);
+//            }
+//            assert(!non_binary_history.empty());
+//            mean_strategy /= (last_day - 32);
+//            average_alpha = pow(2, experiment.return_ave_memory(last_day)) / (double) experiment.return_agent_pop(last_day);
+//            Variance_over_agent_pop = Analysis::variance(non_binary_history) / agent_pop;
+//            successRate = Analysis::success_rate(non_binary_history, agent_pop);
+//            elementRange = ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop * 2);
+//            experiment.strategy_labeled_write_last_n_market_history(Strategy_Threshold, Evolutionary_period, num_days);
+//            experiment.labeled_write_strategy_frequencies(Strategy_Threshold, Evolutionary_period, num_days);
+//
+//            Observables << average_alpha << ", "
+//                        << Evolutionary_period << ", "
+//                        << Strategy_Threshold << ", "
+//                        << agent_pop << ", "
+//                        << Variance_over_agent_pop << ", "
+//                        << mean_strategy << ", "
+//                        << successRate << ", "
+//                        << elementRange << endl;
+//
+//            Evolutionary_period = k;
+//        }
+//    }
+//}
+
 void write_strategy_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
                                                 int agent_pop, int memory_length, int num_memory_iterations,
                                                 int starting_evolutionary_length,
@@ -752,60 +874,56 @@ void write_strategy_evolutionary_mg_observables(int num_days, int num_strategies
                                                 int max_evol_memory, int min_evol_memory,
                                                 int max_num_strategies, int min_num_strategies, int max_pop, int min_pop) {
     assert(max_evol_memory < 32);
-    int initial_memory = 6;
-    for (int memory = initial_memory; memory < memory_length*num_memory_iterations+initial_memory; memory += memory_length) {
-        int Evolutionary_period = starting_evolutionary_length;
+    int Evolutionary_period = starting_evolutionary_length;
+    string base("Strategy Evolution with ");
+    string runs(" runs, h = ");
+    string Agent_pop(", agent_pop = ");
+    string txt(".txt");
+    ofstream Observables(base.append(to_string(num_days-32)) + runs.append(to_string(evolutionary_length)) + Agent_pop.append(to_string(agent_pop))+ txt);
+    printf("Evolutionary period = %i \n", Evolutionary_period);
+    int initial_memory = 2;
+    for (int memory = initial_memory; memory < memory_length*num_memory_iterations+initial_memory; memory ++) {
         printf("Memory = %i \n", memory);
-        string base("Strategy Evolution with ");
-        string runs(" runs, ");
-        string Agent_pop(" evolutions, pop = ");
-        string Memory(", mem = ");
-        string txt(".txt");
-        ofstream Observables(base.append(to_string(num_days-32)) + runs.append(to_string(num_evolutionary_lengths)) + Agent_pop.append(to_string(agent_pop))+ Memory.append(to_string(memory))+txt);
-        for (int k = starting_evolutionary_length; k < evolutionary_length*num_evolutionary_lengths; k+=evolutionary_length) {
-            printf("Evolutionary period = %i \n", Evolutionary_period);
-            double average_alpha = 0;
-            double Variance_over_agent_pop = 0;
-            double mean_strategy = 0;
-            double successRate = 0;
-            double elementRange = 0;
-            ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
-                                       std::unique_ptr<EvolutionStrategy> {
-                                               new Darwinism{memory_delta, strategy_delta, breeding_delta,
-                                                             max_evol_memory, min_evol_memory, max_num_strategies,
-                                                             min_num_strategies, max_pop, min_pop}},
-                                       darwinian_agents(agent_pop, num_strategies_per_agent, memory, 50000,
-                                                        Evolutionary_period)};
+        double average_alpha = 0;
+        double Variance_over_agent_pop = 0;
+        double mean_strategy = 0;
+        double successRate = 0;
+        double elementRange = 0;
+        ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
+                               std::unique_ptr<EvolutionStrategy> {
+                                       new Darwinism{memory_delta, strategy_delta, breeding_delta,
+                                                     max_evol_memory, min_evol_memory, max_num_strategies,
+                                                     min_num_strategies, max_pop, min_pop}},
+                               darwinian_agents(agent_pop, num_strategies_per_agent, memory, 50000,
+                                                Evolutionary_period)};
 
-            experiment.simulate(num_days);
-            auto Strategy_Threshold = experiment.return_strategy_threshold();
-            cout<<"Strategy threshold after simulations = "<<Strategy_Threshold<<endl;
-            vector<int> non_binary_history;
-            auto last_day = experiment.return_market_history()->index_of_current_day();
-            for (int j = 32; j < last_day; ++j) { //from 32 to account for prehistory
-                non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(j));
-                mean_strategy += experiment.return_market_history()->ave_strategy_count_at_n(j);
-            }
-            assert(!non_binary_history.empty());
-            mean_strategy /= (last_day - 32);
-            average_alpha = pow(2, experiment.return_ave_memory(last_day)) / (double) experiment.return_agent_pop(last_day);
-            Variance_over_agent_pop = Analysis::variance(non_binary_history) / agent_pop;
-            successRate = Analysis::success_rate(non_binary_history, agent_pop);
-            elementRange = ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop * 2);
-            experiment.strategy_labeled_write_last_n_market_history(Strategy_Threshold, Evolutionary_period, num_days);
-            experiment.labeled_write_strategy_frequencies(Strategy_Threshold, Evolutionary_period, num_days);
-
-            Observables << average_alpha << ", "
-                        << Evolutionary_period << ", "
-                        << Strategy_Threshold << ", "
-                        << agent_pop << ", "
-                        << Variance_over_agent_pop << ", "
-                        << mean_strategy << ", "
-                        << successRate << ", "
-                        << elementRange << endl;
-
-            Evolutionary_period = k;
+        experiment.simulate(num_days);
+        auto Strategy_Threshold = experiment.return_strategy_threshold();
+        cout<<"Strategy threshold after simulations = "<<Strategy_Threshold<<endl;
+        vector<int> non_binary_history;
+        auto last_day = experiment.return_market_history()->index_of_current_day();
+        for (int j = 32; j < last_day; ++j) { //from 32 to account for prehistory
+            non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(j));
+            mean_strategy += experiment.return_market_history()->ave_strategy_count_at_n(j);
         }
+        assert(!non_binary_history.empty());
+        mean_strategy /= (last_day - 32);
+        average_alpha = pow(2, experiment.return_ave_memory(last_day)) / (double) experiment.return_agent_pop(last_day);
+        Variance_over_agent_pop = Analysis::variance(non_binary_history) / agent_pop;
+        successRate = Analysis::success_rate(non_binary_history, agent_pop);
+        elementRange = ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop * 2);
+//        experiment.thermal_strategy_labeled_write_last_n_market_history(Strategy_Threshold, Evolutionary_period, num_days);
+//        experiment.thermal_labeled_write_strategy_frequencies(Strategy_Threshold, Evolutionary_period, num_days);
+
+        Observables << average_alpha << ", "
+                    << memory << ", "
+                    << Strategy_Threshold << ", "
+                    << Evolutionary_period << ", "
+                    << agent_pop << ", "
+                    << Variance_over_agent_pop << ", "
+                    << mean_strategy << ", "
+                    << successRate << ", "
+                    << elementRange << endl;
     }
 }
 
@@ -817,64 +935,170 @@ void thermal_write_strategy_evolutionary_mg_observables(int num_days, int num_st
                                                 int max_evol_memory, int min_evol_memory,
                                                 int max_num_strategies, int min_num_strategies, int max_pop, int min_pop) {
     assert(max_evol_memory < 32);
-    int initial_memory = 6;
-    for (int memory = initial_memory; memory < memory_length*num_memory_iterations+initial_memory; memory += memory_length) {
-        int Evolutionary_period = starting_evolutionary_length;
+    int Evolutionary_period = starting_evolutionary_length;
+    string base("TMG Strategy Evolution with ");
+    string runs(" runs, h = ");
+    string Agent_pop(", agent_pop = ");
+    string txt(".txt");
+    ofstream Observables(base.append(to_string(num_days-32)) + runs.append(to_string(evolutionary_length)) + Agent_pop.append(to_string(agent_pop))+ txt);
+    printf("Evolutionary period = %i \n", Evolutionary_period);
+    int initial_memory = 2;
+    for (int memory = initial_memory; memory < memory_length*num_memory_iterations+initial_memory; memory ++) {
         printf("(Thermal) Memory = %i \n", memory);
-        string base("TMG Strategy Evolution with ");
-        string runs(" runs, evolutions = ");
-        string Agent_pop(", agent_pop = ");
-        string Memory(", memory = ");
-        string txt(".txt");
-        ofstream Observables(base.append(to_string(num_days-32)) + runs.append(to_string(num_evolutionary_lengths)) + Agent_pop.append(to_string(agent_pop))+ Memory.append(to_string(memory))+txt);
-        for ( int k = starting_evolutionary_length; k < evolutionary_length*num_evolutionary_lengths; k+=evolutionary_length) {
-            printf("Evolutionary period = %i \n", Evolutionary_period);
-            double average_alpha = 0;
-            double Variance_over_agent_pop = 0;
-            double mean_strategy = 0;
-            double successRate = 0;
-            double elementRange = 0;
-            ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
-                                       std::unique_ptr<EvolutionStrategy> {
-                                               new Darwinism{memory_delta, strategy_delta, breeding_delta,
-                                                             max_evol_memory, min_evol_memory, max_num_strategies,
-                                                             min_num_strategies, max_pop, min_pop}},
-                                       darwinian_agents(agent_pop, num_strategies_per_agent, memory, 50000,
-                                                        Evolutionary_period)};
+        double average_alpha = 0;
+        double Variance_over_agent_pop = 0;
+        double mean_strategy = 0;
+        double successRate = 0;
+        double elementRange = 0;
+        ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
+                               std::unique_ptr<EvolutionStrategy> {
+                                       new Darwinism{memory_delta, strategy_delta, breeding_delta,
+                                                     max_evol_memory, min_evol_memory, max_num_strategies,
+                                                     min_num_strategies, max_pop, min_pop}},
+                               darwinian_agents(agent_pop, num_strategies_per_agent, memory, 50000,
+                                                Evolutionary_period)};
 
-            experiment.thermal_simulate(num_days);
-            auto Strategy_Threshold = experiment.return_strategy_threshold();
-            cout<<"Strategy threshold after simulations = "<<Strategy_Threshold<<" (Thermal)"<<endl;
-            vector<int> non_binary_history;
-            auto last_day = experiment.return_market_history()->index_of_current_day();
-            for (int j = 32; j < last_day; ++j) { //from 32 to account for prehistory
-                non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(j));
-                mean_strategy += experiment.return_market_history()->ave_strategy_count_at_n(j);
-            }
-            assert(!non_binary_history.empty());
-            mean_strategy /= (last_day - 32);
-            average_alpha = pow(2, experiment.return_ave_memory(last_day)) / (double) experiment.return_agent_pop(last_day);
-            Variance_over_agent_pop = Analysis::variance(non_binary_history) / agent_pop;
-            successRate = Analysis::success_rate(non_binary_history, agent_pop);
-            elementRange = ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop * 2);
-            experiment.thermal_strategy_labeled_write_last_n_market_history(Strategy_Threshold, Evolutionary_period, num_days);
-            experiment.thermal_labeled_write_strategy_frequencies(Strategy_Threshold, Evolutionary_period, num_days);
-
-            Observables << average_alpha << ", "
-                        << Strategy_Threshold << ", "
-                        << Evolutionary_period << ", "
-                        << agent_pop << ", "
-                        << Variance_over_agent_pop << ", "
-                        << mean_strategy << ", "
-                        << successRate << ", "
-                        << elementRange << endl;
-
-            Evolutionary_period = k;
+        experiment.thermal_simulate(num_days);
+        auto Strategy_Threshold = experiment.return_strategy_threshold();
+        cout<<"Strategy threshold after simulations = "<<Strategy_Threshold<<" (Thermal)"<<endl;
+        vector<int> non_binary_history;
+        auto last_day = experiment.return_market_history()->index_of_current_day();
+        for (int j = 32; j < last_day; ++j) { //from 32 to account for prehistory
+            non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(j));
+            mean_strategy += experiment.return_market_history()->ave_strategy_count_at_n(j);
         }
+        assert(!non_binary_history.empty());
+        mean_strategy /= (last_day - 32);
+        average_alpha = pow(2, experiment.return_ave_memory(last_day)) / (double) experiment.return_agent_pop(last_day);
+        Variance_over_agent_pop = Analysis::variance(non_binary_history) / agent_pop;
+        successRate = Analysis::success_rate(non_binary_history, agent_pop);
+        elementRange = ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop * 2);
+        experiment.thermal_strategy_labeled_write_last_n_market_history(Strategy_Threshold, Evolutionary_period, num_days);
+        experiment.thermal_labeled_write_strategy_frequencies(Strategy_Threshold, Evolutionary_period, num_days);
+
+        Observables << average_alpha << ", "
+                    << memory << ", "
+                    << Strategy_Threshold << ", "
+                    << Evolutionary_period << ", "
+                    << agent_pop << ", "
+                    << Variance_over_agent_pop << ", "
+                    << mean_strategy << ", "
+                    << successRate << ", "
+                    << elementRange << endl;
     }
 }
 
 /////////////////////////////////STATIC EVOLUTIONARY THRESHOLD REGIMES//////////////////////////////////////////
+void thermal_write_memory_evolutionary_mg_observables_over_time(int num_days, int num_strategies_per_agent, int seed,
+                                                        int agent_pop, int memory_length, int num_memory_delta_values,
+                                                        int init_evolutionary_length, int num_run_lengths, int iterated_run_length,
+                                                        double memory_delta, double strategy_delta, double breeding_delta,
+                                                        int max_evol_memory, int min_evol_memory,
+                                                        int max_num_strategies, int min_num_strategies, int max_pop, int min_pop){
+    assert(max_evol_memory < 32);
+    for (int run_length = num_days; run_length < num_run_lengths*iterated_run_length+33 ; ++run_length) {
+        double Memory_Delta = 0.45;
+        string base(" Thermal Mem Evo with runs = ");
+        string txt(".txt");
+        ofstream Observables(base.append(to_string(run_length))+txt);
+        for (int i = 0; i <= num_memory_delta_values - 1; ++i) {
+            printf("Started %lf memory delta run of up to %lf \n", Memory_Delta, num_memory_delta_values*memory_delta+0.45);
+            printf("Evolutionary period = %i \n", init_evolutionary_length);
+            double average_alpha = 0;
+            double Variance_over_agent_pop = 0;
+            double mean_memory = 0;
+            double successRate = 0;
+            double elementRange = 0;
+            ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
+                                       std::unique_ptr<EvolutionStrategy> {
+                                               new Darwinism{Memory_Delta, strategy_delta, breeding_delta,
+                                                             max_evol_memory, min_evol_memory, max_num_strategies,
+                                                             min_num_strategies, max_pop, min_pop}},
+                                       darwinian_agents(agent_pop, num_strategies_per_agent, memory_length, 50000,
+                                                        init_evolutionary_length)};
+            experiment.thermal_simulate(run_length);
+            vector<int> non_binary_history;
+            auto last_day = experiment.return_market_history()->index_of_current_day();
+            for (int j = 32; j < last_day; ++j) { //from 32 to account for prehistory
+                non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(j));
+                mean_memory += experiment.return_market_history()->ave_memory_at_n(j);
+            }
+            assert(!non_binary_history.empty());
+            average_alpha =
+                    pow(2, experiment.return_ave_memory(last_day)) / (double) experiment.return_agent_pop(last_day);
+            mean_memory /= (last_day - 32);
+            Variance_over_agent_pop += Analysis::variance(non_binary_history) / agent_pop;
+            successRate += Analysis::success_rate(non_binary_history, agent_pop);
+            elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop * 2);
+
+            Observables << average_alpha << ", "
+                        << agent_pop << ", "
+                        << Memory_Delta << ", "
+                        << Variance_over_agent_pop << ", "
+                        << mean_memory << ", "
+                        << successRate << ", "
+                        << elementRange << endl;
+            Memory_Delta += memory_delta;
+        }
+        run_length += iterated_run_length;
+    }
+}
+
+void write_memory_evolutionary_mg_observables_over_time(int num_days, int num_strategies_per_agent, int seed,
+                                       int agent_pop, int memory_length, int num_memory_delta_values,
+                                       int init_evolutionary_length, int num_run_lengths, int iterated_run_length,
+                                              double memory_delta, double strategy_delta, double breeding_delta,
+                                       int max_evol_memory, int min_evol_memory,
+                                       int max_num_strategies, int min_num_strategies, int max_pop, int min_pop){
+    assert(max_evol_memory < 32);
+    for (int run_length = num_days; run_length < num_run_lengths*iterated_run_length+33 ; ++run_length) {
+        double Memory_Delta = 0.45;
+        string base(" Mem Evo with runs = ");
+        string txt(".txt");
+        ofstream Observables(base.append(to_string(run_length))+txt);
+        for (int i = 0; i <= num_memory_delta_values - 1; ++i) {
+        printf("Started %lf memory delta run of up to %lf \n", Memory_Delta, num_memory_delta_values*memory_delta+0.45);
+            printf("Evolutionary period = %i \n", init_evolutionary_length);
+            double average_alpha = 0;
+            double Variance_over_agent_pop = 0;
+            double mean_memory = 0;
+            double successRate = 0;
+            double elementRange = 0;
+            ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
+                                       std::unique_ptr<EvolutionStrategy> {
+                                               new Darwinism{Memory_Delta, strategy_delta, breeding_delta,
+                                                             max_evol_memory, min_evol_memory, max_num_strategies,
+                                                             min_num_strategies, max_pop, min_pop}},
+                                       darwinian_agents(agent_pop, num_strategies_per_agent, memory_length, 50000,
+                                                       init_evolutionary_length)};
+            experiment.simulate(run_length);
+            vector<int> non_binary_history;
+            auto last_day = experiment.return_market_history()->index_of_current_day();
+            for (int j = 32; j < last_day; ++j) { //from 32 to account for prehistory
+                non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(j));
+                mean_memory += experiment.return_market_history()->ave_memory_at_n(j);
+            }
+            assert(!non_binary_history.empty());
+            average_alpha =
+                    pow(2, experiment.return_ave_memory(last_day)) / (double) experiment.return_agent_pop(last_day);
+            mean_memory /= (last_day - 32);
+            Variance_over_agent_pop += Analysis::variance(non_binary_history) / agent_pop;
+            successRate += Analysis::success_rate(non_binary_history, agent_pop);
+            elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop * 2);
+
+            Observables << average_alpha << ", "
+                        << agent_pop << ", "
+                        << Memory_Delta << ", "
+                        << Variance_over_agent_pop << ", "
+                        << mean_memory << ", "
+                        << successRate << ", "
+                        << elementRange << endl;
+            Memory_Delta += memory_delta;
+        }
+        run_length += iterated_run_length;
+    }
+}
+
 //void write_memory_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
 //                                       int agent_pop, int memory_length, int num_memory_delta_values,
 //                                       int init_evolutionary_length, int num_evolutionary_lengths, int iterated_evolutionary_length,
@@ -941,7 +1165,7 @@ void thermal_write_strategy_evolutionary_mg_observables(int num_days, int num_st
 //        printf("Evolutionary period = %i \n", Evolutionary_period);
 //    }
 //}
-
+//
 //void thermal_write_memory_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
 //                                       int agent_pop, int memory_length, int num_memory_delta_values,
 //                                       int init_evolutionary_length, int num_evolutionary_lengths, int iterated_evolutionary_length,
@@ -1009,191 +1233,255 @@ void thermal_write_strategy_evolutionary_mg_observables(int num_days, int num_st
 //    }
 //}
 
-void write_strategy_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
-                                              int agent_pop, int memory_length, int num_memory_iterations,
-                                                int num_strategy_delta_values, int starting_evolutionary_length,
-                                              int evolutionary_length, int num_evolutionary_lengths,
-                                                double memory_delta, double strategy_delta, double breeding_delta,
-                                              int max_evol_memory, int min_evol_memory,
-                                              int max_num_strategies, int min_num_strategies, int max_pop, int min_pop) {
-    assert(max_evol_memory < 32);
-    int memory = memory_length;
-    for (int l = 0; l < num_memory_iterations; ++l) {
-        printf("Memory = %i \n", memory);
-        int Evolutionary_period = starting_evolutionary_length;
-        for (int k = 0; k < num_evolutionary_lengths; ++k) {
-            double Strategy_Delta = strategy_delta;
-            string base(
-                    "Strategy evolutionary with strategy_delta = ");
-            string comma(", ");
-            string to(" to ");
-            string runs(" runs, mem = ");
-            string evol_period(", evol_period = ");
-            string txt(".txt");
-            ofstream Observables(base.append(to_string(strategy_delta)) + to.append(to_string(strategy_delta*num_strategy_delta_values)) + comma.append(to_string(num_days-32)) + runs.append(to_string(memory)) + evol_period.append(to_string(Evolutionary_period)) + txt);
-            for (int i = 0; i <= num_strategy_delta_values - 1; ++i) {
-                printf("Started %lf strategy delta run of up to %lf \n", Strategy_Delta,
-                       num_strategy_delta_values * strategy_delta);
-                double average_alpha = 0;
-                double Variance_over_agent_pop = 0;
-                double mean_strategy = 0;
-                double successRate = 0;
-                double elementRange = 0;
-                ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
-                                           std::unique_ptr<EvolutionStrategy> {
-                                                   new Darwinism{memory_delta, Strategy_Delta, breeding_delta,
-                                                                 max_evol_memory, min_evol_memory, max_num_strategies,
-                                                                 min_num_strategies, max_pop, min_pop}},
-                                           darwinian_agents(agent_pop, num_strategies_per_agent, memory, 50000,
-                                                            Evolutionary_period)};
 
-                experiment.simulate(num_days);
-                vector<int> non_binary_history;
-                auto last_day = experiment.return_market_history()->index_of_current_day();
-                for (int j = 32; j < last_day; ++j) { //from 32 to account for prehistory
-                    non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(j));
-                    mean_strategy += experiment.return_market_history()->ave_strategy_count_at_n(j);
-                }
-                assert(!non_binary_history.empty());
-                average_alpha =
-                        pow(2, experiment.return_ave_memory(last_day)) / (double) experiment.return_agent_pop(last_day);
-                mean_strategy /= (last_day - 32);
-                Variance_over_agent_pop += Analysis::variance(non_binary_history) / agent_pop;
-                successRate += Analysis::success_rate(non_binary_history, agent_pop);
-                elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop *
-                                 2);
+//For static phi range evolutionary method
+//void write_strategy_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+//                                              int agent_pop, int memory_length, int num_memory_iterations,
+//                                                int num_strategy_delta_values, int starting_evolutionary_length,
+//                                              int evolutionary_length, int num_evolutionary_lengths,
+//                                                double memory_delta, double strategy_delta, double breeding_delta,
+//                                              int max_evol_memory, int min_evol_memory,
+//                                              int max_num_strategies, int min_num_strategies, int max_pop, int min_pop) {
+//    assert(max_evol_memory < 32);
+//    int memory = memory_length;
+//    for (int l = 0; l < num_memory_iterations; ++l) {
+//        printf("Memory = %i \n", memory);
+//        int Evolutionary_period = starting_evolutionary_length;
+//        for (int k = 0; k < num_evolutionary_lengths; ++k) {
+//            double Strategy_Delta = strategy_delta;
+//            string base(
+//                    "Strategy evolutionary with strategy_delta = ");
+//            string comma(", ");
+//            string to(" to ");
+//            string runs(" runs, mem = ");
+//            string evol_period(", evol_period = ");
+//            string txt(".txt");
+//            ofstream Observables(base.append(to_string(strategy_delta)) + to.append(to_string(strategy_delta*num_strategy_delta_values)) + comma.append(to_string(num_days-32)) + runs.append(to_string(memory)) + evol_period.append(to_string(Evolutionary_period)) + txt);
+//            for (int i = 0; i <= num_strategy_delta_values - 1; ++i) {
+//                printf("Started %lf strategy delta run of up to %lf \n", Strategy_Delta, num_strategy_delta_values*strategy_delta);
+//                double average_alpha = 0;
+//                double Variance_over_agent_pop = 0;
+//                double mean_strategy = 0;
+//                double successRate = 0;
+//                double elementRange = 0;
+//                ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
+//                                           std::unique_ptr<EvolutionStrategy> {
+//                                                   new Darwinism{memory_delta, Strategy_Delta, breeding_delta,
+//                                                                 max_evol_memory, min_evol_memory, max_num_strategies,
+//                                                                 min_num_strategies, max_pop, min_pop}},
+//                                           darwinian_agents(agent_pop, num_strategies_per_agent, memory, 50000,
+//                                                            Evolutionary_period)};
+//
+//                experiment.simulate(num_days);
+//                vector<int> non_binary_history;
+//                auto last_day = experiment.return_market_history()->index_of_current_day();
+//                for (int j = 32; j < last_day; ++j) { //from 32 to account for prehistory
+//                    non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(j));
+//                    mean_strategy += experiment.return_market_history()->ave_strategy_count_at_n(j);
+//                }
+//                assert(!non_binary_history.empty());
+//                average_alpha =
+//                        pow(2, experiment.return_ave_memory(last_day)) / (double) experiment.return_agent_pop(last_day);
+//                mean_strategy /= (last_day - 32);
+//                Variance_over_agent_pop += Analysis::variance(non_binary_history) / agent_pop;
+//                successRate += Analysis::success_rate(non_binary_history, agent_pop);
+//                elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop *
+//                                 2);
+//
+////        for(int date = 33; date < num_days;) {
+////            experiment.labeled_write_memory_frequencies(date);
+////            if (date == 33) { date -= 33; }
+////            date += (int) ((double) (num_days - 32) / 10);
+////        }//For memory distributions over time
+////                printf("(int) (100*%lf) = %i \n", Strategy_Delta, (int)floor((100*Strategy_Delta) + 0.5) ); just in case there's any funny business again
+////                printf("(int) (100*%lf) mod 10 = %i \n", Strategy_Delta, (((int) floor((100*Strategy_Delta) + 0.5)) % 10));
+//                if ( (int) (100*Strategy_Delta) % 10 == 0) {
+//                    experiment.strategy_labeled_write_last_n_market_history(Strategy_Delta, Evolutionary_period,
+//                                                                            num_days);
+//                    experiment.labeled_write_mean_strategies(Strategy_Delta, Evolutionary_period, num_days);
+//                    experiment.labeled_write_strategy_frequencies(Strategy_Delta, Evolutionary_period, num_days);
+//                }
+//
+//                Observables << average_alpha << ", "
+//                            << agent_pop << ", "
+//                            << Strategy_Delta << ", "
+//                            << Variance_over_agent_pop << ", "
+//                            << mean_strategy << ", "
+//                            << successRate << ", "
+//                            << elementRange << endl;
+//                Strategy_Delta += strategy_delta;
+//            }
+//            Evolutionary_period += evolutionary_length;
+//            printf("Evolutionary period = %i \n", Evolutionary_period);
+//        }
+//        memory += memory_length;
+//    }
+//}
+//
+//void thermal_write_strategy_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+//                                                int agent_pop, int memory_length, int num_memory_iterations,
+//                                                int num_strategy_delta_values, int starting_evolutionary_length,
+//                                                int evolutionary_length, int num_evolutionary_lengths,
+//                                                double memory_delta, double strategy_delta, double breeding_delta,
+//                                                int max_evol_memory, int min_evol_memory,
+//                                                int max_num_strategies, int min_num_strategies, int max_pop, int min_pop) {
+//    assert(max_evol_memory < 32);
+//    int memory = memory_length;
+//    for (int l = 0; l < num_memory_iterations; ++l) {
+//        printf("Memory = %i \n", memory);
+//        int Evolutionary_period = starting_evolutionary_length;
+//        for (int k = 0; k < num_evolutionary_lengths; ++k) {
+//            double Strategy_Delta = strategy_delta;
+//            string base(
+//                    "(Thermal) Strategy evolutionary with strategy_delta = ");
+//            string comma(", ");
+//            string to(" to ");
+//            string runs(" runs, mem = ");
+//            string evol_period(", evol_period = ");
+//            string txt(".txt");
+//            ofstream Observables(base.append(to_string(strategy_delta)) + to.append(to_string(strategy_delta*num_strategy_delta_values)) + comma.append(to_string(num_days-32)) + runs.append(to_string(memory)) + evol_period.append(to_string(Evolutionary_period)) + txt);
+//            for (int i = 0; i <= num_strategy_delta_values - 1; ++i) {
+//                printf("Started %lf strategy delta run of up to %lf \n", Strategy_Delta,
+//                       num_strategy_delta_values * strategy_delta);
+//                double average_alpha = 0;
+//                double Variance_over_agent_pop = 0;
+//                double mean_strategy = 0;
+//                double successRate = 0;
+//                double elementRange = 0;
+//                ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
+//                                           std::unique_ptr<EvolutionStrategy> {
+//                                                   new Darwinism{Strategy_Delta, memory_delta, breeding_delta,
+//                                                                 max_evol_memory, min_evol_memory, max_num_strategies,
+//                                                                 min_num_strategies, max_pop, min_pop}},
+//                                           darwinian_agents(agent_pop, num_strategies_per_agent, memory, 50000,
+//                                                            Evolutionary_period)};
+//                experiment.thermal_simulate(num_days);
+//                vector<int> non_binary_history;
+//                auto last_day = experiment.return_market_history()->index_of_current_day();
+//                for (int j = 32; j < last_day; ++j) { //from 32 to account for prehistory
+//                    non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(j));
+//                    mean_strategy += experiment.return_market_history()->ave_strategy_count_at_n(j);
+//                }
+//                assert(!non_binary_history.empty());
+//                average_alpha = pow(2, experiment.return_ave_memory(last_day)) / (double) experiment.return_agent_pop(last_day);
+//                mean_strategy /= (last_day - 32);
+//                Variance_over_agent_pop += Analysis::variance(non_binary_history) / agent_pop;
+//                successRate += Analysis::success_rate(non_binary_history, agent_pop);
+//                elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop *
+//                                 2);
+//
+//                if (((int) (100*Strategy_Delta)) % 10 == 0) {
+//                    experiment.thermal_strategy_labeled_write_last_n_market_history(strategy_delta, Evolutionary_period, num_days);
+//                    experiment.thermal_labeled_write_mean_strategies(strategy_delta, Evolutionary_period, num_days);
+//                    experiment.thermal_labeled_write_strategy_frequencies(strategy_delta, Evolutionary_period, num_days);
+//                }
+//
+//                Observables << average_alpha << ", "
+//                            << agent_pop << ", "
+//                            << Strategy_Delta << ", "
+//                            << Variance_over_agent_pop << ", "
+//                            << mean_strategy << ", "
+//                            << successRate << ", "
+//                            << elementRange << endl;
+//                Strategy_Delta += strategy_delta;
+//            }
+//            Evolutionary_period += evolutionary_length;
+//            printf("Evolutionary period = %i \n", Evolutionary_period);
+//        }
+//        memory += memory_length;
+//        printf("Memory = %i \n", memory);
+//    }
+//}
 
-//        for(int date = 33; date < num_days;) {
-//            experiment.labeled_write_memory_frequencies(date);
-//            if (date == 33) { date -= 33; }
-//            date += (int) ((double) (num_days - 32) / 10);
-//        }//For memory distributions over time
-//                printf("(int) (100*%lf) = %i \n", Strategy_Delta, (int)floor((100*Strategy_Delta) + 0.5) ); just in case there's any funny business again
-//                printf("(int) (100*%lf) mod 10 = %i \n", Strategy_Delta, (((int) floor((100*Strategy_Delta) + 0.5)) % 10));
-                if ( (int) (100*Strategy_Delta) % 10 == 0) {
-                    experiment.strategy_labeled_write_last_n_market_history(Strategy_Delta, Evolutionary_period,
-                                                                            num_days);
-                    experiment.labeled_write_mean_strategies(Strategy_Delta, Evolutionary_period, num_days);
-                    experiment.labeled_write_strategy_frequencies(Strategy_Delta, Evolutionary_period, num_days);
-                }
-
-                Observables << average_alpha << ", "
-                            << agent_pop << ", "
-                            << Strategy_Delta << ", "
-                            << Variance_over_agent_pop << ", "
-                            << mean_strategy << ", "
-                            << successRate << ", "
-                            << elementRange << endl;
-                Strategy_Delta += strategy_delta;
-            }
-            Evolutionary_period += evolutionary_length;
-            printf("Evolutionary period = %i \n", Evolutionary_period);
-        }
-        memory += memory_length;
-    }
-}
-
-void thermal_write_strategy_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
-                                                int agent_pop, int memory_length, int num_memory_iterations,
-                                                int num_strategy_delta_values, int starting_evolutionary_length,
-                                                int evolutionary_length, int num_evolutionary_lengths,
-                                                double memory_delta, double strategy_delta, double breeding_delta,
-                                                int max_evol_memory, int min_evol_memory,
-                                                int max_num_strategies, int min_num_strategies, int max_pop, int min_pop) {
-    assert(max_evol_memory < 32);
-    int memory = memory_length;
-    for (int l = 0; l < num_memory_iterations; ++l) {
-        printf("Memory = %i \n", memory);
-        int Evolutionary_period = starting_evolutionary_length;
-        for (int k = 0; k < num_evolutionary_lengths; ++k) {
-            double Strategy_Delta = strategy_delta;
-            string base(
-                    "Strategy evolutionary with strategy_delta = ");
-            string comma(", ");
-            string to(" to ");
-            string runs(" runs, mem = ");
-            string evol_period(", evol_period = ");
-            string txt(".txt");
-            ofstream Observables(base.append(to_string(strategy_delta)) + to.append(to_string(strategy_delta*num_strategy_delta_values)) + comma.append(to_string(num_days-32)) + runs.append(to_string(memory)) + evol_period.append(to_string(Evolutionary_period)) + txt);
-            for (int i = 0; i <= num_strategy_delta_values - 1; ++i) {
-                printf("Started %lf strategy delta run of up to %lf \n", Strategy_Delta,
-                       num_strategy_delta_values * strategy_delta);
-                double average_alpha = 0;
-                double Variance_over_agent_pop = 0;
-                double mean_strategy = 0;
-                double successRate = 0;
-                double elementRange = 0;
-                ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
-                                           std::unique_ptr<EvolutionStrategy> {
-                                                   new Darwinism{Strategy_Delta, memory_delta, breeding_delta,
-                                                                 max_evol_memory, min_evol_memory, max_num_strategies,
-                                                                 min_num_strategies, max_pop, min_pop}},
-                                           darwinian_agents(agent_pop, num_strategies_per_agent, memory, 50000,
-                                                            Evolutionary_period)};
-                experiment.thermal_simulate(num_days);
-                vector<int> non_binary_history;
-                auto last_day = experiment.return_market_history()->index_of_current_day();
-                for (int j = 32; j < last_day; ++j) { //from 32 to account for prehistory
-                    non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(j));
-                    mean_strategy += experiment.return_market_history()->ave_strategy_count_at_n(j);
-                }
-                assert(!non_binary_history.empty());
-                average_alpha = pow(2, experiment.return_ave_memory(last_day)) / (double) experiment.return_agent_pop(last_day);
-                mean_strategy /= (last_day - 32);
-                Variance_over_agent_pop += Analysis::variance(non_binary_history) / agent_pop;
-                successRate += Analysis::success_rate(non_binary_history, agent_pop);
-                elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) agent_pop *
-                                 2);
-
-                if (((int) (100*Strategy_Delta)) % 10 == 0) {
-                    experiment.thermal_strategy_labeled_write_last_n_market_history(strategy_delta, Evolutionary_period, num_days);
-                    experiment.thermal_labeled_write_mean_strategies(strategy_delta, Evolutionary_period, num_days);
-                    experiment.thermal_labeled_write_strategy_frequencies(strategy_delta, Evolutionary_period, num_days);
-                }
-
-                Observables << average_alpha << ", "
-                            << agent_pop << ", "
-                            << Strategy_Delta << ", "
-                            << Variance_over_agent_pop << ", "
-                            << mean_strategy << ", "
-                            << successRate << ", "
-                            << elementRange << endl;
-                Strategy_Delta += strategy_delta;
-            }
-            Evolutionary_period += evolutionary_length;
-            printf("Evolutionary period = %i \n", Evolutionary_period);
-        }
-        memory += memory_length;
-        printf("Memory = %i \n", memory);
-    }
-}
+//void write_population_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
+//                                                int agent_pop, int memory_length, int num_memory_iterations,
+//                                                int num_breeding_delta_values,
+//                                                int evolutionary_length, double memory_delta,
+//                                                  double strategy_delta, double breeding_delta,
+//                                                int max_evol_memory, int min_evol_memory,
+//                                                int max_num_strategies, int min_num_strategies, int max_pop, int min_pop) {
+//    assert(max_evol_memory < 32);
+//    double initial_breeding_threshold = 0.0;
+//    double Breeding_Threshold = initial_breeding_threshold;
+//    string base("Pop evol with pop_delta = ");
+//    string comma(", ");
+//    string to(" to ");
+//    string evol_period(", evol_period = ");
+//    string txt(".txt");
+//    ofstream Observables(base.append(to_string(breeding_delta)) + to.append(to_string(breeding_delta*num_breeding_delta_values+initial_breeding_threshold)) + comma.append(to_string(num_days-32)) + evol_period.append(to_string(evolutionary_length)) + txt);
+//    for (int memory = memory_length; memory < num_memory_iterations*memory_length; memory++) {
+//        printf("Memory = %i \n", memory);
+//        for (int i = 0; i <= num_breeding_delta_values - 1; ++i) {
+//            printf("Started %lf breeding threshold run of up to %lf \n", Breeding_Threshold,
+//                   num_breeding_delta_values * breeding_delta + initial_breeding_threshold);
+//            double average_alpha = 0;
+//            double Variance_over_agent_pop = 0;
+//            double mean_pop= 0;
+//            double successRate = 0;
+//            double elementRange = 0;
+//            ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
+//                                       std::unique_ptr<EvolutionStrategy> {
+//                                               new Darwinism{strategy_delta, memory_delta, Breeding_Threshold,
+//                                                             max_evol_memory, min_evol_memory, max_num_strategies,
+//                                                             min_num_strategies, max_pop, min_pop}},
+//                                       darwinian_agents(agent_pop, num_strategies_per_agent, memory, 50000,
+//                                                        evolutionary_length)};
+//
+//            experiment.simulate(num_days);
+//            vector<int> non_binary_history;
+//            auto last_day = experiment.return_market_history()->index_of_current_day();
+//            auto Agent_Pop = experiment.return_agent_pop(last_day);
+//            for (int j = 32; j < last_day; ++j) { //from 32 to account for prehistory
+//                non_binary_history.emplace_back(experiment.return_market_history()->market_count_at_day_i(j));
+//                mean_pop += experiment.return_market_history()->population_at_n(j);
+//            }
+//            assert(!non_binary_history.empty());
+//            average_alpha =
+//                    pow(2, experiment.return_ave_memory(last_day)) / (double) experiment.return_agent_pop(last_day);
+//            mean_pop /= (last_day - 32);
+//            Variance_over_agent_pop += Analysis::variance(non_binary_history) / Agent_Pop;
+//            successRate += Analysis::success_rate(non_binary_history, Agent_Pop);
+//            elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) Agent_Pop *
+//                             2);
+//
+//        Observables << average_alpha << ", "
+//                    << memory << ", "
+//                    << Agent_Pop << ", "
+//                    << Breeding_Threshold << ", "
+//                    << Variance_over_agent_pop << ", "
+//                    << mean_pop << ", "
+//                    << successRate << ", "
+//                    << elementRange << endl;
+//        Breeding_Threshold += breeding_delta;
+//        }
+//    }
+//}
 
 void write_population_evolutionary_mg_observables(int num_days, int num_strategies_per_agent, int seed,
-                                                int agent_pop, int memory_length, int num_memory_iterations,
-                                                int num_breeding_delta_values, int starting_evolutionary_length,
-                                                int evolutionary_length, int num_evolutionary_lengths,
-                                                double memory_delta, double strategy_delta, double breeding_delta,
-                                                int max_evol_memory, int min_evol_memory,
-                                                int max_num_strategies, int min_num_strategies, int max_pop, int min_pop) {
+                                                          int agent_pop, int memory_length, int num_memory_iterations,
+                                                          int num_breeding_delta_values, int starting_evolutionary_length,
+                                                          int evolutionary_length, int num_evolutionary_lengths,
+                                                          double memory_delta, double strategy_delta, double breeding_delta,
+                                                          int max_evol_memory, int min_evol_memory,
+                                                          int max_num_strategies, int min_num_strategies, int max_pop, int min_pop) {
     assert(max_evol_memory < 32);
     int memory = memory_length;
     for (int l = 0; l < num_memory_iterations; ++l) {
         printf("Memory = %i \n", memory);
         int Evolutionary_period = starting_evolutionary_length;
-        double initial_breeding_threshold = 0.35;
         for (int k = 0; k < num_evolutionary_lengths; ++k) {
-            double Breeding_Threshold = initial_breeding_threshold;
+            double Breeding_Threshold = breeding_delta;
             string base(
-                    "Breeding evolutionary with breeding_delta = ");
+                    "Thermal Breeding evolutionary with breeding_delta = ");
             string comma(", ");
             string to(" to ");
             string runs(" runs, mem = ");
             string evol_period(", evol_period = ");
             string txt(".txt");
-            ofstream Observables(base.append(to_string(breeding_delta)) + to.append(to_string(breeding_delta*num_breeding_delta_values+initial_breeding_threshold)) + comma.append(to_string(num_days-32)) + runs.append(to_string(memory)) + evol_period.append(to_string(Evolutionary_period)) + txt);
+            ofstream Observables(base.append(to_string(breeding_delta)) + to.append(to_string(breeding_delta*num_breeding_delta_values)) + comma.append(to_string(num_days-32)) + runs.append(to_string(memory)) + evol_period.append(to_string(Evolutionary_period)) + txt);
             for (int i = 0; i <= num_breeding_delta_values - 1; ++i) {
                 printf("Started %lf breeding threshold run of up to %lf \n", Breeding_Threshold,
-                       num_breeding_delta_values * breeding_delta + initial_breeding_threshold);
+                       num_breeding_delta_values * breeding_delta);
                 double average_alpha = 0;
                 double Variance_over_agent_pop = 0;
                 double mean_pop= 0;
@@ -1201,7 +1489,7 @@ void write_population_evolutionary_mg_observables(int num_days, int num_strategi
                 double elementRange = 0;
                 ExperimentState experiment{basic_pre_history(32, seed, agent_pop),
                                            std::unique_ptr<EvolutionStrategy> {
-                                                   new Darwinism{strategy_delta, memory_delta, Breeding_Threshold,
+                                                   new Darwinism{memory_delta, strategy_delta, Breeding_Threshold,
                                                                  max_evol_memory, min_evol_memory, max_num_strategies,
                                                                  min_num_strategies, max_pop, min_pop}},
                                            darwinian_agents(agent_pop, num_strategies_per_agent, memory, 50000,
@@ -1224,14 +1512,16 @@ void write_population_evolutionary_mg_observables(int num_days, int num_strategi
                 elementRange += ((double) Analysis::number_of_unique_elements(non_binary_history) / (double) Agent_Pop *
                                  2);
 
-                if ( (int) (100*Breeding_Threshold) % 10 == 0) {
-                    experiment.population_labeled_write_last_n_market_history(Breeding_Threshold, Evolutionary_period,
-                                                                            num_days);
-                    experiment.labeled_write_populations(Breeding_Threshold, Evolutionary_period, num_days);
-                }
+//                printf("(int) (100*%lf) = %i \n", Strategy_Delta, (int)floor((100*Strategy_Delta) + 0.5) ); just in case there's any funny business again
+//                printf("(int) (100*%lf) mod 10 = %i \n", Strategy_Delta, (((int) floor((100*Strategy_Delta) + 0.5)) % 10));
+//                if ( (int) (100*Breeding_Threshold) % 10 == 0) {
+//                    experiment.population_labeled_write_last_n_market_history(Breeding_Threshold, Evolutionary_period,
+//                                                                              num_days);
+//                    experiment.thermal_labeled_write_populations(Breeding_Threshold, Evolutionary_period, num_days);
+//                }
 
                 Observables << average_alpha << ", "
-                            << Agent_Pop << ", "
+                            << Agent_Pop  << ", "
                             << Breeding_Threshold << ", "
                             << Variance_over_agent_pop << ", "
                             << mean_pop << ", "
